@@ -3,7 +3,9 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - Earth
+  - Enemy
   layers:
   - Default
   - TransparentFX
@@ -47,14 +49,14 @@ TagManager:
   - name: Earth
     uniqueID: 1620852391
     locked: 0
-  - name: Enemy
-    uniqueID: 441965283
+  - name: Bullet
+    uniqueID: 2480346813
     locked: 0
   - name: Player
     uniqueID: 3636254953
     locked: 0
-  - name: Bullet
-    uniqueID: 2480346813
+  - name: Enemy
+    uniqueID: 441965283
     locked: 0
   - name: UI
     uniqueID: 296195089
