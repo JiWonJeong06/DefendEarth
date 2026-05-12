@@ -12,10 +12,7 @@ public class Earth : MonoBehaviour
     {
         currentHealth = maxHealth;
     }
-
-    /// <summary>
-    /// 지구가 피해를 입음
-    /// </summary>
+    
     public void TakeDamage(float damage)
     {
         if (isDestroyed) return;
@@ -29,9 +26,6 @@ public class Earth : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 게임 오버
-    /// </summary>
     private void GameOver()
     {
         if (isDestroyed) return;
@@ -43,12 +37,9 @@ public class Earth : MonoBehaviour
         // GameManager.Instance.GameOver();
         
         // 지구 제거 (선택사항)
-        // Destroy(gameObject);
+        Destroy(gameObject);
     }
 
-    /// <summary>
-    /// 적과 충돌 감지
-    /// </summary>
     private void OnTriggerEnter2D(Collider2D collision)
     {
         // 적과 충돌

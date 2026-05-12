@@ -6,8 +6,8 @@ public class Bullet : MonoBehaviour
     [SerializeField] private float maxLifetime = 10f;
     
     [Header("Stats")]
-    private float bulletSpeed = 10f;
-    private float atk = 1f;
+    public float bulletSpeed = 10f;
+    public float atk = 1f;
     private Vector2 direction = Vector2.up;
     
     private Rigidbody2D rb;

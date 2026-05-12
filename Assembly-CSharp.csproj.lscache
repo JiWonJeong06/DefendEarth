@@ -55,8 +55,13 @@ Assets/Scripts/
  Bulletpool.cs
  Earth.cs
  Enemy.cs
+ EnemySpawner.cs
+ GameManager.cs
+ HpBar.cs
  JoyStick.cs
+ LevelManager.cs
  Player.cs
+ SoundManager.cs
 Temp/obj/Assembly-CSharp/.NETStandard,Version=v2.1.AssemblyAttributes.cs
 
 [metadataReferences]
