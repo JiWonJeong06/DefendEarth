@@ -14,26 +14,28 @@ public class JoyStick : MonoBehaviour, IDragHandler, IEndDragHandler
     private void Start()
     {
         joystickRect = GetComponent<RectTransform>();
-        stickStartPos = stick.anchoredPosition;
+        if (stick != null)
+        {
+            stickStartPos = stick.anchoredPosition;
+        }
     }
 
     public void OnDrag(PointerEventData eventData)
     {
         if (stick == null) return;
         
-        Vector2 dragOffset = (Vector2)eventData.position - (Vector2)joystickRect.position;
-        
-        // 최대 거리로 제한
-        if (dragOffset.magnitude > maxDistance)
+        // 터치 위치를 조이스틱 배경의 로컬 좌표로 정확하게 변환
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(joystickRect, eventData.position, eventData.pressEventCamera, out Vector2 localPoint))
         {
-            dragOffset = dragOffset.normalized * maxDistance;
+            // X축 이동 거리를 -maxDistance 와 maxDistance 사이로 제한
+            float clampedX = Mathf.Clamp(localPoint.x, -maxDistance, maxDistance);
+            
+            // 스틱 이동 적용 (Y축은 고정)
+            stick.anchoredPosition = new Vector2(clampedX, stickStartPos.y);
+            
+            // 입력 방향을 -1.0 ~ 1.0 사이로 정규화
+            inputDirection = new Vector2(clampedX / maxDistance, 0f);
         }
-        
-        // 스틱을 좌우로만 움직임 (Y는 stickStartPos.y 유지)
-        stick.anchoredPosition = new Vector2(dragOffset.x, stickStartPos.y);
-        
-        // 입력 방향은 X값만 사용
-        inputDirection = new Vector2(dragOffset.x, 0f);
     }
 
     public void OnEndDrag(PointerEventData eventData)

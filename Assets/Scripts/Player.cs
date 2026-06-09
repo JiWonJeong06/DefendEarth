@@ -52,26 +52,38 @@ public class Player : MonoBehaviour
 
     private void Start()
     {
-        rb             = GetComponent<Rigidbody2D>();
-        spriteRenderer = GetComponent<SpriteRenderer>();
+     rb             = GetComponent<Rigidbody2D>();
+    spriteRenderer = GetComponent<SpriteRenderer>();
 
-        if (joyStick == null)
-            joyStick = FindFirstObjectByType<JoyStick>();
+    if (joyStick == null)
+        joyStick = FindFirstObjectByType<JoyStick>();
 
-        if (joyStick == null)
-            Debug.LogError("JoyStick을 찾을 수 없습니다!");
+    if (joyStick == null)
+        Debug.LogError("JoyStick을 찾을 수 없습니다!");
 
-        shootTimer = 0f;
-        UpdateStats();
-        UpdateSprites();
+    // 업그레이드 레벨 적용
+    currentLevel = Mathf.Clamp(GameData.UpgradeLevel, 1, maxLevel);
+
+    shootTimer = 0f;
+    UpdateStats();
+    UpdateSprites();
     }
 
     private void FixedUpdate()
-    {
-        float moveInput = joyStick.GetHorizontalInput() * inputSensitivity;
-        MovePlayer(moveInput);
-    }
+{
+    // 정규화된 입력값(-1 ~ 1)을 그대로 가져옵니다. (감도 곱하기 제거 또는 조정)
+    float moveInput = joyStick.GetHorizontalInput(); 
+    MovePlayer(moveInput);
+}
 
+private void MovePlayer(float moveInput)
+{
+    // Rigidbody2D 이동은 position을 직접 바꾸는 것보다 MovePosition을 사용하는 것이 물리 연산에 안전합니다.
+    Vector2 targetPosition = rb.position + new Vector2(moveInput * moveSpeed * Time.fixedDeltaTime, 0f);
+    targetPosition.x = Mathf.Clamp(targetPosition.x, minX, maxX);
+    
+    rb.MovePosition(targetPosition);
+}
     private void Update()
     {
         shootTimer -= Time.deltaTime;
@@ -82,12 +94,7 @@ public class Player : MonoBehaviour
         }
     }
 
-    private void MovePlayer(float moveInput)
-    {
-        Vector2 newPos = rb.position + new Vector2(moveInput * moveSpeed * Time.fixedDeltaTime, 0f);
-        newPos.x = Mathf.Clamp(newPos.x, minX, maxX);
-        rb.position = newPos;
-    }
+
 
     private void Shoot()
     {
