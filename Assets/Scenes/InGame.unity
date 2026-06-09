@@ -455,13 +455,16 @@ MonoBehaviour:
   minX: -5
   maxX: 5
   joyStick: {fileID: 0}
-  shootPoint: {fileID: 0}
-  shootInterval: 0.65
-  bulletPool: {fileID: 0}
+  shootPoint: {fileID: 220805780}
+  bulletPrefab: {fileID: 8356251636981889780, guid: 375900540f1654946a15e78531505612, type: 3}
   currentLevel: 1
   maxLevel: 100
-  baseSpeed: 10
-  baseAtk: 1
+  baseAtk: 5
+  baseBulletSpeed: 8
+  baseFireRate: 0.85
+  atkGrowth: 0.03
+  bulletSpeedGrowth: 0.0105
+  fireRateGrowth: 0.0125
 --- !u!212 &220805779
 SpriteRenderer:
   serializedVersion: 2
@@ -1229,6 +1232,51 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &526644477
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 526644479}
+  - component: {fileID: 526644478}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &526644478
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 526644477}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20c2e926387b2a44f964b059635f5ef3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  spawner: {fileID: 1771051877}
+--- !u!4 &526644479
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 526644477}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &567215031
 GameObject:
   m_ObjectHideFlags: 0
@@ -1584,6 +1632,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BulletPool
   bulletPrefab: {fileID: 8356251636981889780, guid: 375900540f1654946a15e78531505612, type: 3}
   poolSize: 50
+  allBullets: []
+  createdCount: 0
 --- !u!1 &700552296
 GameObject:
   m_ObjectHideFlags: 0
@@ -3765,15 +3815,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c40db5efff1747e4e8103321f737daf9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
-  enemyPrefab:
-  - {fileID: 615848138686719987, guid: 62409c7b52b43a44d91d62f621da7baa, type: 3}
+  enemyPrefabs:
   - {fileID: 6319430071988020502, guid: a138629715d8baa43b7c5ab098f29513, type: 3}
   - {fileID: 3917296747285615184, guid: 05545629421e70d46af7ea201df18533, type: 3}
   - {fileID: 5981926956612513557, guid: 24297930f99d59e478e5a6ea607d726b, type: 3}
   - {fileID: 2290473319052704899, guid: 0f371171c7d7269419453f5525f4a01c, type: 3}
-  spawnInterval: 3
-  transformminX: -5
-  transformmaxX: 5
+  - {fileID: 615848138686719987, guid: 62409c7b52b43a44d91d62f621da7baa, type: 3}
+  spawnMinX: 5
+  spawnMaxX: -5
+  rushSpawnDelay: 0.15
+  endRushTimeThreshold: 30
+  endRushInterval: 0.5
 --- !u!4 &1771051878
 Transform:
   m_ObjectHideFlags: 0
@@ -4822,3 +4874,4 @@ SceneRoots:
   - {fileID: 1077096593}
   - {fileID: 1771051878}
   - {fileID: 1880581047}
+  - {fileID: 526644479}

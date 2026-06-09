@@ -8,7 +8,7 @@ public class Enemy : MonoBehaviour
     
     [Header("Health")]
     [SerializeField] private float maxHealth = 10f;
-    [SerializeField] private float atk = 5f; // 공격력
+    [SerializeField] private float atk = 5f;
     [SerializeField] private int scoreValue = 100;
     
     private Rigidbody2D rb;
@@ -23,10 +23,7 @@ public class Enemy : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (!isDead)
-        {
-            Move();
-        }
+        if (!isDead) Move();
     }
 
     private void Move()
@@ -35,45 +32,40 @@ public class Enemy : MonoBehaviour
     }
 
     /// <summary>
-    /// 적이 피해를 입음
+    /// 스포너에서 난이도 스탯 주입
     /// </summary>
+    public void SetStats(float hp, float atkValue, int score)
+    {
+        maxHealth  = hp;
+        currentHealth = hp;
+        atk        = atkValue;
+        scoreValue = score;
+    }
+
     public void TakeDamage(float damage)
     {
         currentHealth -= damage;
-        
-        if (currentHealth <= 0)
-        {
-            Die();
-        }
+        if (currentHealth <= 0) Die();
     }
 
-    /// <summary>
-    /// 적 사망
-    /// </summary>
     private void Die()
     {
         if (isDead) return;
-        
         isDead = true;
-        
-        // 스코어 추가 (GameManager가 있으면)
-        // GameManager.Instance.AddScore(scoreValue);
-        
-        // 적 제거
+
+        GameManager.Instance?.AddScore(scoreValue);
+
         Destroy(gameObject);
     }
 
-    /// <summary>
-    /// 화면 밖으로 나가면 제거
-    /// </summary>
     private void OnBecameInvisible()
     {
         Destroy(gameObject);
     }
 
-    public float GetHealth() => currentHealth;
+    public float GetHealth()    => currentHealth;
     public float GetMaxHealth() => maxHealth;
-    public float GetAtk() => atk;
-    public bool IsDead() => isDead;
-    public int GetScoreValue() => scoreValue;
+    public float GetAtk()       => atk;
+    public bool  IsDead()       => isDead;
+    public int   GetScoreValue() => scoreValue;
 }

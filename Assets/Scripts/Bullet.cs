@@ -12,19 +12,12 @@ public class Bullet : MonoBehaviour
     
     private Rigidbody2D rb;
     private float lifeTimer;
-    private BulletPool bulletPool;
 
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-    }
-
-    private void OnEnable()
-    {
         lifeTimer = maxLifetime;
-        
-        if (rb != null)
-            rb.linearVelocity = direction * bulletSpeed;
+        rb.linearVelocity = direction * bulletSpeed;
     }
 
     private void FixedUpdate()
@@ -33,7 +26,7 @@ public class Bullet : MonoBehaviour
         
         if (lifeTimer <= 0)
         {
-            ReturnToPool();
+            Destroy(gameObject);
         }
     }
 
@@ -41,20 +34,18 @@ public class Bullet : MonoBehaviour
     {
         if (collision.CompareTag("Enemy"))
         {
-            // 적에게 피해를 입힘
             Enemy enemy = collision.GetComponent<Enemy>();
             if (enemy != null)
             {
                 enemy.TakeDamage((int)atk);
             }
             
-            ReturnToPool();
+            Destroy(gameObject);
         }
     }
 
-    public void Initialize(BulletPool pool, Vector2 newDirection, float newSpeed, float newAtk)
+    public void Initialize(Vector2 newDirection, float newSpeed, float newAtk)
     {
-        bulletPool = pool;
         direction = newDirection.normalized;
         bulletSpeed = newSpeed;
         atk = newAtk;
@@ -74,22 +65,6 @@ public class Bullet : MonoBehaviour
             rb.linearVelocity = direction * bulletSpeed;
     }
 
-    public void SetAtk(float newAtk)
-    {
-        atk = newAtk;
-    }
-
+    public void SetAtk(float newAtk) => atk = newAtk;
     public float GetAtk() => atk;
-
-    private void ReturnToPool()
-    {
-        if (bulletPool != null)
-        {
-            bulletPool.ReturnBullet(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
-    }
 }
