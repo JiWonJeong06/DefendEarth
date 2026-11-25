@@ -104,3 +104,10 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# Signing keys and secrets (never commit) - Bouncy UFO
+*.keystore
+*.jks
+*.p12
+*.pem
+keystore.properties
