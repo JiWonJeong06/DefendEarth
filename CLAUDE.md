@@ -20,6 +20,7 @@ Unity Android 게임. 이 문서는 Claude Code가 이 저장소에서 작업할
 - 회사명(Company Name): KKANGJUNG
 - Unity: **6000.3.29f1** (6.3 LTS). 기존 DefendEarth 프로젝트를 이 버전으로 업그레이드해서 사용(아래 「기존 프로젝트에서 시작」). 버전을 바꾸거나 새 패치가 나오면 Unity 보안 공지를 먼저 확인한다.
 - 렌더링: 2D (URP 2D 가능), 도트 픽셀
+- 폰트 (11/26 결정): **갈무리 Galmuri11·Galmuri9** (SIL OFL 1.1, 한·영·일 지원). `Assets/Art/Fonts/Galmuri/`, 라이선스 기록은 `docs/05_라이선스_기록.md`. 출시 전 게임 안에 저작권·라이선스 문구 표시.
 - 사용자는 정책·코드에 익숙하지 않다. 설명은 쉬운 한국어로 한다.
 
 ## 보안·정책 규칙 (반드시 지킴)
