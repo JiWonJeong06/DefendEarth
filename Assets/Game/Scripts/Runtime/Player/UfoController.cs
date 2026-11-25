@@ -3,110 +3,104 @@ using UnityEngine;
 namespace BouncyUFO
 {
     /// <summary>
-    /// 플레이어 UFO. 좌우로만 움직인다. 체력은 없다.
-    /// - 드래그: 손가락이 플레이 영역 너비의 몇 %를 움직였는지만큼 따라간다(기기마다 같음).
-    /// - 탭: 탭한 쪽(UFO 기준 왼쪽/오른쪽)으로 통 튀며 짧게 대시. 재사용 대기 있음.
+    /// 플레이어 UFO. 좌우로만 움직이고 체력은 없다.
+    /// 조작은 탭 하나: UFO보다 왼쪽을 탭하면 왼쪽으로, 오른쪽을 탭하면 오른쪽으로 한 칸 통 튄다.
+    /// 튀는 중에 또 탭하면 착지하자마자 이어서 튄다(빠른 연타 가능).
     /// </summary>
     public sealed class UfoController : MonoBehaviour
     {
-        [SerializeField] private GestureInput input;
+        [SerializeField] private TapInput input;
         [SerializeField] private SquashStretch visual;
 
-        private float dashTimer = -1f;
-        private float dashStartX;
-        private float dashTargetX;
-        private float cooldownUntil;
-        private float lastX;
-        private bool wasMoving;
+        private float hopTimer = -1f;
+        private float hopStartX;
+        private float hopTargetX;
+        private int bufferedDir;
+        private float bufferedUntil;
 
-        public bool IsDashing => dashTimer >= 0f;
+        public bool IsHopping => hopTimer >= 0f;
 
         private GameConfig Config => PlayArea.Config;
+        private float HalfWidth => Config.PixelsToUnits(Config.ufoHalfWidthPx);
 
         private void Start()
         {
             float y = PlayArea.Bottom + Config.PixelsToUnits(Config.ufoHeightFromBottomPx);
             transform.position = new Vector3(0f, y, 0f);
-            lastX = 0f;
         }
 
         private void OnEnable()
         {
-            if (input == null) return;
-            input.Dragged += OnDragged;
-            input.Tapped += OnTapped;
+            if (input != null) input.Tapped += OnTapped;
         }
 
         private void OnDisable()
         {
-            if (input == null) return;
-            input.Dragged -= OnDragged;
-            input.Tapped -= OnTapped;
-        }
-
-        private float HalfWidth => Config.PixelsToUnits(Config.ufoHalfWidthPx);
-
-        private void OnDragged(float fractionOfPlayWidth)
-        {
-            if (IsDashing || Time.timeScale == 0f) return;
-            float dx = fractionOfPlayWidth * PlayArea.Size.x * Config.dragSensitivity;
-            SetX(transform.position.x + dx);
+            if (input != null) input.Tapped -= OnTapped;
         }
 
         private void OnTapped(Vector2 screenPos)
         {
-            if (IsDashing || Time.timeScale == 0f || Time.time < cooldownUntil) return;
+            if (Time.timeScale == 0f) return;
             var cam = PlayAreaCamera.Main != null ? PlayAreaCamera.Main.Camera : null;
             if (cam == null) return;
 
-            float ufoScreenX = cam.WorldToScreenPoint(transform.position).x;
-            float dir = Mathf.Sign(screenPos.x - ufoScreenX);
-            float target = PlayArea.ClampX(transform.position.x + dir * Config.dashDistanceFraction * PlayArea.Size.x, HalfWidth);
-            if (Mathf.Approximately(target, transform.position.x)) return; // 이미 벽에 붙어 있음
+            // 방향은 탭한 순간의 UFO 위치(튀는 중이면 착지할 자리) 기준
+            float referenceX = IsHopping ? hopTargetX : transform.position.x;
+            float refScreenX = cam.WorldToScreenPoint(new Vector3(referenceX, transform.position.y, 0f)).x;
+            int dir = screenPos.x < refScreenX ? -1 : 1;
 
-            dashStartX = transform.position.x;
-            dashTargetX = target;
-            dashTimer = 0f;
-            cooldownUntil = Time.time + Config.dashCooldown;
-            if (visual != null) visual.Punch(Config.squashOnDashStart);
+            if (IsHopping)
+            {
+                bufferedDir = dir;
+                bufferedUntil = Time.time + Config.hopBufferTime;
+                return;
+            }
+            StartHop(dir);
+        }
+
+        private void StartHop(int dir)
+        {
+            float from = transform.position.x;
+            float target = PlayArea.ClampX(from + dir * Config.hopDistanceFraction * PlayArea.Size.x, HalfWidth);
+            if (Mathf.Abs(target - from) < 0.01f)
+            {
+                // 벽에 붙어 있음: 제자리에서 살짝 움찔
+                if (visual != null) visual.Punch(-Config.squashOnHopStart * 0.5f);
+                return;
+            }
+
+            hopStartX = from;
+            hopTargetX = target;
+            hopTimer = 0f;
+            if (visual != null) visual.Punch(-Config.squashOnHopStart); // 위로 늘어나며 출발
         }
 
         private void Update()
         {
-            if (IsDashing) UpdateDash();
-            UpdateMoveSquash();
-        }
+            if (!IsHopping) return;
 
-        private void UpdateDash()
-        {
-            dashTimer += Time.deltaTime;
-            float t = Mathf.Clamp01(dashTimer / Mathf.Max(0.01f, Config.dashDuration));
-            float eased = 1f - (1f - t) * (1f - t); // 빠르게 출발해서 부드럽게 멈춤
-            SetX(Mathf.Lerp(dashStartX, dashTargetX, eased));
-            if (visual != null) visual.SetHop(Mathf.Sin(t * Mathf.PI) * Config.PixelsToUnits(Config.dashHopPx));
+            hopTimer += Time.deltaTime;
+            float t = Mathf.Clamp01(hopTimer / Mathf.Max(0.01f, Config.hopDuration));
+            float eased = 1f - (1f - t) * (1f - t); // 빠르게 출발해서 부드럽게 착지
+            SetX(Mathf.Lerp(hopStartX, hopTargetX, eased));
+            if (visual != null) visual.SetHop(Mathf.Sin(t * Mathf.PI) * Config.PixelsToUnits(Config.hopHeightPx));
 
-            if (t >= 1f)
+            if (t < 1f) return;
+
+            hopTimer = -1f;
+            if (visual != null)
             {
-                dashTimer = -1f;
-                if (visual != null)
-                {
-                    visual.SetHop(0f);
-                    visual.Punch(Config.squashOnDashLand);
-                }
+                visual.SetHop(0f);
+                visual.Punch(Config.squashOnHopLand); // 착지하며 납작하게
             }
-        }
-
-        private void UpdateMoveSquash()
-        {
-            float x = transform.position.x;
-            float speed = Time.deltaTime > 0f ? Mathf.Abs(x - lastX) / Time.deltaTime : 0f;
-            lastX = x;
-            if (IsDashing) { wasMoving = false; return; } // 착지 연출을 '멈춤' 연출이 덮지 않게
-
-            bool moving = speed >= Config.movingSpeedThreshold * PlayArea.Size.x;
-            if (moving != wasMoving && visual != null)
-                visual.Punch(moving ? Config.squashOnMoveStartStop : -Config.squashOnMoveStartStop * 0.6f);
-            wasMoving = moving;
+            if (bufferedDir != 0 && Time.time <= bufferedUntil)
+            {
+                int dir = bufferedDir;
+                bufferedDir = 0;
+                StartHop(dir);
+            }
+            bufferedDir = 0;
         }
 
         private void SetX(float x)

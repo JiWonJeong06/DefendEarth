@@ -68,7 +68,7 @@ namespace BouncyUFO.EditorTools
 
             // 5) UFO (입력 + 조작 + 통통 연출)
             var ufo = new GameObject("UFO");
-            var input = ufo.AddComponent<GestureInput>();
+            var input = ufo.AddComponent<TapInput>();
             var controller = ufo.AddComponent<UfoController>();
             var visual = CreateSprite("Visual", FindSprite(UfoSheetPath, "Enemy_0"), spriteMat, 10);
             visual.transform.SetParent(ufo.transform, false);
