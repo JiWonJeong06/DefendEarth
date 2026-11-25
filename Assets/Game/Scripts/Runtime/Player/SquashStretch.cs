@@ -27,7 +27,13 @@ namespace BouncyUFO
             velocity = 0f;
         }
 
-        /// <summary>위로 튀어 오른 높이(유닛). 대시 중 포물선에 쓴다.</summary>
+        /// <summary>지금 출렁임을 덮어쓰지 않고 살짝만 보탠다(발사 들썩임 등 자주 일어나는 작은 연출용).</summary>
+        public void Nudge(float squash)
+        {
+            velocity += squash * 25f;
+        }
+
+        /// <summary>위로 튀어 오른 높이(유닛). 튀는 중 포물선에 쓴다.</summary>
         public void SetHop(float offset) => hopOffset = offset;
 
         private void LateUpdate()

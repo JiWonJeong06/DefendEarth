@@ -17,6 +17,10 @@ namespace BouncyUFO.EditorTools
         private const string ConfigPath = "Assets/Game/Data/GameConfig.asset";
         private const string UfoSheetPath = "Assets/Art/Temp/Enemy.png";
         private const string EarthSheetPath = "Assets/Art/Temp/Earth-Star.png";
+        private const string ArtPath = "Assets/Art/Temp/";
+        private const string MonsterDataFolder = "Assets/Game/Data/Monsters";
+        private const string FlashShaderPath = "Assets/Game/Shaders/SpriteFlash.shader";
+        private const string FlashMaterialPath = "Assets/Game/Data/SpriteFlash.mat";
         private const string SpriteMaterialPath = "Packages/com.unity.render-pipelines.universal/Runtime/Materials/Sprite-Unlit-Default.mat";
 
         [MenuItem("Bouncy UFO/Build Game Scene")]
@@ -34,9 +38,22 @@ namespace BouncyUFO.EditorTools
 
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
-            // 1) 설정 루트
-            var root = new GameObject("GameRoot").AddComponent<GameRoot>();
+            Material flashMat = LoadOrCreateFlashMaterial();
+            Sprite pixel = LoadSprite(ArtPath + "Pixel.png");
+
+            // 1) 설정 루트 + 공용 그림·재질 + 판 상태
+            var rootGo = new GameObject("GameRoot");
+            var root = rootGo.AddComponent<GameRoot>();
             SetField(root, "config", config);
+            var assets = rootGo.AddComponent<GameAssets>();
+            assets.bulletSprite = LoadSprite(ArtPath + "Bullet.png");
+            assets.sparkSprite = LoadSprite(ArtPath + "Spark.png");
+            assets.pixelSprite = pixel;
+            assets.spriteMaterial = spriteMat;
+            assets.flashMaterial = flashMat;
+            assets.monsters = LoadOrCreateMonsters();
+            var session = rootGo.AddComponent<GameSession>();
+            new GameObject("Effects").AddComponent<Effects>();
 
             // 2) 카메라: 플레이 영역 전체가 보이게(정수 배율 도트)
             var camGo = new GameObject("Main Camera") { tag = "MainCamera" };
@@ -55,32 +72,111 @@ namespace BouncyUFO.EditorTools
 
             // 3) 플레이 영역 배경 (여백과 구분되는 남색)
             Sprite bgSprite = FindSprite(EarthSheetPath, "Earth-Star_9");
-            var bg = CreateSprite("PlayAreaBackground", bgSprite, spriteMat, -100);
+            var bg = CreateSprite("PlayAreaBackground", bgSprite, spriteMat, SortOrder.Background);
             if (bgSprite != null)
             {
                 Vector2 s = bgSprite.bounds.size;
                 bg.transform.localScale = new Vector3(PlayArea.Size.x / s.x, PlayArea.Size.y / s.y, 1f);
             }
 
-            // 4) 지구 (임시 그림, 아래쪽 가운데)
-            var earth = CreateSprite("Earth", FindSprite(EarthSheetPath, "Earth-Star_0"), spriteMat, -50);
-            earth.transform.position = new Vector3(0f, PlayArea.Bottom, 0f);
+            // 4) 지구 (임시 그림, 아래쪽 가운데) + 체력 바
+            var earthGo = CreateSprite("Earth", FindSprite(EarthSheetPath, "Earth-Star_0"), spriteMat, SortOrder.Earth);
+            earthGo.transform.position = new Vector3(0f, PlayArea.Bottom, 0f);
+            var earth = earthGo.AddComponent<Earth>();
+            SetField(earth, "spriteRenderer", earthGo.GetComponent<SpriteRenderer>());
+            SetField(earth, "visual", earthGo.AddComponent<SquashStretch>());
+            SetField(session, "earth", earth);
+            var bar = new GameObject("EarthHealthBar").AddComponent<EarthHealthBar>();
+            SetField(bar, "earth", earth);
 
-            // 5) UFO (입력 + 조작 + 통통 연출)
+            // 5) UFO (입력 + 조작 + 자동 발사 + 통통 연출)
             var ufo = new GameObject("UFO");
             var input = ufo.AddComponent<TapInput>();
             var controller = ufo.AddComponent<UfoController>();
-            var visual = CreateSprite("Visual", FindSprite(UfoSheetPath, "Enemy_0"), spriteMat, 10);
+            var weapon = ufo.AddComponent<Weapon>();
+            var visual = CreateSprite("Visual", FindSprite(UfoSheetPath, "Enemy_0"), spriteMat, SortOrder.Ufo);
             visual.transform.SetParent(ufo.transform, false);
             var squash = visual.AddComponent<SquashStretch>();
             SetField(controller, "input", input);
             SetField(controller, "visual", squash);
+            SetField(weapon, "visual", squash);
             ufo.transform.position = new Vector3(0f, PlayArea.Bottom + config.PixelsToUnits(config.ufoHeightFromBottomPx), 0f);
+
+            // 6) 몬스터 등장 + 판 끝 화면
+            new GameObject("MonsterSpawner").AddComponent<MonsterSpawner>();
+            var overlay = new GameObject("GameOverOverlay").AddComponent<GameOverOverlay>();
+            SetField(overlay, "input", input);
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             AddSceneToBuild(ScenePath);
             Selection.activeObject = AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath);
             Debug.Log("[Bouncy UFO] Game 장면을 만들었습니다: " + ScenePath);
+        }
+
+        private static Sprite LoadSprite(string path)
+        {
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (sprite == null) Debug.LogWarning("[Bouncy UFO] 스프라이트를 찾지 못했습니다: " + path);
+            return sprite;
+        }
+
+        private static Material LoadOrCreateFlashMaterial()
+        {
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(FlashMaterialPath);
+            if (mat != null) return mat;
+            var shader = AssetDatabase.LoadAssetAtPath<Shader>(FlashShaderPath);
+            if (shader == null) { Debug.LogError("[Bouncy UFO] 셰이더가 없습니다: " + FlashShaderPath); return null; }
+            mat = new Material(shader) { name = "SpriteFlash" };
+            AssetDatabase.CreateAsset(mat, FlashMaterialPath);
+            return mat;
+        }
+
+        /// <summary>첫 빌드 몬스터 3종. 이미 있으면 그대로 쓴다(Inspector에서 고친 값 유지).</summary>
+        private static MonsterDefinition[] LoadOrCreateMonsters()
+        {
+            if (!AssetDatabase.IsValidFolder(MonsterDataFolder))
+                AssetDatabase.CreateFolder("Assets/Game/Data", "Monsters");
+
+            var swarm = LoadOrCreateMonster("Swarm", d =>
+            {
+                d.nameKey = "monster.swarm"; d.sprite = FindSprite(UfoSheetPath, "Enemy_3");
+                d.scale = 0.8f; d.hitRadiusPx = 7f;
+                d.maxHp = 2; d.earthDamage = 3; d.speed = 0.09f;
+                d.wobbleAmplitudePx = 6f; d.wobbleFrequency = 0.8f;
+                d.groupSize = 5; d.groupSpreadPx = 56f; d.spawnWeight = 4f; d.unlockTime = 0f;
+                d.exp = 1; d.score = 10;
+            });
+            var charger = LoadOrCreateMonster("Charger", d =>
+            {
+                d.nameKey = "monster.charger"; d.sprite = FindSprite(UfoSheetPath, "Enemy_8");
+                d.scale = 1f; d.hitRadiusPx = 8f;
+                d.maxHp = 4; d.earthDamage = 6; d.speed = 0.08f;
+                d.pattern = MonsterDefinition.MovePattern.Charge;
+                d.chargeTriggerFraction = 0.3f; d.chargeWindup = 0.5f; d.chargeSpeed = 0.6f;
+                d.groupSize = 1; d.spawnWeight = 3f; d.unlockTime = 8f;
+                d.exp = 2; d.score = 25;
+            });
+            var tank = LoadOrCreateMonster("Tank", d =>
+            {
+                d.nameKey = "monster.tank"; d.sprite = FindSprite(UfoSheetPath, "Enemy_11");
+                d.scale = 1.5f; d.hitRadiusPx = 10f;
+                d.maxHp = 22; d.earthDamage = 15; d.speed = 0.04f;
+                d.groupSize = 1; d.spawnWeight = 1.5f; d.unlockTime = 25f;
+                d.exp = 6; d.score = 80;
+            });
+            AssetDatabase.SaveAssets();
+            return new[] { swarm, charger, tank };
+        }
+
+        private static MonsterDefinition LoadOrCreateMonster(string name, System.Action<MonsterDefinition> init)
+        {
+            string path = MonsterDataFolder + "/" + name + ".asset";
+            var def = AssetDatabase.LoadAssetAtPath<MonsterDefinition>(path);
+            if (def != null) return def;
+            def = ScriptableObject.CreateInstance<MonsterDefinition>();
+            init(def);
+            AssetDatabase.CreateAsset(def, path);
+            return def;
         }
 
         private static GameConfig LoadOrCreateConfig()

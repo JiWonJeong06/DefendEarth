@@ -41,6 +41,37 @@ namespace BouncyUFO
         [Tooltip("착지할 때 납작하게 눌리는 정도")]
         public float squashOnHopLand = 0.3f;
 
+        [Tooltip("탄을 쏠 때 살짝 들썩이는 정도")]
+        public float squashOnFire = 0.05f;
+
+        [Header("기본 무기 (기본형 UFO: 직선탄)")]
+        [Tooltip("발사 간격(초)")]
+        public float fireInterval = 0.22f;
+        [Tooltip("탄 속도(플레이 영역 높이/초)")]
+        public float bulletSpeedFraction = 1.0f;
+        public int bulletDamage = 1;
+        [Tooltip("탄 판정 반지름(기준 픽셀). 그림(6×10)보다 살짝 크게")]
+        public float bulletHitRadiusPx = 5f;
+        [Tooltip("UFO 중심에서 탄이 나가는 높이(기준 픽셀)")]
+        public float muzzleOffsetPx = 10f;
+        [Tooltip("탄 갈래가 여러 개일 때 옆 간격(기준 픽셀)")]
+        public float multiShotSpacingPx = 7f;
+
+        [Header("지구")]
+        public int earthMaxHp = 100;
+        [Tooltip("몬스터가 이 높이(플레이 영역 아래 끝에서 기준 픽셀)에 닿으면 지구 피해")]
+        public float earthLinePx = 22f;
+
+        [Header("몬스터 등장 (임시. 3번 묶음에서 웨이브로 바뀜)")]
+        [Tooltip("처음 등장 간격(초)")]
+        public float spawnIntervalStart = 1.4f;
+        [Tooltip("가장 빠른 등장 간격(초)")]
+        public float spawnIntervalMin = 0.55f;
+        [Tooltip("이 시간(초)에 걸쳐 등장 간격이 가장 빠르게 줄어든다")]
+        public float spawnRampSeconds = 180f;
+        [Tooltip("플레이 영역 좌우 끝에서 이만큼(기준 픽셀) 안쪽에서 나온다")]
+        public float spawnSideMarginPx = 14f;
+
         // ---- 계산 값 ----
         public float PixelsToUnits(float px) => px / pixelsPerUnit;
         public Vector2 PlayAreaSize => new Vector2(playAreaPixels.x, playAreaPixels.y) / pixelsPerUnit;
