@@ -18,7 +18,13 @@ namespace BouncyUFO
         public Material spriteMaterial;
         [Tooltip("맞으면 하얗게 번쩍이는 재질(몬스터용)")]
         public Material flashMaterial;
+        [Tooltip("일반 몬스터들")]
         public MonsterDefinition[] monsters;
+        public MonsterDefinition boss;
+        public MonsterDefinition meteor;
+        public Sprite coinSprite;
+        [Tooltip("숫자 0~9 도트 그림(점수·골드 표시)")]
+        public Sprite[] digitSprites = new Sprite[10];
 
         private void Awake() => Instance = this;
 

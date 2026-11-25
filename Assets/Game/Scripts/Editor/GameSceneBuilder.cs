@@ -18,6 +18,7 @@ namespace BouncyUFO.EditorTools
         private const string UfoSheetPath = "Assets/Art/Temp/Enemy.png";
         private const string EarthSheetPath = "Assets/Art/Temp/Earth-Star.png";
         private const string ArtPath = "Assets/Art/Temp/";
+        private const string DummyPath = "Assets/Art/Temp/Dummy/";
         private const string MonsterDataFolder = "Assets/Game/Data/Monsters";
         private const string FlashShaderPath = "Assets/Game/Shaders/SpriteFlash.shader";
         private const string FlashMaterialPath = "Assets/Game/Data/SpriteFlash.mat";
@@ -52,6 +53,11 @@ namespace BouncyUFO.EditorTools
             assets.spriteMaterial = spriteMat;
             assets.flashMaterial = flashMat;
             assets.monsters = LoadOrCreateMonsters();
+            assets.boss = LoadOrCreateBoss();
+            assets.meteor = LoadOrCreateMeteor();
+            assets.coinSprite = LoadSprite(DummyPath + "Coin.png");
+            assets.digitSprites = new Sprite[10];
+            for (int i = 0; i < 10; i++) assets.digitSprites[i] = LoadSprite(DummyPath + "Digit" + i + ".png");
             var session = rootGo.AddComponent<GameSession>();
             new GameObject("Effects").AddComponent<Effects>();
 
@@ -103,7 +109,20 @@ namespace BouncyUFO.EditorTools
             ufo.transform.position = new Vector3(0f, PlayArea.Bottom + config.PixelsToUnits(config.ufoHeightFromBottomPx), 0f);
 
             // 6) 몬스터 등장 + 판 끝 화면
-            new GameObject("MonsterSpawner").AddComponent<MonsterSpawner>();
+            var spawner = new GameObject("MonsterSpawner").AddComponent<MonsterSpawner>();
+            var warning = new GameObject("WarningFlash").AddComponent<WarningFlash>();
+            var gold = new GameObject("GoldDrops").AddComponent<GoldDrops>();
+            SetField(gold, "target", ufo.transform);
+            var waves = new GameObject("WaveDirector").AddComponent<WaveDirector>();
+            SetField(waves, "spawner", spawner);
+            SetField(waves, "warning", warning);
+            SetField(waves, "gold", gold);
+
+            // 7) 위쪽 표시: 골드·웨이브 번호, 보스 체력 바
+            var hud = new GameObject("TopHud").AddComponent<TopHud>();
+            SetField(hud, "waves", waves);
+            var bossBar = new GameObject("BossHealthBar").AddComponent<BossHealthBar>();
+            SetField(bossBar, "waves", waves);
             var overlay = new GameObject("GameOverOverlay").AddComponent<GameOverOverlay>();
             SetField(overlay, "input", input);
 
@@ -143,7 +162,7 @@ namespace BouncyUFO.EditorTools
                 d.scale = 0.8f; d.hitRadiusPx = 7f;
                 d.maxHp = 2; d.earthDamage = 3; d.speed = 0.09f;
                 d.wobbleAmplitudePx = 6f; d.wobbleFrequency = 0.8f;
-                d.groupSize = 5; d.groupSpreadPx = 56f; d.spawnWeight = 4f; d.unlockTime = 0f;
+                d.groupSize = 5; d.groupSpreadPx = 56f; d.spawnWeight = 4f; d.unlockWave = 1;
                 d.exp = 1; d.score = 10;
             });
             var charger = LoadOrCreateMonster("Charger", d =>
@@ -153,7 +172,7 @@ namespace BouncyUFO.EditorTools
                 d.maxHp = 4; d.earthDamage = 6; d.speed = 0.08f;
                 d.pattern = MonsterDefinition.MovePattern.Charge;
                 d.chargeTriggerFraction = 0.3f; d.chargeWindup = 0.5f; d.chargeSpeed = 0.6f;
-                d.groupSize = 1; d.spawnWeight = 3f; d.unlockTime = 8f;
+                d.groupSize = 1; d.spawnWeight = 3f; d.unlockWave = 2;
                 d.exp = 2; d.score = 25;
             });
             var tank = LoadOrCreateMonster("Tank", d =>
@@ -161,11 +180,47 @@ namespace BouncyUFO.EditorTools
                 d.nameKey = "monster.tank"; d.sprite = FindSprite(UfoSheetPath, "Enemy_11");
                 d.scale = 1.5f; d.hitRadiusPx = 10f;
                 d.maxHp = 22; d.earthDamage = 15; d.speed = 0.04f;
-                d.groupSize = 1; d.spawnWeight = 1.5f; d.unlockTime = 25f;
+                d.groupSize = 1; d.spawnWeight = 1.5f; d.unlockWave = 3;
                 d.exp = 6; d.score = 80;
             });
             AssetDatabase.SaveAssets();
             return new[] { swarm, charger, tank };
+        }
+
+        /// <summary>보스 1종(더미 그림). 회차마다 체력이 늘어난다(GameConfig).</summary>
+        private static MonsterDefinition LoadOrCreateBoss()
+        {
+            if (!AssetDatabase.IsValidFolder(MonsterDataFolder))
+                AssetDatabase.CreateFolder("Assets/Game/Data", "Monsters");
+            var boss = LoadOrCreateMonster("Boss", d =>
+            {
+                d.kind = MonsterDefinition.Kind.Boss;
+                d.nameKey = "monster.boss1"; d.sprite = LoadSprite(DummyPath + "Boss.png");
+                d.scale = 1f; d.hitRadiusPx = 16f;
+                d.maxHp = 120; d.earthDamage = 30; d.speed = 0.08f;
+                d.pattern = MonsterDefinition.MovePattern.Patrol;
+                d.patrolStartFraction = 0.22f; d.patrolSpeed = 0.18f; d.patrolDescendSpeed = 0.006f;
+                d.spawnWeight = 0f; d.unlockWave = 1;
+                d.exp = 20; d.score = 500;
+            });
+            AssetDatabase.SaveAssets();
+            return boss;
+        }
+
+        /// <summary>재화 운석 1종(더미 그림). 지나가도 지구 피해 없음, 부수면 골드.</summary>
+        private static MonsterDefinition LoadOrCreateMeteor()
+        {
+            var meteor = LoadOrCreateMonster("Meteor", d =>
+            {
+                d.kind = MonsterDefinition.Kind.Meteor;
+                d.nameKey = "meteor.gold"; d.sprite = LoadSprite(DummyPath + "Meteor.png");
+                d.scale = 1f; d.hitRadiusPx = 7f;
+                d.maxHp = 4; d.earthDamage = 0; d.speed = 0.08f;
+                d.spawnWeight = 0f; d.unlockWave = 1;
+                d.exp = 0; d.score = 5; d.gold = 8;
+            });
+            AssetDatabase.SaveAssets();
+            return meteor;
         }
 
         private static MonsterDefinition LoadOrCreateMonster(string name, System.Action<MonsterDefinition> init)

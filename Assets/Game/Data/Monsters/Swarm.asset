@@ -28,6 +28,6 @@ MonoBehaviour:
   groupSize: 5
   groupSpreadPx: 56
   spawnWeight: 4
-  unlockTime: 0
+  unlockWave: 1
   exp: 1
   score: 10

@@ -21,6 +21,7 @@ namespace BouncyUFO
         /// <summary>이번 판에서 버틴 시간(초).</summary>
         public float Elapsed { get; private set; }
         public Earth Earth => earth;
+        public RunStats Stats { get; } = new RunStats();
 
         public event Action GameOver;
 

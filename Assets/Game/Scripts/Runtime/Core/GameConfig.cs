@@ -70,15 +70,55 @@ namespace BouncyUFO
         [Tooltip("몬스터가 이 높이(플레이 영역 아래 끝에서 기준 픽셀)에 닿으면 지구 피해")]
         public float earthLinePx = 22f;
 
-        [Header("몬스터 등장 (임시. 3번 묶음에서 웨이브로 바뀜)")]
-        [Tooltip("처음 등장 간격(초)")]
-        public float spawnIntervalStart = 1.4f;
-        [Tooltip("가장 빠른 등장 간격(초)")]
-        public float spawnIntervalMin = 0.55f;
-        [Tooltip("이 시간(초)에 걸쳐 등장 간격이 가장 빠르게 줄어든다")]
-        public float spawnRampSeconds = 180f;
+        [Header("웨이브 (몬스터가 무리로 몰려온다)")]
+        [Tooltip("웨이브 하나의 길이(초)")]
+        public float waveDuration = 18f;
+        [Tooltip("웨이브 사이 쉬는 시간(초)")]
+        public float waveBreak = 2.5f;
+        [Tooltip("1웨이브에 나오는 무리 수")]
+        public int groupsPerWaveBase = 7;
+        [Tooltip("웨이브마다 늘어나는 무리 수")]
+        public float groupsPerWaveStep = 1.5f;
+        [Tooltip("웨이브마다 몬스터 체력 증가(0.1 = +10%씩)")]
+        public float hpGrowthPerWave = 0.1f;
+        [Tooltip("웨이브마다 몬스터 속도 증가(0.03 = +3%씩)")]
+        public float speedGrowthPerWave = 0.03f;
+        [Tooltip("몬스터 속도 배율 최대치")]
+        public float speedMaxMultiplier = 1.6f;
         [Tooltip("플레이 영역 좌우 끝에서 이만큼(기준 픽셀) 안쪽에서 나온다")]
         public float spawnSideMarginPx = 14f;
+
+        [Header("러시 (가끔 한꺼번에 몰려옴)")]
+        [Tooltip("몇 웨이브마다 러시가 있는지 (보스 웨이브는 제외)")]
+        public int rushEveryWaves = 3;
+        [Tooltip("러시 길이(초). 웨이브 끝부분에 온다")]
+        public float rushDuration = 4f;
+        [Tooltip("러시 중 무리 간격(초)")]
+        public float rushInterval = 0.35f;
+        [Tooltip("러시 전 경고 시간(초)")]
+        public float rushWarning = 1.2f;
+
+        [Header("보스")]
+        [Tooltip("몇 웨이브마다 보스 웨이브인지 (4 = 4, 8, 12…웨이브)")]
+        public int bossEveryWaves = 4;
+        [Tooltip("보스 회차마다 체력 증가(0.6 = +60%씩)")]
+        public float bossHpGrowth = 0.6f;
+        [Tooltip("보스 등장 전 경고 시간(초)")]
+        public float bossWarning = 2f;
+        [Tooltip("보스가 부하(떼거리형)를 부르는 간격(초)")]
+        public float bossSummonInterval = 6f;
+        [Tooltip("보스 처치 단계 보상 골드: 첫 회")]
+        public int bossRewardBase = 50;
+        [Tooltip("보스 회차마다 늘어나는 보상 골드")]
+        public int bossRewardStep = 30;
+
+        [Header("재화 운석")]
+        [Tooltip("운석이 나오는 간격(초) 최소~최대 (보스 웨이브 포함)")]
+        public Vector2 meteorIntervalRange = new Vector2(7f, 12f);
+        [Tooltip("골드 동전이 UFO로 빨려 들어가기 시작하는 시간(초)")]
+        public float coinMagnetDelay = 0.25f;
+        [Tooltip("동전이 빨려 들어가는 최고 속도(플레이 영역 높이/초)")]
+        public float coinMagnetSpeed = 1.6f;
 
         [Header("몬스터 간격 (너무 밀집하지 않게)")]
         [Tooltip("몬스터끼리 가로 간격의 최소치 = UFO 최소 점프 거리 × 이 배율. 1이면 최소 점프만큼")]

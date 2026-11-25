@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &186245690
+--- !u!1 &416002654
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,34 +127,37 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 186245692}
-  - component: {fileID: 186245691}
+  - component: {fileID: 416002656}
+  - component: {fileID: 416002655}
   m_Layer: 0
-  m_Name: MonsterSpawner
+  m_Name: TopHud
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &186245691
+--- !u!114 &416002655
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 186245690}
+  m_GameObject: {fileID: 416002654}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 85fe7ec3659b384479937a7dbeff8470, type: 3}
+  m_Script: {fileID: 11500000, guid: 1d6c9bee69fa10e48ac154cd68b01487, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.MonsterSpawner
---- !u!4 &186245692
+  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.TopHud
+  waves: {fileID: 1239437088}
+  rowOffsetPx: 16
+  sidePaddingPx: 6
+--- !u!4 &416002656
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 186245690}
+  m_GameObject: {fileID: 416002654}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -163,7 +166,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &269902514
+--- !u!1 &544718298
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -171,10 +174,10 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 269902518}
-  - component: {fileID: 269902517}
-  - component: {fileID: 269902516}
-  - component: {fileID: 269902515}
+  - component: {fileID: 544718302}
+  - component: {fileID: 544718301}
+  - component: {fileID: 544718300}
+  - component: {fileID: 544718299}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -182,25 +185,25 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &269902515
+--- !u!114 &544718299
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 269902514}
+  m_GameObject: {fileID: 544718298}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d691ce59f64f6bc439ced4f948e1cea9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: BouncyUFO::BouncyUFO.PlayAreaCamera
---- !u!114 &269902516
+--- !u!114 &544718300
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 269902514}
+  m_GameObject: {fileID: 544718298}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c88f5cead0c0b2a4eb05b5900433f8d1, type: 3}
@@ -218,13 +221,13 @@ MonoBehaviour:
   m_CropFrameX: 0
   m_CropFrameY: 0
   m_StretchFill: 0
---- !u!20 &269902517
+--- !u!20 &544718301
 Camera:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 269902514}
+  m_GameObject: {fileID: 544718298}
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
@@ -269,13 +272,13 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!4 &269902518
+--- !u!4 &544718302
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 269902514}
+  m_GameObject: {fileID: 544718298}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -10}
@@ -284,7 +287,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &428716418
+--- !u!1 &920450252
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -292,9 +295,194 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 428716421}
-  - component: {fileID: 428716420}
-  - component: {fileID: 428716419}
+  - component: {fileID: 920450254}
+  - component: {fileID: 920450253}
+  m_Layer: 0
+  m_Name: GameOverOverlay
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &920450253
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 920450252}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9fab5e75d3d1684b92219d21aa1bf24, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.GameOverOverlay
+  input: {fileID: 1997918802}
+  tapDelay: 0.8
+--- !u!4 &920450254
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 920450252}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1011280497
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1011280499}
+  - component: {fileID: 1011280498}
+  m_Layer: 0
+  m_Name: MonsterSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1011280498
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1011280497}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85fe7ec3659b384479937a7dbeff8470, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.MonsterSpawner
+--- !u!4 &1011280499
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1011280497}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1023463470
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1023463474}
+  - component: {fileID: 1023463473}
+  - component: {fileID: 1023463472}
+  - component: {fileID: 1023463471}
+  m_Layer: 0
+  m_Name: GameRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1023463471
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1023463470}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63caf76e9efb0f34ebe2f2d4ace71fde, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.GameSession
+  earth: {fileID: 1924597426}
+--- !u!114 &1023463472
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1023463470}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 430777f63ab1f234895901a1b5211a87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.GameAssets
+  bulletSprite: {fileID: 21300000, guid: a690b50f8acd42e8bff11a3699507d0a, type: 3}
+  sparkSprite: {fileID: 21300000, guid: 318b8278b5f14f12a07c632215b7d6d4, type: 3}
+  pixelSprite: {fileID: 21300000, guid: a0ea659d31924bdd9149cf58f5df3a33, type: 3}
+  spriteMaterial: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
+  flashMaterial: {fileID: 2100000, guid: 9ed3d410fc3241e469d4173349786b8d, type: 2}
+  monsters:
+  - {fileID: 11400000, guid: 799c48360aa082745a534ca0a0f6ef9c, type: 2}
+  - {fileID: 11400000, guid: a669b48bbdd5a42439460fb9282bb5a8, type: 2}
+  - {fileID: 11400000, guid: 8250bc3bafa03da48bdbef4f93fb8212, type: 2}
+  boss: {fileID: 11400000, guid: 3ddcef900d2c8804fb9b4f842870e8f1, type: 2}
+  meteor: {fileID: 11400000, guid: 363114d273e4a1446aefae7c72a82103, type: 2}
+  coinSprite: {fileID: 21300000, guid: 5e082f249625474d90df82f80ca33ecd, type: 3}
+  digitSprites:
+  - {fileID: 21300000, guid: e2e18ce3e3f848ba8bc30b68fcd61f39, type: 3}
+  - {fileID: 21300000, guid: 2a5a4aa893ab4a25b44520e991810f07, type: 3}
+  - {fileID: 21300000, guid: 6f5c7025cde942edb3e1f05e6bb0d9a4, type: 3}
+  - {fileID: 21300000, guid: d7c865b26a234b90a3ed3eac19b48541, type: 3}
+  - {fileID: 21300000, guid: 86146268f0d84421acbd0715abf923e2, type: 3}
+  - {fileID: 21300000, guid: ef10d4a99f24497ab534a7b57233751c, type: 3}
+  - {fileID: 21300000, guid: e20cee90454240648d3e5148a9d5c0be, type: 3}
+  - {fileID: 21300000, guid: e65bf0d2c0cc47efb6fe1500bc977e9b, type: 3}
+  - {fileID: 21300000, guid: 7c8078739cc840a2b0e3ba0c59f4106f, type: 3}
+  - {fileID: 21300000, guid: fefbd9092cd346c184d2f4533e436d51, type: 3}
+--- !u!114 &1023463473
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1023463470}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbf6590b655f383439f2773c411eb0c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.GameRoot
+  config: {fileID: 11400000, guid: d47cbc314d71b404e94372884947e04c, type: 2}
+--- !u!4 &1023463474
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1023463470}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1103953876
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1103953877}
+  - component: {fileID: 1103953879}
+  - component: {fileID: 1103953878}
   m_Layer: 0
   m_Name: Visual
   m_TagString: Untagged
@@ -302,26 +490,41 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &428716419
+--- !u!4 &1103953877
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1103953876}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1997918803}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1103953878
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 428716418}
+  m_GameObject: {fileID: 1103953876}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 16eb4d57ce8076c4dbac46dff471ad7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: BouncyUFO::BouncyUFO.SquashStretch
---- !u!212 &428716420
+--- !u!212 &1103953879
 SpriteRenderer:
   serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 428716418}
+  m_GameObject: {fileID: 1103953876}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -373,22 +576,7 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!4 &428716421
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 428716418}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 1627882231}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &894606292
+--- !u!1 &1229717105
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -396,71 +584,37 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 894606296}
-  - component: {fileID: 894606295}
-  - component: {fileID: 894606294}
-  - component: {fileID: 894606293}
+  - component: {fileID: 1229717107}
+  - component: {fileID: 1229717106}
   m_Layer: 0
-  m_Name: GameRoot
+  m_Name: BossHealthBar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &894606293
+--- !u!114 &1229717106
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 894606292}
+  m_GameObject: {fileID: 1229717105}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 63caf76e9efb0f34ebe2f2d4ace71fde, type: 3}
+  m_Script: {fileID: 11500000, guid: 9f5ae3467638fd0448eeff4536bc3eeb, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.GameSession
-  earth: {fileID: 967758786}
---- !u!114 &894606294
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 894606292}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 430777f63ab1f234895901a1b5211a87, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.GameAssets
-  bulletSprite: {fileID: 21300000, guid: a690b50f8acd42e8bff11a3699507d0a, type: 3}
-  sparkSprite: {fileID: 21300000, guid: 318b8278b5f14f12a07c632215b7d6d4, type: 3}
-  pixelSprite: {fileID: 21300000, guid: a0ea659d31924bdd9149cf58f5df3a33, type: 3}
-  spriteMaterial: {fileID: 2100000, guid: 9dfc825aed78fcd4ba02077103263b40, type: 2}
-  flashMaterial: {fileID: 2100000, guid: 9ed3d410fc3241e469d4173349786b8d, type: 2}
-  monsters:
-  - {fileID: 11400000, guid: 799c48360aa082745a534ca0a0f6ef9c, type: 2}
-  - {fileID: 11400000, guid: a669b48bbdd5a42439460fb9282bb5a8, type: 2}
-  - {fileID: 11400000, guid: 8250bc3bafa03da48bdbef4f93fb8212, type: 2}
---- !u!114 &894606295
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 894606292}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fbf6590b655f383439f2773c411eb0c6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.GameRoot
-  config: {fileID: 11400000, guid: d47cbc314d71b404e94372884947e04c, type: 2}
---- !u!4 &894606296
+  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.BossHealthBar
+  waves: {fileID: 1239437088}
+  sizePx: {x: 100, y: 3}
+  topOffsetPx: 25
+--- !u!4 &1229717107
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 894606292}
+  m_GameObject: {fileID: 1229717105}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -469,7 +623,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &967758785
+--- !u!1 &1239437087
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -477,10 +631,149 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 967758789}
-  - component: {fileID: 967758788}
-  - component: {fileID: 967758786}
-  - component: {fileID: 967758787}
+  - component: {fileID: 1239437089}
+  - component: {fileID: 1239437088}
+  m_Layer: 0
+  m_Name: WaveDirector
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1239437088
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1239437087}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d1ef50f4275d79498ca407baf0e3832, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.WaveDirector
+  spawner: {fileID: 1011280498}
+  warning: {fileID: 2044395095}
+  gold: {fileID: 1607374885}
+--- !u!4 &1239437089
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1239437087}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1546742575
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1546742577}
+  - component: {fileID: 1546742576}
+  m_Layer: 0
+  m_Name: EarthHealthBar
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1546742576
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1546742575}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6dc46e521f61fa418a053749205e931, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.EarthHealthBar
+  earth: {fileID: 1924597426}
+  sizePx: {x: 120, y: 5}
+  topOffsetPx: 7
+--- !u!4 &1546742577
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1546742575}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1607374884
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1607374886}
+  - component: {fileID: 1607374885}
+  m_Layer: 0
+  m_Name: GoldDrops
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1607374885
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1607374884}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fbcbefea0d658642b5079325f0f297c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.GoldDrops
+  target: {fileID: 1997918803}
+--- !u!4 &1607374886
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1607374884}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1924597425
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1924597429}
+  - component: {fileID: 1924597428}
+  - component: {fileID: 1924597426}
+  - component: {fileID: 1924597427}
   m_Layer: 0
   m_Name: Earth
   m_TagString: Untagged
@@ -488,40 +781,40 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &967758786
+--- !u!114 &1924597426
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 967758785}
+  m_GameObject: {fileID: 1924597425}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8e43b40605eab3e4baa412c863444404, type: 3}
   m_Name: 
   m_EditorClassIdentifier: BouncyUFO::BouncyUFO.Earth
-  spriteRenderer: {fileID: 967758788}
-  visual: {fileID: 967758787}
---- !u!114 &967758787
+  spriteRenderer: {fileID: 1924597428}
+  visual: {fileID: 1924597427}
+--- !u!114 &1924597427
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 967758785}
+  m_GameObject: {fileID: 1924597425}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 16eb4d57ce8076c4dbac46dff471ad7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: BouncyUFO::BouncyUFO.SquashStretch
---- !u!212 &967758788
+--- !u!212 &1924597428
 SpriteRenderer:
   serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 967758785}
+  m_GameObject: {fileID: 1924597425}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -573,13 +866,13 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!4 &967758789
+--- !u!4 &1924597429
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 967758785}
+  m_GameObject: {fileID: 1924597425}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -10, z: 0}
@@ -588,7 +881,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1627882227
+--- !u!1 &1997918801
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -596,10 +889,10 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1627882231}
-  - component: {fileID: 1627882228}
-  - component: {fileID: 1627882230}
-  - component: {fileID: 1627882229}
+  - component: {fileID: 1997918803}
+  - component: {fileID: 1997918802}
+  - component: {fileID: 1997918805}
+  - component: {fileID: 1997918804}
   m_Layer: 0
   m_Name: UFO
   m_TagString: Untagged
@@ -607,62 +900,62 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1627882228
+--- !u!114 &1997918802
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1627882227}
+  m_GameObject: {fileID: 1997918801}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 42bfdd4411c6e184284be97989cae22b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: BouncyUFO::BouncyUFO.TapInput
---- !u!114 &1627882229
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1627882227}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 670e1dfb631270f41bba2f2a366be8a8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.Weapon
-  visual: {fileID: 428716419}
---- !u!114 &1627882230
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1627882227}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5da7c5945bd7cf3428bdcece4daa9360, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.UfoController
-  input: {fileID: 1627882228}
-  visual: {fileID: 428716419}
---- !u!4 &1627882231
+--- !u!4 &1997918803
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1627882227}
+  m_GameObject: {fileID: 1997918801}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -6.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 428716421}
+  - {fileID: 1103953877}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1684262429
+--- !u!114 &1997918804
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1997918801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 670e1dfb631270f41bba2f2a366be8a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.Weapon
+  visual: {fileID: 1103953878}
+--- !u!114 &1997918805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1997918801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5da7c5945bd7cf3428bdcece4daa9360, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.UfoController
+  input: {fileID: 1997918802}
+  visual: {fileID: 1103953878}
+--- !u!1 &2009649896
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -670,8 +963,52 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1684262431}
-  - component: {fileID: 1684262430}
+  - component: {fileID: 2009649898}
+  - component: {fileID: 2009649897}
+  m_Layer: 0
+  m_Name: Effects
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2009649897
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2009649896}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a85c27689a481f943a4650cfe896aae1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.Effects
+--- !u!4 &2009649898
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2009649896}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2032758772
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2032758774}
+  - component: {fileID: 2032758773}
   m_Layer: 0
   m_Name: PlayAreaBackground
   m_TagString: Untagged
@@ -679,14 +1016,14 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!212 &1684262430
+--- !u!212 &2032758773
 SpriteRenderer:
   serializedVersion: 2
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1684262429}
+  m_GameObject: {fileID: 2032758772}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -738,13 +1075,13 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!4 &1684262431
+--- !u!4 &2032758774
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1684262429}
+  m_GameObject: {fileID: 2032758772}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -753,7 +1090,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2025031433
+--- !u!1 &2044395094
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -761,127 +1098,35 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2025031435}
-  - component: {fileID: 2025031434}
+  - component: {fileID: 2044395096}
+  - component: {fileID: 2044395095}
   m_Layer: 0
-  m_Name: GameOverOverlay
+  m_Name: WarningFlash
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2025031434
+--- !u!114 &2044395095
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2025031433}
+  m_GameObject: {fileID: 2044395094}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9fab5e75d3d1684b92219d21aa1bf24, type: 3}
+  m_Script: {fileID: 11500000, guid: 5f58884feb648c94ea737f92d47324ee, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.GameOverOverlay
-  input: {fileID: 1627882228}
-  tapDelay: 0.8
---- !u!4 &2025031435
+  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.WarningFlash
+  thicknessPx: 4
+--- !u!4 &2044395096
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2025031433}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2058186651
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2058186653}
-  - component: {fileID: 2058186652}
-  m_Layer: 0
-  m_Name: Effects
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &2058186652
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2058186651}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a85c27689a481f943a4650cfe896aae1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.Effects
---- !u!4 &2058186653
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2058186651}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2112026229
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2112026231}
-  - component: {fileID: 2112026230}
-  m_Layer: 0
-  m_Name: EarthHealthBar
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &2112026230
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2112026229}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a6dc46e521f61fa418a053749205e931, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.EarthHealthBar
-  earth: {fileID: 967758786}
-  sizePx: {x: 120, y: 5}
-  topOffsetPx: 7
---- !u!4 &2112026231
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2112026229}
+  m_GameObject: {fileID: 2044395094}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -894,12 +1139,17 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 894606296}
-  - {fileID: 2058186653}
-  - {fileID: 269902518}
-  - {fileID: 1684262431}
-  - {fileID: 967758789}
-  - {fileID: 2112026231}
-  - {fileID: 1627882231}
-  - {fileID: 186245692}
-  - {fileID: 2025031435}
+  - {fileID: 1023463474}
+  - {fileID: 2009649898}
+  - {fileID: 544718302}
+  - {fileID: 2032758774}
+  - {fileID: 1924597429}
+  - {fileID: 1546742577}
+  - {fileID: 1997918803}
+  - {fileID: 1011280499}
+  - {fileID: 2044395096}
+  - {fileID: 1607374886}
+  - {fileID: 1239437089}
+  - {fileID: 416002656}
+  - {fileID: 1229717107}
+  - {fileID: 920450254}
