@@ -1,11 +1,12 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 namespace BouncyUFO
 {
     /// <summary>
     /// 레벨업 카드 고르기 화면. 게임이 멈춘 동안 카드 3장을 보여 주고, 누른 카드에서 손을 떼면 고른다.
-    /// (임시: 폰트가 정해지기 전이라 글자 대신 아이콘 + 단계 점. 이름·설명 번역 키는 카드 데이터에 있음)
+    /// 카드에는 아이콘, 이름, 설명(3개 언어), 단계 점이 보인다.
     /// </summary>
     public sealed class CardChoiceUI : MonoBehaviour
     {
@@ -13,9 +14,9 @@ namespace BouncyUFO
         [SerializeField] private LevelSystem levels;
 
         [Tooltip("카드 크기(기준 픽셀)")]
-        [SerializeField] private Vector2 cardSizePx = new Vector2(48f, 64f);
+        [SerializeField] private Vector2 cardSizePx = new Vector2(56f, 96f);
         [Tooltip("카드 사이 간격(기준 픽셀)")]
-        [SerializeField] private float gapPx = 8f;
+        [SerializeField] private float gapPx = 4f;
 
         private const int Order = SortOrder.Overlay + 10;
 
@@ -24,6 +25,8 @@ namespace BouncyUFO
             public Transform root;
             public SpriteRenderer frame;
             public SpriteRenderer icon;
+            public TextMeshPro name;
+            public TextMeshPro desc;
             public readonly List<SpriteRenderer> pips = new List<SpriteRenderer>();
             public CardDefinition card;
             public int nextStack;
@@ -32,6 +35,7 @@ namespace BouncyUFO
         private readonly List<CardView> views = new List<CardView>();
         private SpriteRenderer dim;
         private PixelNumber levelNumber;
+        private TextMeshPro title;
         private bool open;
         private float openedAt;
         private int pressedIndex = -1;
@@ -51,9 +55,14 @@ namespace BouncyUFO
             levelNumber = new GameObject("LevelNumber").AddComponent<PixelNumber>();
             levelNumber.transform.SetParent(transform, false);
             levelNumber.transform.localScale = Vector3.one * 2f;
-            levelNumber.transform.position = new Vector3(0f, Config.PixelsToUnits(cardSizePx.y * 0.5f + 16f), 0f);
+            levelNumber.transform.position = new Vector3(0f, Config.PixelsToUnits(cardSizePx.y * 0.5f + 12f), 0f);
             levelNumber.Configure(PixelNumber.Align.Center, new Color(0.6f, 1f, 0.7f));
             levelNumber.SetSortingOrder(Order + 3);
+
+            title = GameText.Create("Title", transform, GameText.Style.Title, Order + 3);
+            GameText.SetKey(title, "ui.levelup");
+            title.color = new Color(0.6f, 1f, 0.7f);
+            title.transform.position = new Vector3(0f, Config.PixelsToUnits(cardSizePx.y * 0.5f + 30f), 0f);
 
             for (int i = 0; i < LevelSystem.ChoiceCount; i++) views.Add(CreateView(i));
             SetVisible(false);
@@ -94,7 +103,15 @@ namespace BouncyUFO
 
             v.icon = assets.CreateSprite("Icon", null, Order + 3, v.root);
             v.icon.transform.localScale = Vector3.one * 2f;
-            v.icon.transform.localPosition = new Vector3(0f, Config.PixelsToUnits(8f), 0f);
+            v.icon.transform.localPosition = new Vector3(0f, Config.PixelsToUnits(cardSizePx.y * 0.5f - 20f), 0f);
+
+            float textBox = cardSizePx.x - 6f;
+            v.name = GameText.Create("Name", v.root, GameText.Style.Body, Order + 3, TextAlignmentOptions.Center, textBox, true);
+            v.name.transform.localPosition = new Vector3(0f, Config.PixelsToUnits(cardSizePx.y * 0.5f - 42f), 0f);
+            v.desc = GameText.Create("Desc", v.root, GameText.Style.Body, Order + 3, TextAlignmentOptions.Top, textBox, true);
+            v.desc.color = new Color(0.78f, 0.82f, 0.95f);
+            v.desc.transform.localPosition = new Vector3(0f, Config.PixelsToUnits(cardSizePx.y * 0.5f - 52f), 0f);
+            v.desc.rectTransform.pivot = new Vector2(0.5f, 1f);
             return v;
         }
 
@@ -115,6 +132,9 @@ namespace BouncyUFO
                 v.root.localPosition = new Vector3(-total * 0.5f + w * 0.5f + (w + gap) * i, 0f, 0f);
                 v.frame.color = v.card.color;
                 v.icon.sprite = v.card.icon;
+                GameText.SetKey(v.name, v.card.nameKey);
+                v.name.color = v.card.color;
+                GameText.SetKey(v.desc, v.card.descKey);
                 BuildPips(v);
             }
 
@@ -136,7 +156,7 @@ namespace BouncyUFO
 
             float size = Config.PixelsToUnits(3f);
             float step = Config.PixelsToUnits(5f);
-            float y = -Config.PixelsToUnits(cardSizePx.y * 0.5f - 9f);
+            float y = -Config.PixelsToUnits(cardSizePx.y * 0.5f - 6f);
             float start = -step * (max - 1) * 0.5f;
             for (int i = 0; i < max; i++)
             {
@@ -223,6 +243,7 @@ namespace BouncyUFO
         {
             dim.enabled = on;
             levelNumber.gameObject.SetActive(on);
+            title.gameObject.SetActive(on);
             foreach (var v in views) v.root.gameObject.SetActive(on && v.card != null && v.root.gameObject.activeSelf);
             if (!on) foreach (var v in views) v.root.gameObject.SetActive(false);
         }

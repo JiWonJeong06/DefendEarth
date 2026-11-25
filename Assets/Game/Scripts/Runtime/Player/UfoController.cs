@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace BouncyUFO
@@ -27,6 +28,9 @@ namespace BouncyUFO
         private float bufferedUntil;
 
         public bool IsHopping => hopTimer >= 0f;
+
+        /// <summary>통 튀기 시작(방향 -1 왼쪽 / 1 오른쪽). 튜토리얼이 듣는다.</summary>
+        public event Action<int> Hopped;
 
         private GameConfig Config => PlayArea.Config;
         private float HalfWidth => Config.PixelsToUnits(Config.ufoHalfWidthPx);
@@ -107,6 +111,7 @@ namespace BouncyUFO
             hopHeight = Config.PixelsToUnits(Mathf.Lerp(Config.hopHeightMinMaxPx.x, Config.hopHeightMinMaxPx.y, charge));
             hopTimer = 0f;
             if (visual != null) visual.Punch(-Config.squashOnHopStart * Mathf.Lerp(0.7f, 1.3f, charge)); // 위로 늘어나며 출발
+            Hopped?.Invoke(dir);
         }
 
         private void Update()

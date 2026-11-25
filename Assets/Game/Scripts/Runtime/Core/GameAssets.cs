@@ -31,11 +31,21 @@ namespace BouncyUFO
         [Tooltip("번역표 (key,ko,en,ja)")]
         public TextAsset strings;
 
+        [Header("글자 (갈무리 폰트)")]
+        [Tooltip("Galmuri11 (12픽셀): 제목·숫자")]
+        public Font titleFont;
+        [Tooltip("Galmuri9 (10픽셀): 설명")]
+        public Font bodyFont;
+        [Tooltip("TextMeshPro/Mobile/Bitmap 셰이더 (빌드에 꼭 들어가게 여기서 참조)")]
+        public Shader textShader;
+
         private void Awake()
         {
             Instance = this;
             Localization.Load(strings);
         }
+
+        private void LateUpdate() => GameText.KeepCrisp();
 
         private void OnDestroy()
         {

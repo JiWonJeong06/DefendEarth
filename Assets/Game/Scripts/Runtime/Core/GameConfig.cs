@@ -120,6 +120,10 @@ namespace BouncyUFO
         [Tooltip("동전이 빨려 들어가는 최고 속도(플레이 영역 높이/초)")]
         public float coinMagnetSpeed = 1.6f;
 
+        [Header("점수")]
+        [Tooltip("버틴 시간 1초당 점수 (몬스터 점수는 몬스터 데이터의 score)")]
+        public float scorePerSecond = 2f;
+
         [Header("판 안 성장 (경험치·레벨업)")]
         [Tooltip("레벨 1→2에 필요한 경험치")]
         public float xpBase = 6f;

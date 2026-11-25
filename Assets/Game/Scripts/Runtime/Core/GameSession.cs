@@ -23,7 +23,24 @@ namespace BouncyUFO
         public Earth Earth => earth;
         public RunStats Stats { get; } = new RunStats();
 
+        /// <summary>판이 끝남(골드 정산 전). 날아가던 동전 등을 여기서 마무리한다.</summary>
         public event Action GameOver;
+        /// <summary>정산·저장까지 끝남. 결과 화면은 이걸 듣는다.</summary>
+        public event Action<RunResult> Finished;
+
+        /// <summary>한 판의 최종 결과.</summary>
+        public struct RunResult
+        {
+            public int score;
+            public int bestScore;
+            public bool newBest;
+            public int wave;
+            public float seconds;
+            public int meteorGold;
+            public int stageGold;
+            public int totalGold;
+            public int walletGold;
+        }
 
         private void Awake()
         {
@@ -48,7 +65,9 @@ namespace BouncyUFO
 
         private void Update()
         {
-            if (IsPlaying) Elapsed += Time.deltaTime;
+            if (!IsPlaying) return;
+            Elapsed += Time.deltaTime;
+            Stats.SetTimeScore(Mathf.FloorToInt(Elapsed * PlayArea.Config.scorePerSecond));
         }
 
         private void OnEarthDied()
@@ -57,6 +76,31 @@ namespace BouncyUFO
             Current = State.GameOver;
             Time.timeScale = 0f;
             GameOver?.Invoke();
+            Finished?.Invoke(FinalizeRun());
+        }
+
+        /// <summary>최고 기록·골드를 기기에 저장한다. 판에서 져도 골드는 유지.</summary>
+        private RunResult FinalizeRun()
+        {
+            var save = SaveSystem.Data;
+            var r = new RunResult
+            {
+                score = Stats.Score,
+                wave = Stats.Wave,
+                seconds = Elapsed,
+                meteorGold = Stats.MeteorGold,
+                stageGold = Stats.StageGold,
+                totalGold = Stats.TotalGold,
+                newBest = Stats.Score > save.bestScore,
+            };
+            if (r.newBest) save.bestScore = Stats.Score;
+            if (Stats.Wave > save.bestWave) save.bestWave = Stats.Wave;
+            save.gold += Stats.TotalGold;
+            save.totalRuns++;
+            SaveSystem.Save();
+            r.bestScore = save.bestScore;
+            r.walletGold = save.gold;
+            return r;
         }
 
         private int pauseCount;

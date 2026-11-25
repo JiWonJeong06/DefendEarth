@@ -3,7 +3,7 @@ using UnityEngine;
 namespace BouncyUFO
 {
     /// <summary>
-    /// 경험치 바(얇은 하늘색 줄)와 현재 레벨 숫자. 골드·웨이브 줄 바로 아래.
+    /// 경험치 바(얇은 하늘색 줄). 골드·점수·웨이브 줄 바로 아래. 레벨 숫자는 레벨업 화면에서 보여 준다.
     /// </summary>
     public sealed class XpBar : MonoBehaviour
     {
@@ -13,15 +13,12 @@ namespace BouncyUFO
         [Tooltip("좌우 끝에서 띄우는 거리(기준 픽셀)")]
         [SerializeField] private float sidePaddingPx = 6f;
         [SerializeField] private float heightPx = 2f;
-        [Tooltip("레벨 숫자 줄(골드·웨이브와 같은 줄) 높이(기준 픽셀)")]
-        [SerializeField] private float levelRowOffsetPx = 16f;
 
         private Transform fill;
         private float width;
         private float pixelSize;
         private float shown;
         private float target;
-        private PixelNumber levelNumber;
 
         private void Start()
         {
@@ -40,12 +37,6 @@ namespace BouncyUFO
             f.transform.localScale = new Vector3(0f, h / pixelSize, 1f);
             fill = f.transform;
 
-            levelNumber = new GameObject("Level").AddComponent<PixelNumber>();
-            levelNumber.transform.SetParent(transform, false);
-            levelNumber.transform.position = new Vector3(0f, PlayArea.Top - config.PixelsToUnits(levelRowOffsetPx), 0f);
-            levelNumber.Configure(PixelNumber.Align.Center, new Color(0.6f, 1f, 0.7f));
-            levelNumber.SetValue(1);
-
             if (levels != null)
             {
                 levels.XpChanged += OnXpChanged;
@@ -61,7 +52,6 @@ namespace BouncyUFO
         private void OnXpChanged(float xp, float need)
         {
             float value = need > 0f ? Mathf.Clamp01(xp / need) : 0f;
-            if (levels != null) levelNumber.SetValue(levels.Level);
             if (value < target) shown = 0f; // 레벨업으로 넘어가면 처음부터 다시 차오름
             target = value;
         }

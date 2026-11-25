@@ -3,7 +3,7 @@ using UnityEngine;
 namespace BouncyUFO
 {
     /// <summary>
-    /// 위쪽 표시: 왼쪽에 골드(동전 + 숫자), 오른쪽에 웨이브 번호. 지구 체력 바 바로 아래.
+    /// 위쪽 표시: 왼쪽에 골드(동전 + 숫자), 가운데 점수, 오른쪽에 웨이브 번호. 지구 체력 바 바로 아래.
     /// 골드가 늘면 동전 아이콘이 통 튄다.
     /// </summary>
     public sealed class TopHud : MonoBehaviour
@@ -16,6 +16,7 @@ namespace BouncyUFO
 
         private PixelNumber goldNumber;
         private PixelNumber waveNumber;
+        private PixelNumber scoreNumber;
         private SquashStretch coinBounce;
 
         private void Start()
@@ -41,15 +42,29 @@ namespace BouncyUFO
             waveNumber.Configure(PixelNumber.Align.Right, new Color(0.75f, 0.85f, 1f));
             waveNumber.SetValue(0);
 
+            scoreNumber = new GameObject("Score").AddComponent<PixelNumber>();
+            scoreNumber.transform.SetParent(transform, false);
+            scoreNumber.transform.position = new Vector3(0f, y, 0f);
+            scoreNumber.Configure(PixelNumber.Align.Center, Color.white);
+            scoreNumber.SetValue(0);
+
             var session = GameSession.Instance;
-            if (session != null) session.Stats.GoldChanged += OnGoldChanged;
+            if (session != null)
+            {
+                session.Stats.GoldChanged += OnGoldChanged;
+                session.Stats.ScoreChanged += OnScoreChanged;
+            }
             if (waves != null) waves.WaveStarted += OnWaveStarted;
         }
 
         private void OnDestroy()
         {
             var session = GameSession.Instance;
-            if (session != null) session.Stats.GoldChanged -= OnGoldChanged;
+            if (session != null)
+            {
+                session.Stats.GoldChanged -= OnGoldChanged;
+                session.Stats.ScoreChanged -= OnScoreChanged;
+            }
             if (waves != null) waves.WaveStarted -= OnWaveStarted;
         }
 
@@ -60,5 +75,6 @@ namespace BouncyUFO
         }
 
         private void OnWaveStarted(int wave) => waveNumber.SetValue(wave);
+        private void OnScoreChanged(int score) => scoreNumber.SetValue(score);
     }
 }

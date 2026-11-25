@@ -21,6 +21,8 @@ namespace BouncyUFO.EditorTools
         private const string DummyPath = "Assets/Art/Temp/Dummy/";
         private const string CardDataFolder = "Assets/Game/Data/Cards";
         private const string StringsPath = "Assets/Game/Data/Localization/strings.csv";
+        private const string FontPath = "Assets/Art/Fonts/Galmuri/";
+        private const string TextShaderPath = "Assets/TextMesh Pro/Shaders/TMP_Bitmap-Mobile.shader";
         private const string MonsterDataFolder = "Assets/Game/Data/Monsters";
         private const string FlashShaderPath = "Assets/Game/Shaders/SpriteFlash.shader";
         private const string FlashMaterialPath = "Assets/Game/Data/SpriteFlash.mat";
@@ -62,6 +64,11 @@ namespace BouncyUFO.EditorTools
             for (int i = 0; i < 10; i++) assets.digitSprites[i] = LoadSprite(DummyPath + "Digit" + i + ".png");
             assets.cards = LoadOrCreateCards();
             assets.strings = AssetDatabase.LoadAssetAtPath<TextAsset>(StringsPath);
+            assets.titleFont = AssetDatabase.LoadAssetAtPath<Font>(FontPath + "Galmuri11.ttf");
+            assets.bodyFont = AssetDatabase.LoadAssetAtPath<Font>(FontPath + "Galmuri9.ttf");
+            assets.textShader = AssetDatabase.LoadAssetAtPath<Shader>(TextShaderPath);
+            if (assets.titleFont == null || assets.bodyFont == null || assets.textShader == null)
+                Debug.LogWarning("[Bouncy UFO] 폰트나 글자 셰이더를 찾지 못했습니다. Assets/Art/Fonts/Galmuri, " + TextShaderPath + " 확인");
             if (assets.strings == null) Debug.LogWarning("[Bouncy UFO] 번역표가 없습니다: " + StringsPath);
             var session = rootGo.AddComponent<GameSession>();
             new GameObject("Effects").AddComponent<Effects>();
@@ -138,8 +145,13 @@ namespace BouncyUFO.EditorTools
             var cardUi = new GameObject("CardChoiceUI").AddComponent<CardChoiceUI>();
             SetField(cardUi, "input", input);
             SetField(cardUi, "levels", levels);
-            var overlay = new GameObject("GameOverOverlay").AddComponent<GameOverOverlay>();
-            SetField(overlay, "input", input);
+
+            // 9) 간단 튜토리얼 (처음 한 번)
+            var tutorial = new GameObject("TutorialHints").AddComponent<TutorialHints>();
+            SetField(tutorial, "ufo", controller);
+            SetField(tutorial, "waves", waves);
+            var result = new GameObject("ResultScreen").AddComponent<ResultScreen>();
+            SetField(result, "input", input);
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             AddSceneToBuild(ScenePath);
@@ -296,6 +308,17 @@ namespace BouncyUFO.EditorTools
             init(def);
             AssetDatabase.CreateAsset(def, path);
             return def;
+        }
+
+        /// <summary>테스트용: 이 PC의 저장(최고 기록·골드·튜토리얼 완료)을 지운다. 폰 저장은 그대로.</summary>
+        [MenuItem("Bouncy UFO/Reset Save Data (this PC)")]
+        public static void ResetSave()
+        {
+            string path = System.IO.Path.Combine(Application.persistentDataPath, "save.json");
+            if (!System.IO.File.Exists(path)) { EditorUtility.DisplayDialog("Bouncy UFO", "지울 저장 파일이 없습니다.", "확인"); return; }
+            if (!EditorUtility.DisplayDialog("Bouncy UFO", "이 PC의 저장(최고 기록·골드·튜토리얼 완료)을 지울까요?\n" + path, "지우기", "취소")) return;
+            System.IO.File.Delete(path);
+            Debug.Log("[Bouncy UFO] 저장을 지웠습니다. 다음 Play부터 튜토리얼이 다시 나옵니다.");
         }
 
         private static GameConfig LoadOrCreateConfig()

@@ -20,6 +20,8 @@ namespace BouncyUFO
         public int Wave { get; private set; }
         public int BossRound { get; private set; }
         public Monster CurrentBoss { get; private set; }
+        /// <summary>true인 동안 첫 웨이브를 시작하지 않는다(튜토리얼 이동 연습 중).</summary>
+        public bool HoldStart { get; set; }
 
         /// <summary>새 웨이브 시작(웨이브 번호).</summary>
         public event Action<int> WaveStarted;
@@ -72,6 +74,7 @@ namespace BouncyUFO
             if (session == null || !session.IsPlaying) return;
             float dt = Time.deltaTime;
 
+            if (HoldStart && Wave == 0) return;
             UpdateMeteors(dt);
 
             switch (phase)
@@ -201,7 +204,7 @@ namespace BouncyUFO
         private void OnMonsterKilled(Monster m)
         {
             var stats = GameSession.Instance != null ? GameSession.Instance.Stats : null;
-            if (stats != null && m.Kind != MonsterDefinition.Kind.Meteor) stats.AddKill(m.IsBoss);
+            if (stats != null && m.Kind != MonsterDefinition.Kind.Meteor) stats.AddKill(m.IsBoss, m.Definition.score);
 
             if (m.IsBoss && m == CurrentBoss)
             {

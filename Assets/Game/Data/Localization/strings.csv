@@ -16,3 +16,19 @@ monster.charger,돌진 몬스터,Charger,とっしんモンスター
 monster.tank,덩치 몬스터,Bruiser,でかモンスター
 monster.boss1,보스,Boss,ボス
 meteor.gold,골드 운석,Gold Meteor,ゴールド隕石
+ui.result.title,지구가 함락됐어요!,Earth has fallen!,地球が落ちちゃった！
+ui.score,점수,Score,スコア
+ui.best,최고 기록,Best,ハイスコア
+ui.new_record,신기록!,New Record!,新記録！
+ui.wave,웨이브,Wave,ウェーブ
+ui.time,버틴 시간,Time,生存時間
+ui.gold.meteor,운석 골드,Meteor Gold,隕石ゴールド
+ui.gold.stage,단계 보상,Stage Reward,ステージ報酬
+ui.gold.total,이번 판 골드,Gold Earned,獲得ゴールド
+ui.gold.wallet,가진 골드,Total Gold,所持ゴールド
+ui.tap_retry,화면을 눌러 다시 하기,Tap to play again,タップでもう一度
+tut.move,UFO 왼쪽이나 오른쪽을 눌러 보세요,Tap left or right of the UFO,UFOの左か右をタップしてね
+tut.move_long,길게 누를수록 멀리 통!,Hold longer to bounce farther!,長押しするほど遠くへポヨン！
+tut.attack,자동으로 쏴요. 몬스터를 맞혀 보세요!,It fires on its own. Hit the monsters!,自動で撃つよ。モンスターに当ててね！
+tut.earth,몬스터가 지구에 닿으면 지구 체력이 줄어요,Monsters that reach Earth hurt it,モンスターが地球に届くと体力が減るよ
+tut.go,이제 지구를 지켜 주세요!,Now protect the Earth!,さあ、地球を守ってね！
