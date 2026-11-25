@@ -21,15 +21,23 @@ namespace BouncyUFO
         [Tooltip("UFO 몸체 반 너비. 화면 밖으로 나가지 않게 막는 데 쓴다")]
         public float ufoHalfWidthPx = 14f;
 
-        [Header("탭 한 칸 통통 이동")]
-        [Tooltip("한 번 탭에 튀는 거리(플레이 영역 너비 비율). 0.2 = 5칸이면 끝에서 끝")]
-        [Range(0.05f, 0.5f)] public float hopDistanceFraction = 0.2f;
-        [Tooltip("한 칸 튀는 데 걸리는 시간(초). 짧을수록 빠르게 연타 가능")]
-        [Range(0.05f, 0.4f)] public float hopDuration = 0.12f;
-        [Tooltip("튈 때 위로 올라가는 높이(기준 픽셀)")]
-        public float hopHeightPx = 6f;
-        [Tooltip("튀는 중에 탭하면 이 시간(초) 안에 착지할 때 이어서 튄다")]
+        [Header("통통 이동: 짧게 누르면 조금, 길게 누를수록 멀리 (최대치 있음)")]
+        [Tooltip("짧게 탭했을 때 튀는 거리(플레이 영역 너비 비율)")]
+        [Range(0.02f, 0.3f)] public float hopMinDistanceFraction = 0.08f;
+        [Tooltip("가장 길게 눌렀을 때 튀는 최대 거리(플레이 영역 너비 비율)")]
+        [Range(0.1f, 1f)] public float hopMaxDistanceFraction = 0.35f;
+        [Tooltip("이 시간(초)보다 짧게 누르면 '짧은 탭'(최소 거리)")]
+        public float hopShortPressTime = 0.1f;
+        [Tooltip("이 시간(초)까지 누르면 최대 거리. 그 이상은 더 늘지 않는다")]
+        public float hopFullChargeTime = 0.45f;
+        [Tooltip("짧은 통/가장 먼 통에 걸리는 시간(초)")]
+        public Vector2 hopDurationMinMax = new Vector2(0.08f, 0.17f);
+        [Tooltip("짧은 통/가장 먼 통의 튀는 높이(기준 픽셀)")]
+        public Vector2 hopHeightMinMaxPx = new Vector2(3f, 9f);
+        [Tooltip("튀는 중에 손을 떼면 이 시간(초) 안에 착지할 때 이어서 튄다")]
         public float hopBufferTime = 0.15f;
+        [Tooltip("누르고 있는 동안 최대로 움츠리는 정도(모으는 느낌)")]
+        public float squashOnCharge = 0.2f;
 
         [Header("통통 연출 (스쿼시·스트레치)")]
         [Tooltip("스프링 세기. 클수록 빨리 원래 모양으로 돌아온다")]
@@ -72,7 +80,28 @@ namespace BouncyUFO
         [Tooltip("플레이 영역 좌우 끝에서 이만큼(기준 픽셀) 안쪽에서 나온다")]
         public float spawnSideMarginPx = 14f;
 
+        [Header("몬스터 간격 (너무 밀집하지 않게)")]
+        [Tooltip("몬스터끼리 가로 간격의 최소치 = UFO 최소 점프 거리 × 이 배율. 1이면 최소 점프만큼")]
+        [Range(0.5f, 3f)] public float monsterGapHopMultiplier = 1f;
+        [Tooltip("두 몬스터 판정이 닿지 않게 더 띄우는 여유(기준 픽셀)")]
+        public float monsterExtraGapPx = 2f;
+        [Tooltip("이 세로 거리(최소 간격 배율) 안에 있는 몬스터끼리만 가로 간격을 맞춘다")]
+        public float monsterGapVerticalRange = 1.2f;
+        [Tooltip("너무 가까우면 옆으로 벌어지는 속도(플레이 영역 너비/초)")]
+        public float monsterSeparationSpeed = 0.35f;
+        [Tooltip("새로 나올 때 이 높이(플레이 영역 높이 비율)까지의 몬스터와 겹치지 않는 자리를 찾는다")]
+        [Range(0f, 1f)] public float spawnCheckBandFraction = 0.3f;
+
         // ---- 계산 값 ----
+        /// <summary>UFO가 가장 짧게 튀는 거리(유닛).</summary>
+        public float MinHopDistance => hopMinDistanceFraction * PlayAreaSize.x;
+
+        /// <summary>두 몬스터 사이에 필요한 가로 간격(중심끼리, 유닛).</summary>
+        public float MonsterGap(float radiusA, float radiusB)
+        {
+            return Mathf.Max(MinHopDistance * monsterGapHopMultiplier, radiusA + radiusB + PixelsToUnits(monsterExtraGapPx));
+        }
+
         public float PixelsToUnits(float px) => px / pixelsPerUnit;
         public Vector2 PlayAreaSize => new Vector2(playAreaPixels.x, playAreaPixels.y) / pixelsPerUnit;
     }

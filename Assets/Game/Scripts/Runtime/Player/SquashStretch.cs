@@ -13,6 +13,7 @@ namespace BouncyUFO
         private float amount;
         private float velocity;
         private float hopOffset;
+        private float hold;
 
         private void Awake()
         {
@@ -33,6 +34,9 @@ namespace BouncyUFO
             velocity += squash * 25f;
         }
 
+        /// <summary>계속 유지되는 움츠림(누르고 있는 동안 힘을 모으는 모양). 0이면 없음.</summary>
+        public void SetHold(float squash) => hold = squash;
+
         /// <summary>위로 튀어 오른 높이(유닛). 튀는 중 포물선에 쓴다.</summary>
         public void SetHop(float offset) => hopOffset = offset;
 
@@ -47,7 +51,8 @@ namespace BouncyUFO
             amount += velocity * dt;
             amount = Mathf.Clamp(amount, -0.6f, 0.6f);
 
-            transform.localScale = new Vector3(baseScale.x * (1f + amount), baseScale.y * (1f - amount), baseScale.z);
+            float total = Mathf.Clamp(amount + hold, -0.6f, 0.6f);
+            transform.localScale = new Vector3(baseScale.x * (1f + total), baseScale.y * (1f - total), baseScale.z);
             transform.localPosition = baseLocalPos + new Vector3(0f, hopOffset, 0f);
         }
     }

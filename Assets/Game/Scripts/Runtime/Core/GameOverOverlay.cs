@@ -25,13 +25,13 @@ namespace BouncyUFO
             dim.enabled = false;
 
             if (GameSession.Instance != null) GameSession.Instance.GameOver += OnGameOver;
-            if (input != null) input.Tapped += OnTapped;
+            if (input != null) input.Pressed += OnPressed;
         }
 
         private void OnDestroy()
         {
             if (GameSession.Instance != null) GameSession.Instance.GameOver -= OnGameOver;
-            if (input != null) input.Tapped -= OnTapped;
+            if (input != null) input.Pressed -= OnPressed;
         }
 
         private void OnGameOver()
@@ -40,7 +40,7 @@ namespace BouncyUFO
             shownAt = Time.unscaledTime;
         }
 
-        private void OnTapped(Vector2 _)
+        private void OnPressed(Vector2 _)
         {
             if (shownAt < 0f || Time.unscaledTime - shownAt < tapDelay) return;
             GameSession.Instance.Restart();

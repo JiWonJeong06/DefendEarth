@@ -45,7 +45,8 @@ namespace BouncyUFO
             block = new MaterialPropertyBlock();
         }
 
-        public void Spawn(MonsterDefinition def, Vector2 position)
+        /// <summary>무리는 같은 흔들림 박자(wobblePhase)를 써서 서로 가까워지지 않게 한다.</summary>
+        public void Spawn(MonsterDefinition def, Vector2 position, float wobblePhase)
         {
             Definition = def;
             hp = Mathf.Max(1, def.maxHp);
@@ -55,7 +56,7 @@ namespace BouncyUFO
             transform.position = position;
             HitRadius = PlayArea.Config.PixelsToUnits(def.hitRadiusPx) * def.scale;
             baseX = position.x;
-            wobblePhase = UnityEngine.Random.value * Mathf.PI * 2f;
+            this.wobblePhase = wobblePhase;
             age = 0f;
             chargeState = 0;
             chargeTimer = 0f;
@@ -88,7 +89,7 @@ namespace BouncyUFO
                 float amp = config.PixelsToUnits(Definition.wobbleAmplitudePx);
                 p.x = baseX + Mathf.Sin(age * Definition.wobbleFrequency * Mathf.PI * 2f + wobblePhase) * amp;
             }
-            p.x = PlayArea.ClampX(p.x, HitRadius * 0.5f);
+            p.x = PlayArea.ClampX(p.x, HitRadius);
             transform.position = p;
 
             if (flashTimer > 0f)
@@ -125,6 +126,16 @@ namespace BouncyUFO
                 default:
                     return Definition.chargeSpeed * height;
             }
+        }
+
+        /// <summary>너무 가까운 몬스터와 벌어지도록 옆으로 민다.</summary>
+        public void Shift(float dx)
+        {
+            if (!IsAlive || dx == 0f) return;
+            baseX = PlayArea.ClampX(baseX + dx, HitRadius);
+            var p = transform.position;
+            p.x = PlayArea.ClampX(p.x + dx, HitRadius);
+            transform.position = p;
         }
 
         public void TakeHit(int damage, Vector2 hitPoint)
