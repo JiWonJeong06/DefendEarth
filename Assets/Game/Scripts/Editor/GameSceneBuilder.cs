@@ -19,6 +19,8 @@ namespace BouncyUFO.EditorTools
         private const string EarthSheetPath = "Assets/Art/Temp/Earth-Star.png";
         private const string ArtPath = "Assets/Art/Temp/";
         private const string DummyPath = "Assets/Art/Temp/Dummy/";
+        private const string CardDataFolder = "Assets/Game/Data/Cards";
+        private const string StringsPath = "Assets/Game/Data/Localization/strings.csv";
         private const string MonsterDataFolder = "Assets/Game/Data/Monsters";
         private const string FlashShaderPath = "Assets/Game/Shaders/SpriteFlash.shader";
         private const string FlashMaterialPath = "Assets/Game/Data/SpriteFlash.mat";
@@ -58,6 +60,9 @@ namespace BouncyUFO.EditorTools
             assets.coinSprite = LoadSprite(DummyPath + "Coin.png");
             assets.digitSprites = new Sprite[10];
             for (int i = 0; i < 10; i++) assets.digitSprites[i] = LoadSprite(DummyPath + "Digit" + i + ".png");
+            assets.cards = LoadOrCreateCards();
+            assets.strings = AssetDatabase.LoadAssetAtPath<TextAsset>(StringsPath);
+            if (assets.strings == null) Debug.LogWarning("[Bouncy UFO] 번역표가 없습니다: " + StringsPath);
             var session = rootGo.AddComponent<GameSession>();
             new GameObject("Effects").AddComponent<Effects>();
 
@@ -123,6 +128,16 @@ namespace BouncyUFO.EditorTools
             SetField(hud, "waves", waves);
             var bossBar = new GameObject("BossHealthBar").AddComponent<BossHealthBar>();
             SetField(bossBar, "waves", waves);
+
+            // 8) 판 안 성장: 경험치·레벨업 카드
+            var levels = new GameObject("LevelSystem").AddComponent<LevelSystem>();
+            SetField(levels, "weapon", weapon);
+            SetField(levels, "ufoVisual", squash);
+            var xpBar = new GameObject("XpBar").AddComponent<XpBar>();
+            SetField(xpBar, "levels", levels);
+            var cardUi = new GameObject("CardChoiceUI").AddComponent<CardChoiceUI>();
+            SetField(cardUi, "input", input);
+            SetField(cardUi, "levels", levels);
             var overlay = new GameObject("GameOverOverlay").AddComponent<GameOverOverlay>();
             SetField(overlay, "input", input);
 
@@ -221,6 +236,55 @@ namespace BouncyUFO.EditorTools
             });
             AssetDatabase.SaveAssets();
             return meteor;
+        }
+
+        /// <summary>첫 빌드 카드 5장. 이미 있으면 그대로 쓴다(Inspector에서 고친 값 유지).</summary>
+        private static CardDefinition[] LoadOrCreateCards()
+        {
+            if (!AssetDatabase.IsValidFolder(CardDataFolder))
+                AssetDatabase.CreateFolder("Assets/Game/Data", "Cards");
+
+            var list = new[]
+            {
+                LoadOrCreateCard("Damage", c =>
+                {
+                    c.nameKey = "card.damage.name"; c.descKey = "card.damage.desc"; c.icon = LoadSprite(DummyPath + "IconDamage.png");
+                    c.color = new Color(1f, 0.45f, 0.4f); c.effect = CardDefinition.Effect.Damage; c.value = 1f; c.maxStacks = 5; c.weight = 1f;
+                }),
+                LoadOrCreateCard("FireRate", c =>
+                {
+                    c.nameKey = "card.firerate.name"; c.descKey = "card.firerate.desc"; c.icon = LoadSprite(DummyPath + "IconFireRate.png");
+                    c.color = new Color(1f, 0.85f, 0.3f); c.effect = CardDefinition.Effect.FireRate; c.value = 0.15f; c.maxStacks = 5; c.weight = 1f;
+                }),
+                LoadOrCreateCard("MultiShot", c =>
+                {
+                    c.nameKey = "card.multishot.name"; c.descKey = "card.multishot.desc"; c.icon = LoadSprite(DummyPath + "IconMultiShot.png");
+                    c.color = new Color(0.4f, 0.9f, 1f); c.effect = CardDefinition.Effect.MultiShot; c.value = 1f; c.maxStacks = 3; c.weight = 0.8f;
+                }),
+                LoadOrCreateCard("Pierce", c =>
+                {
+                    c.nameKey = "card.pierce.name"; c.descKey = "card.pierce.desc"; c.icon = LoadSprite(DummyPath + "IconPierce.png");
+                    c.color = new Color(0.6f, 1f, 0.5f); c.effect = CardDefinition.Effect.Pierce; c.value = 1f; c.maxStacks = 3; c.weight = 0.8f;
+                }),
+                LoadOrCreateCard("HealEarth", c =>
+                {
+                    c.nameKey = "card.heal.name"; c.descKey = "card.heal.desc"; c.icon = LoadSprite(DummyPath + "IconHeal.png");
+                    c.color = new Color(0.45f, 0.65f, 1f); c.effect = CardDefinition.Effect.HealEarth; c.value = 25f; c.maxStacks = 0; c.weight = 0.7f;
+                }),
+            };
+            AssetDatabase.SaveAssets();
+            return list;
+        }
+
+        private static CardDefinition LoadOrCreateCard(string name, System.Action<CardDefinition> init)
+        {
+            string path = CardDataFolder + "/" + name + ".asset";
+            var card = AssetDatabase.LoadAssetAtPath<CardDefinition>(path);
+            if (card != null) return card;
+            card = ScriptableObject.CreateInstance<CardDefinition>();
+            init(card);
+            AssetDatabase.CreateAsset(card, path);
+            return card;
         }
 
         private static MonsterDefinition LoadOrCreateMonster(string name, System.Action<MonsterDefinition> init)

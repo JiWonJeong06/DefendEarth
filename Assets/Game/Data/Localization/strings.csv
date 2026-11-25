@@ -1,0 +1,18 @@
+key,ko,en,ja
+card.damage.name,공격력,Power,攻撃力
+card.damage.desc,탄 피해 +1,Bullet damage +1,弾のダメージ +1
+card.firerate.name,연사,Rapid Fire,連射
+card.firerate.desc,발사 속도 15% 빨라짐,Fire 15% faster,発射速度 15% アップ
+card.multishot.name,탄 갈래 +1,Extra Shot,弾の数 +1
+card.multishot.desc,한 번에 탄 1개 더,One more bullet per shot,一度に弾が1つ増える
+card.pierce.name,관통,Pierce,貫通
+card.pierce.desc,탄이 몬스터 1마리 더 뚫고 감,Bullets pierce 1 more monster,弾がモンスターを1体多く貫く
+card.heal.name,지구 회복,Repair Earth,地球回復
+card.heal.desc,지구 체력 25 회복,Restore 25 Earth HP,地球の体力を25回復
+ui.levelup,레벨 업!,Level Up!,レベルアップ！
+ui.choose_card,카드 1장을 고르세요,Choose a card,カードを1枚選んでね
+monster.swarm,떼거리 몬스터,Swarmer,むれモンスター
+monster.charger,돌진 몬스터,Charger,とっしんモンスター
+monster.tank,덩치 몬스터,Bruiser,でかモンスター
+monster.boss1,보스,Boss,ボス
+meteor.gold,골드 운석,Gold Meteor,ゴールド隕石

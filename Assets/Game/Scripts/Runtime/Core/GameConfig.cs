@@ -120,6 +120,18 @@ namespace BouncyUFO
         [Tooltip("동전이 빨려 들어가는 최고 속도(플레이 영역 높이/초)")]
         public float coinMagnetSpeed = 1.6f;
 
+        [Header("판 안 성장 (경험치·레벨업)")]
+        [Tooltip("레벨 1→2에 필요한 경험치")]
+        public float xpBase = 6f;
+        [Tooltip("레벨마다 더 필요한 경험치")]
+        public float xpStep = 4f;
+        [Tooltip("레벨이 높을수록 더 가파르게 (레벨-1)² × 이 값")]
+        public float xpQuadratic = 0.3f;
+        [Tooltip("카드 화면이 뜬 뒤 이 시간(초) 동안은 탭을 받지 않는다(이동하던 손가락으로 잘못 고르지 않게)")]
+        public float cardInputDelay = 0.4f;
+        [Tooltip("레벨업 때 UFO가 크게 통 튀는 정도")]
+        public float squashOnLevelUp = 0.45f;
+
         [Header("몬스터 간격 (너무 밀집하지 않게)")]
         [Tooltip("몬스터끼리 가로 간격의 최소치 = UFO 최소 점프 거리 × 이 배율. 1이면 최소 점프만큼")]
         [Range(0.5f, 3f)] public float monsterGapHopMultiplier = 1f;

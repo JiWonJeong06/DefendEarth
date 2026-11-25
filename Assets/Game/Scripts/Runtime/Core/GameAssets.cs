@@ -26,7 +26,16 @@ namespace BouncyUFO
         [Tooltip("숫자 0~9 도트 그림(점수·골드 표시)")]
         public Sprite[] digitSprites = new Sprite[10];
 
-        private void Awake() => Instance = this;
+        [Tooltip("판 안 강화 카드들")]
+        public CardDefinition[] cards;
+        [Tooltip("번역표 (key,ko,en,ja)")]
+        public TextAsset strings;
+
+        private void Awake()
+        {
+            Instance = this;
+            Localization.Load(strings);
+        }
 
         private void OnDestroy()
         {

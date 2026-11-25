@@ -26,6 +26,13 @@ namespace BouncyUFO
             foreach (var d in digits) d.color = color;
         }
 
+        /// <summary>그리는 순서(화면을 덮는 창 위에 숫자를 띄울 때).</summary>
+        public void SetSortingOrder(int order)
+        {
+            sortingOrder = order;
+            foreach (var d in digits) d.sortingOrder = order;
+        }
+
         public void SetValue(int value)
         {
             if (value == shown) return;

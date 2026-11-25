@@ -59,6 +59,24 @@ namespace BouncyUFO
             GameOver?.Invoke();
         }
 
+        private int pauseCount;
+
+        /// <summary>잠깐 멈춤 중인지(레벨업 카드 고르기 등). 판은 계속 진행 중이다.</summary>
+        public bool IsPaused => pauseCount > 0;
+
+        /// <summary>게임을 멈춘다. 여러 곳에서 불러도 모두 Resume해야 다시 움직인다.</summary>
+        public void Pause()
+        {
+            pauseCount++;
+            Time.timeScale = 0f;
+        }
+
+        public void Resume()
+        {
+            pauseCount = Mathf.Max(0, pauseCount - 1);
+            if (pauseCount == 0 && IsPlaying) Time.timeScale = 1f;
+        }
+
         public void Restart()
         {
             Time.timeScale = 1f;

@@ -10,7 +10,7 @@ namespace BouncyUFO
         [SerializeField] private WaveDirector waves;
         [SerializeField] private Vector2 sizePx = new Vector2(100f, 3f);
         [Tooltip("플레이 영역 위쪽 끝에서 바 중심까지(기준 픽셀)")]
-        [SerializeField] private float topOffsetPx = 25f;
+        [SerializeField] private float topOffsetPx = 29f;
 
         private Transform fill;
         private Transform root;
