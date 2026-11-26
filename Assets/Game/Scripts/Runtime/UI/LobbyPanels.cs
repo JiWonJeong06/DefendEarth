@@ -118,33 +118,38 @@ namespace BouncyUFO
     }
 
     /// <summary>
-    /// 캐릭터 꾸미기(프로필용, 게임에 영향 없음): 머리 모양·머리색·피부색·옷색을 고른다. 데모는 모두 무료.
-    /// 자유 그림·글 입력은 넣지 않는다(정해진 부품만).
+    /// 캐릭터 꾸미기(프로필용, 게임에 영향 없음): 머리 모양·머리색·머리 장식·눈 모양·눈 색·피부색·옷을 고른다. 데모는 모두 무료.
+    /// 자유 그림·글 입력은 넣지 않는다(정해진 부품만). 프로필 창의 "꾸미기"로 연다.
     /// </summary>
     public sealed class CustomizePanel : ModalPanel
     {
+        private const int Parts = 7;
         private PilotView preview;
-        private readonly TextMeshPro[] values = new TextMeshPro[4];
-        private static readonly string[] Keys = { "ui.custom.hairstyle", "ui.custom.haircolor", "ui.custom.skin", "ui.custom.suit" };
+        private readonly TextMeshPro[] values = new TextMeshPro[Parts];
+        private static readonly string[] Keys =
+        {
+            "ui.custom.hairstyle", "ui.custom.haircolor", "ui.custom.headwear", "ui.custom.eyes",
+            "ui.custom.eyecolor", "ui.custom.skin", "ui.custom.outfit",
+        };
 
         public static CustomizePanel Create(Transform parent, int sortingOrder)
         {
             var go = new GameObject("CustomizePanel");
             go.transform.SetParent(parent, false);
             var p = go.AddComponent<CustomizePanel>();
-            p.Build(new Vector2(170f, 250f), "ui.custom", sortingOrder);
+            p.Build(new Vector2(170f, 290f), "ui.custom", sortingOrder);
             p.BuildContent();
             return p;
         }
 
         private void BuildContent()
         {
-            preview = PilotView.Create(Content, new Vector3(0f, U(64f), 0f), 3, Order + 4);
+            preview = PilotView.Create(Content, new Vector3(0f, U(90f), 0f), 2, Order + 4);
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < Parts; i++)
             {
                 int index = i;
-                float y = 4f - i * 26f;
+                float y = 40f - i * 20f;
                 var label = CreateText("Label" + i, new Vector2(0f, y), GameText.Style.Body, TextAlignmentOptions.MidlineLeft, 150f);
                 GameText.SetKey(label, Keys[i]);
                 label.color = new Color(0.75f, 0.8f, 1f);
@@ -159,34 +164,57 @@ namespace BouncyUFO
                 values[i] = CreateText("Value" + i, new Vector2(40f, y), GameText.Style.Body);
             }
 
-            var note = CreateText("Note", new Vector2(0f, -104f), GameText.Style.Body, TextAlignmentOptions.Center, 150f, true);
+            var note = CreateText("Note", new Vector2(0f, -116f), GameText.Style.Body, TextAlignmentOptions.Center, 150f, true);
             GameText.SetKey(note, "ui.custom.note");
             note.color = new Color(0.6f, 0.65f, 0.8f);
         }
 
-        private int Count(int part)
+        private static int Count(int part)
         {
-            var a = GameAssets.Instance;
             switch (part)
             {
-                case 0: return Mathf.Max(1, a.pilotHair != null ? a.pilotHair.Length : 1);
+                case 0: return PilotView.HairStyleCount;
                 case 1: return PilotView.HairColors.Length;
-                case 2: return PilotView.SkinColors.Length;
-                default: return PilotView.SuitColors.Length;
+                case 2: return PilotView.HeadwearCount;
+                case 3: return PilotView.EyeStyleCount;
+                case 4: return PilotView.EyeColors.Length;
+                case 5: return PilotView.SkinColors.Length;
+                default: return PilotView.OutfitCount;
+            }
+        }
+
+        private static int Get(SaveData d, int part)
+        {
+            switch (part)
+            {
+                case 0: return d.hairStyle;
+                case 1: return d.hairColor;
+                case 2: return d.headwear;
+                case 3: return d.eyeStyle;
+                case 4: return d.eyeColor;
+                case 5: return d.skinColor;
+                default: return d.outfit;
+            }
+        }
+
+        private static void Set(SaveData d, int part, int v)
+        {
+            switch (part)
+            {
+                case 0: d.hairStyle = v; break;
+                case 1: d.hairColor = v; break;
+                case 2: d.headwear = v; break;
+                case 3: d.eyeStyle = v; break;
+                case 4: d.eyeColor = v; break;
+                case 5: d.skinColor = v; break;
+                default: d.outfit = v; break;
             }
         }
 
         private void Change(int part, int delta)
         {
             var d = SaveSystem.Data;
-            int n = Count(part);
-            switch (part)
-            {
-                case 0: d.hairStyle = PilotView.Mod(d.hairStyle + delta, n); break;
-                case 1: d.hairColor = PilotView.Mod(d.hairColor + delta, n); break;
-                case 2: d.skinColor = PilotView.Mod(d.skinColor + delta, n); break;
-                default: d.suitColor = PilotView.Mod(d.suitColor + delta, n); break;
-            }
+            Set(d, part, PilotView.Mod(Get(d, part) + delta, Count(part)));
             SaveSystem.Save();
             Refresh();
         }
@@ -194,9 +222,14 @@ namespace BouncyUFO
         private void Refresh()
         {
             var d = SaveSystem.Data;
-            int[] current = { d.hairStyle, d.hairColor, d.skinColor, d.suitColor };
-            for (int i = 0; i < 4; i++)
-                GameText.SetPlain(values[i], (PilotView.Mod(current[i], Count(i)) + 1) + " / " + Count(i));
+            for (int i = 0; i < Parts; i++)
+            {
+                int n = Count(i);
+                int v = PilotView.Mod(Get(d, i), n);
+                // 머리 장식 0번은 "없음"
+                string text = i == 2 && v == 0 ? Localization.Get("ui.custom.none") : (v + 1) + " / " + n;
+                GameText.SetPlain(values[i], text);
+            }
             preview.Refresh();
         }
 

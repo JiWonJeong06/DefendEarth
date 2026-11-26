@@ -26,6 +26,7 @@ namespace BouncyUFO
         private const float BoxWidthPx = 168f;
         private const float BoxHeightPx = 72f;
         private const float HintYFromBottomPx = 104f;
+        private const float ApproachBoost = 3f;       // 강조되기 전에 내려오는 속도 배율
 
         [SerializeField] private UfoController ufo;
         [SerializeField] private WaveDirector waves;
@@ -129,13 +130,17 @@ namespace BouncyUFO
                 bossDone = false;
                 var boss = waves.StartBoss(Config.tutorialBossHpMultiplier);
                 if (boss == null) break;
+                LockControls(true);
+                boss.ApproachBoost = ApproachBoost;
                 float patrolY = PlayArea.Top - boss.Definition.patrolStartFraction * PlayArea.Size.y;
                 while (boss.IsAlive && boss.transform.position.y > patrolY + U(2f)) yield return null;
+                boss.ApproachBoost = 1f;
                 if (firstBoss)
                 {
                     firstBoss = false;
                     yield return Say(boss.transform, 22f, "tut.boss1", "tut.boss2", "tut.boss3", "tut.boss4");
                 }
+                LockControls(false);
                 SetTarget(boss.transform, 22f);
                 SetHint(Localization.Get("tut.hint.boss"));
                 while (!bossDone) yield return null;
@@ -166,14 +171,18 @@ namespace BouncyUFO
                 watching = m;
                 outcome = Outcome.None;
 
-                // 화면 위쪽 1/3쯤 내려와 잘 보일 때
+                // 화면 위쪽 1/3쯤 내려와 잘 보일 때까지: 빨리 내려오고, 그동안 플레이어는 조작할 수 없다
+                LockControls(true);
+                m.ApproachBoost = ApproachBoost;
                 float showY = PlayArea.Top - PlayArea.Size.y * 0.3f;
                 while (outcome == Outcome.None && m.transform.position.y > showY) yield return null;
+                m.ApproachBoost = 1f;
                 if (first && outcome == Outcome.None)
                 {
                     first = false;
                     yield return Say(m.transform, half, keys);
                 }
+                LockControls(false);
                 SetTarget(m.transform, half);
                 SetHint(Localization.Get(hintKey));
                 while (outcome == Outcome.None) yield return null;
@@ -207,6 +216,11 @@ namespace BouncyUFO
         }
 
         private void OnCardPicked(CardDefinition card, int stacks) => cardPicked = true;
+
+        private void LockControls(bool locked)
+        {
+            if (ufo != null) ufo.InputLocked = locked;
+        }
 
         private static IEnumerator Wait(float seconds)
         {

@@ -26,6 +26,8 @@ namespace BouncyUFO
         public int ChainDamageBonus { get; set; }
 
         public bool IsDashing { get; private set; }
+        /// <summary>true면 새로 조준할 수 없다(튜토리얼에서 몬스터가 강조되기 전).</summary>
+        public bool InputLocked { get; set; }
         public bool IsAiming => aiming;
 
         /// <summary>돌진 시작(조준 방향). 튜토리얼이 듣는다.</summary>
@@ -75,7 +77,7 @@ namespace BouncyUFO
 
         private void OnPressed(Vector2 screenPos)
         {
-            if (Time.timeScale == 0f) return;
+            if (Time.timeScale == 0f || InputLocked) return;
             if (PixelButton.AnyAt(screenPos)) return; // 일시정지 버튼 등을 누른 것은 조작이 아님
             var session = GameSession.Instance;
             if (session != null && !session.IsPlaying) return;
@@ -90,7 +92,7 @@ namespace BouncyUFO
             aiming = false;
             ShowGuide(false);
             if (visual != null) visual.SetHold(0f);
-            if (Time.timeScale == 0f) return;
+            if (Time.timeScale == 0f || InputLocked) return;
 
             Vector2 aim = AimDirection(screenPos);
             if (aim == Vector2.zero) return; // 거의 안 당기고 뗐으면 취소

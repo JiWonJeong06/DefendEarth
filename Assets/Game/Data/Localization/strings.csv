@@ -79,10 +79,12 @@ ui.ranking,순위표,Ranking,ランキング
 ui.settings,설정,Settings,設定
 ui.settings.language,언어,Language,言語
 ui.settings.sound,소리,Sound,サウンド
+ui.settings.volume,볼륨,Volume,音量
 ui.settings.vibration,진동,Vibration,振動
 ui.on,켜짐,On,オン
 ui.off,꺼짐,Off,オフ
-ui.settings.tutorial,튜토리얼 다시 보기,Replay tutorial,チュートリアルをもう一度
+ui.settings.tutorial,튜토리얼 하기,Play tutorial,チュートリアルをする
+ui.settings.tutorial_confirm,지금 판을 끝내고 튜토리얼을 할까요?,End this game and play the tutorial?,今のゲームを終えてチュートリアルをする？
 ui.settings.tutorial_done,다음 판에서 튜토리얼이 나와요,The tutorial will play next game,次のゲームでチュートリアルが出るよ
 ui.settings.credits,크레딧·라이선스,Credits & Licenses,クレジット・ライセンス
 ui.credits.license,폰트 라이선스 보기,View font license,フォントのライセンス
@@ -98,8 +100,12 @@ upgrade.meteor.desc,운석 골드 10% 증가,Meteor gold +10%,隕石ゴールド
 ui.custom.hairstyle,머리 모양,Hair style,髪型
 ui.custom.haircolor,머리색,Hair color,髪の色
 ui.custom.skin,피부색,Skin,肌の色
-ui.custom.suit,옷색,Suit,服の色
 ui.custom.note,꾸미기는 프로필용이에요. 게임에는 영향이 없어요,Looks are for your profile only. They do not affect the game.,見た目はプロフィール用。ゲームには影響しないよ
+ui.custom.headwear,머리 장식,Headwear,頭の飾り
+ui.custom.eyes,눈 모양,Eyes,目の形
+ui.custom.eyecolor,눈 색,Eye color,目の色
+ui.custom.outfit,옷,Outfit,服
+ui.custom.none,없음,None,なし
 ui.ranking.local,이 기기 기록이에요. 온라인 순위표는 준비 중!,Records on this device. Online ranking coming soon!,この端末の記録だよ。オンラインランキングは準備中！
 ui.ranking.empty,아직 기록이 없어요,No records yet,まだ記録がないよ
 ui.pause,일시정지,Paused,一時停止
@@ -114,3 +120,21 @@ ui.quit_game,게임 종료,Quit Game,ゲーム終了
 ui.quit_confirm,게임을 종료할까요?,Quit the game?,ゲームを終了する？
 ui.yes,예,Yes,はい
 ui.no,아니요,No,いいえ
+nick.title,닉네임 정하기,Choose a Nickname,ニックネーム
+nick.rules,한글 2~8자 · 영어·숫자 2~12자 · 일본어 2~10자 (특수문자·띄어쓰기 불가),Korean 2-8 / English·numbers 2-12 / Japanese 2-10 (no symbols or spaces),韓国語2~8字・英数字2~12字・日本語2~10字（記号・スペース不可）
+nick.err.short,2자 이상 입력해 주세요,Use at least 2 characters,2文字以上入力してね
+nick.err.char,특수문자·띄어쓰기는 쓸 수 없어요,Symbols and spaces are not allowed,記号やスペースは使えないよ
+nick.err.font,쓸 수 없는 한자가 있어요,This kanji can't be used,使えない漢字があるよ
+nick.err.long_ko,한글이 있으면 8자까지예요,Up to 8 characters with Korean,韓国語を含むと8文字まで
+nick.err.long_ja,일본어가 있으면 10자까지예요,Up to 10 characters with Japanese,日本語を含むと10文字まで
+nick.err.long_en,12자까지예요,Up to 12 characters,12文字まで
+ui.ok,확인,OK,OK
+ui.cancel,취소,Cancel,キャンセル
+ui.settings.rename,바꾸기,Change,変更
+nick.paste,붙여넣기,Paste,貼り付け
+profile.title,프로필,Profile,プロフィール
+profile.playtime,플레이 시간,Play time,プレイ時間
+profile.runs,플레이 횟수,Games played,プレイ回数
+profile.best,최고 점수,Best score,ベストスコア
+profile.bestwave,최고 웨이브,Best wave,最高ウェーブ
+profile.time_hm,{0}시간 {1}분,{0}h {1}m,{0}時間{1}分

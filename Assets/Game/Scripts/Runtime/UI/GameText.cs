@@ -23,6 +23,14 @@ namespace BouncyUFO
 
         private static int NativePixels(Style style) => style == Style.Title ? 12 : 10;
 
+        /// <summary>두 갈무리 글꼴(Galmuri11·9) 모두에 이 글자가 있는지(없으면 화면에 □로 나온다).</summary>
+        public static bool HasGlyph(char c)
+        {
+            var t = FontFor(Style.Title);
+            var b = FontFor(Style.Body);
+            return t != null && b != null && t.HasCharacter(c, false, true) && b.HasCharacter(c, false, true);
+        }
+
         private static TMP_FontAsset FontFor(Style style)
         {
             if (cache.TryGetValue(style, out var asset) && asset != null) return asset;

@@ -219,7 +219,11 @@ namespace BouncyUFO
         private void OnMonsterKilled(Monster m)
         {
             var stats = GameSession.Instance != null ? GameSession.Instance.Stats : null;
-            if (stats != null && m.Kind != MonsterDefinition.Kind.Meteor) stats.AddKill(m.IsBoss, m.Definition.score);
+            if (stats != null)
+            {
+                if (m.Kind == MonsterDefinition.Kind.Meteor) stats.AddScore(m.Definition.score); // 운석 파괴도 점수
+                else stats.AddKill(m.IsBoss, m.Definition.score);
+            }
 
             if (m.IsBoss && m == CurrentBoss)
             {

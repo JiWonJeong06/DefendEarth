@@ -22,7 +22,7 @@ namespace BouncyUFO
     [Serializable]
     public sealed class SaveData
     {
-        public const int CurrentVersion = 2;
+        public const int CurrentVersion = 3;
 
         public int version = CurrentVersion;
         public int bestScore;
@@ -37,15 +37,26 @@ namespace BouncyUFO
         public int language = -1;
         public bool sound = true;
         public bool vibration = true;
+        // v3 ---------------------------------------------------------
+        /// <summary>소리 크기 0~1(효과음·배경음악 모두). 소리 끄기와 따로.</summary>
+        public float volume = 1f;
+        /// <summary>닉네임(처음 켤 때 정함, 설정에서 언제든 바꿈). 비어 있으면 아직 안 정함.</summary>
+        public string nickname = "";
+        /// <summary>지금까지 게임(튜토리얼 포함)을 한 시간 합계(초). 프로필에 보여 준다.</summary>
+        public float playSeconds;
         /// <summary>플레이어 계정 경험치(누적). 레벨은 계산해서 구한다.</summary>
         public int accountXp;
         /// <summary>강화 단계. 순서는 GameConfig.upgrades와 같다.</summary>
         public List<int> upgradeLevels = new List<int>();
-        /// <summary>캐릭터 꾸미기: 머리 모양, 머리색, 피부색, 옷색</summary>
+        /// <summary>캐릭터 꾸미기(11/27 5부품): 머리 모양·머리색, 피부색, 눈 모양·눈 색, 옷, 머리 장식(0 = 없음)</summary>
         public int hairStyle;
         public int hairColor;
         public int skinColor;
-        public int suitColor;
+        public int suitColor; // 옛 옷색(안 씀, 옛 저장 호환용)
+        public int eyeStyle;
+        public int eyeColor;
+        public int outfit;
+        public int headwear;
         /// <summary>이 기기 최고 기록 TOP 10</summary>
         public List<ScoreEntry> topScores = new List<ScoreEntry>();
 
@@ -113,6 +124,7 @@ namespace BouncyUFO
                 if (d.bestScore > 0 && d.topScores.Count == 0)
                     d.topScores.Add(new ScoreEntry { score = d.bestScore, wave = d.bestWave, date = "-" });
             }
+            if (d.version < 3) d.volume = 1f; // v2 이하 저장엔 없어서 0으로 읽힌다
             if (d.upgradeLevels == null) d.upgradeLevels = new List<int>();
             if (d.topScores == null) d.topScores = new List<ScoreEntry>();
             d.version = SaveData.CurrentVersion;

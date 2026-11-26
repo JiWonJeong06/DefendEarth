@@ -70,7 +70,6 @@ namespace BouncyUFO
             }
             if (!IsPlaying) return;
             Elapsed += Time.deltaTime;
-            Stats.SetTimeScore(Mathf.FloorToInt(Elapsed * PlayArea.Config.scorePerSecond));
         }
 
         private void OnEarthDied() => End(false, PlayArea.Config.gameOverDelay);
@@ -80,6 +79,25 @@ namespace BouncyUFO
         {
             if (SceneFlow.IsTutorial) { FinishTutorial(false); return; }
             End(true, 0f);
+        }
+
+        /// <summary>설정의 "튜토리얼 하기"(게임 중): 지금 판을 나가기처럼 저장하고 튜토리얼을 새로 시작.</summary>
+        public void LeaveForTutorial()
+        {
+            if (IsPlaying)
+            {
+                Current = State.GameOver;
+                Time.timeScale = 0f;
+                GameOver?.Invoke(); // 날아가던 동전 정산
+                if (SceneFlow.IsTutorial)
+                {
+                    SaveSystem.Data.gold += Stats.TotalGold;
+                    SaveSystem.Data.playSeconds += Elapsed;
+                    SaveSystem.Save();
+                }
+                else FinalizeRun(true);
+            }
+            SceneFlow.StartTutorial();
         }
 
         /// <summary>
@@ -94,6 +112,7 @@ namespace BouncyUFO
             GameOver?.Invoke(); // 날아가던 동전 정산
             var save = SaveSystem.Data;
             save.gold += Stats.TotalGold;
+            save.playSeconds += Elapsed;
             if (completed) save.tutorialDone = true;
             SaveSystem.Save();
             SceneFlow.GoLobby();
@@ -134,6 +153,7 @@ namespace BouncyUFO
                 xpGained = xpGained,
                 levelBefore = before.level,
             };
+            save.playSeconds += Elapsed;
             if (r.newBest) save.bestScore = Stats.Score;
             if (Stats.Wave > save.bestWave) save.bestWave = Stats.Wave;
             save.gold += Stats.TotalGold;

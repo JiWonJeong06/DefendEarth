@@ -52,7 +52,7 @@ namespace BouncyUFO
             s.nextVoice = (s.nextVoice + 1) % Voices;
             v.clip = s.clips[i];
             v.pitch = pitch;
-            v.volume = SfxVolume * volume;
+            v.volume = SfxVolume * volume * SaveSystem.Data.volume;
             v.Play();
         }
 
@@ -84,6 +84,7 @@ namespace BouncyUFO
         private void Update()
         {
             music.mute = !SaveSystem.Data.sound;
+            music.volume = MusicVolume * SaveSystem.Data.volume;
         }
 
         // ---------------- 효과음 ----------------

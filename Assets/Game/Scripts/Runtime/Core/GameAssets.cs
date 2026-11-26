@@ -51,11 +51,21 @@ namespace BouncyUFO
         [Tooltip("빨강 채움(UI_4)")]
         public Sprite loadingBarFill;
 
-        [Header("캐릭터 꾸미기 (더미 그림, 흰색 그림에 색을 입힌다)")]
-        public Sprite pilotSuit;
-        public Sprite pilotFace;
-        public Sprite pilotEyes;
-        public Sprite[] pilotHair = new Sprite[0];
+        [Header("캐릭터 (SD 전신, 5부품, 모두 24x36 같은 캔버스. 임시 그림)")]
+        [Tooltip("몸통(흰/회색, 피부색을 입힌다)")]
+        public Sprite charBody;
+        [Tooltip("뒷머리(머리 모양마다, 앞머리와 같은 순서)")]
+        public Sprite[] charHairBack = new Sprite[0];
+        [Tooltip("앞머리(머리 모양마다)")]
+        public Sprite[] charHairFront = new Sprite[0];
+        [Tooltip("눈 모양(흰 칸에 눈 색을 입힌다)")]
+        public Sprite[] charEyes = new Sprite[0];
+        [Tooltip("옷(그림 색 그대로)")]
+        public Sprite[] charOutfits = new Sprite[0];
+        [Tooltip("머리 장식(없음은 따로, 여기엔 1번부터)")]
+        public Sprite[] charHeadwear = new Sprite[0];
+        [Tooltip("머리 장식마다 머리색을 입히는지(동물 귀 등)")]
+        public bool[] charHeadwearUsesHairColor = new bool[0];
 
         [Header("크레딧")]
         [Tooltip("갈무리 폰트 라이선스 원문 (OFL은 폰트와 함께 라이선스를 배포해야 한다)")]
@@ -96,6 +106,8 @@ namespace BouncyUFO
         /// <summary>몬스터는 한 마리마다 다른 순서(Monster ~ Monster+MonsterSlots-1)를 받아 겹쳐도 깜빡이지 않는다.</summary>
         public const int Monster = 0;
         public const int MonsterSlots = 200;
+        /// <summary>몬스터 머리 위 작은 체력 바(모든 몬스터 위, 보스 아래).</summary>
+        public const int MonsterHpBar = 250;
         public const int Boss = 300;
         public const int Ufo = 400;
         public const int Effect = 500;

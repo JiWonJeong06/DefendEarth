@@ -22,6 +22,8 @@ namespace BouncyUFO
         private int lastHop = -1;
         private TapInput input;
         private ConfirmPanel quitConfirm;
+        private NicknamePanel nicknamePanel;
+        private bool leaving;
 
         private GameConfig Config => PlayArea.Config;
         private float U(float px) => Config.PixelsToUnits(px);
@@ -60,6 +62,7 @@ namespace BouncyUFO
             version.transform.position = new Vector3(0f, PlayArea.Bottom + U(6f), 0f);
 
             quitConfirm = ConfirmPanel.Create(transform, SortOrder.Overlay);
+            nicknamePanel = NicknamePanel.Create(transform, SortOrder.Overlay + 20);
 
             input = TapInput.Main;
             if (input != null) input.Released += OnReleased;
@@ -74,13 +77,24 @@ namespace BouncyUFO
 
         private void OnReleased(Vector2 pos, float held)
         {
+            if (leaving) return;
             if (quitConfirm != null && quitConfirm.IsOpen) return; // 확인 창의 버튼이 처리
+            if (nicknamePanel != null && nicknamePanel.IsOpen) return; // 닉네임 창의 버튼이 처리
             if (!skipped && Time.time - startedAt < TitleEnd)
             {
                 skipped = true; // 연출 건너뛰기
                 return;
             }
             Sound.Play(Sfx.Start);
+            // 처음 켰으면 닉네임부터 정한다(취소 없음)
+            if (!Nickname.IsSet) { nicknamePanel.Ask(false, _ => GoLobby()); return; }
+            GoLobby();
+        }
+
+        private void GoLobby()
+        {
+            if (leaving) return;
+            leaving = true;
             SceneFlow.GoLobby();
         }
 
@@ -92,7 +106,8 @@ namespace BouncyUFO
             // 안드로이드 뒤로 버튼(= Esc): "게임을 종료할까요?"
             if (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
             {
-                if (quitConfirm.IsOpen) quitConfirm.Close();
+                if (nicknamePanel.IsOpen) { /* 처음 닉네임은 꼭 정해야 해서 닫지 않는다 */ }
+                else if (quitConfirm.IsOpen) quitConfirm.Close();
                 else quitConfirm.Ask("ui.quit_confirm", AppQuit.Now);
             }
         }

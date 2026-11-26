@@ -4,8 +4,8 @@ using UnityEngine;
 namespace BouncyUFO
 {
     /// <summary>
-    /// 설정 창(로비·일시정지 공용): 언어, 소리, 진동, 튜토리얼 다시 보기, 크레딧·라이선스.
-    /// 소리·진동은 아직 없어서 설정만 저장한다(진동을 실제로 쓰면 VIBRATE 권한이 추가되므로 그때 확인).
+    /// 설정 창(로비·일시정지 공용): 언어, 소리 켜기/끄기 + 소리 크기 막대, 진동, 닉네임 바꾸기, 튜토리얼 하기, 크레딧·라이선스.
+    /// 진동은 아직 없어서 설정만 저장한다(진동을 실제로 쓰면 VIBRATE 권한이 추가되므로 그때 확인).
     /// </summary>
     public sealed class SettingsPanel : ModalPanel
     {
@@ -17,6 +17,9 @@ namespace BouncyUFO
         private readonly PixelButton[] languageButtons = new PixelButton[3];
         private PixelButton soundButton;
         private PixelButton vibrationButton;
+        private PixelSlider volumeSlider;
+        private NicknamePanel nickname;
+        private TextMeshPro nicknameLabel;
         private TextMeshPro toast;
         private float toastUntil;
         private CreditsPanel credits;
@@ -29,25 +32,28 @@ namespace BouncyUFO
             var go = new GameObject("SettingsPanel");
             go.transform.SetParent(parent, false);
             var p = go.AddComponent<SettingsPanel>();
-            p.Build(new Vector2(164f, showQuitGame ? 240f : 214f), "ui.settings", sortingOrder);
+            p.Build(new Vector2(164f, showQuitGame ? 284f : 258f), "ui.settings", sortingOrder);
             p.BuildContent(showQuitGame ? 13f : 0f);
             p.credits = CreditsPanel.Create(parent, sortingOrder + 20);
+            p.confirm = ConfirmPanel.Create(parent, sortingOrder + 40);
+            p.nickname = NicknamePanel.Create(parent, sortingOrder + 30);
             if (showQuitGame)
             {
-                p.confirm = ConfirmPanel.Create(parent, sortingOrder + 40);
-                var quit = p.CreateButton("QuitGame", new Vector2(0f, -100f), new Vector2(140f, 18f), "ui.quit_game", new Color(0.8f, 0.35f, 0.35f), GameText.Style.Body);
+                var quit = p.CreateButton("QuitGame", new Vector2(0f, -144f), new Vector2(140f, 18f), "ui.quit_game", new Color(0.8f, 0.35f, 0.35f), GameText.Style.Body);
                 quit.Clicked += () => p.confirm.Ask("ui.quit_confirm", AppQuit.Now);
             }
             return p;
         }
 
         public bool IsConfirmOpen => confirm != null && confirm.IsOpen;
+        public bool IsNicknameOpen => nickname != null && nickname.IsOpen;
         public bool IsCreditsOpen => credits != null && credits.IsOpen;
 
         /// <summary>뒤로 가기: 맨 위 창부터 하나씩 닫는다. 닫은 게 있으면 true.</summary>
         public bool Back()
         {
             if (IsConfirmOpen) { confirm.Close(); return true; }
+            if (IsNicknameOpen) { nickname.Close(); return true; }
             if (IsCreditsOpen) { credits.Close(); return true; }
             if (IsOpen) { Close(); return true; }
             return false;
@@ -73,19 +79,27 @@ namespace BouncyUFO
             soundButton = CreateButton("Sound", new Vector2(44f, y), new Vector2(54f, 16f), "ui.on", On, GameText.Style.Body);
             soundButton.Clicked += () => { SaveSystem.Data.sound = !SaveSystem.Data.sound; SaveSystem.Save(); RefreshToggles(); };
 
-            y -= 24f;
+            y -= 22f;
+            Row("ui.settings.volume", y);
+            volumeSlider = PixelSlider.Create("Volume", Content, Order + 5, 100f, new Vector2(20f, y));
+            volumeSlider.Owner = this;
+            volumeSlider.Changed += v => SaveSystem.Data.volume = v;
+            volumeSlider.Released += v => { SaveSystem.Data.volume = v; SaveSystem.Save(); Sound.Play(Sfx.Coin); };
+
+            y -= 22f;
             Row("ui.settings.vibration", y);
             vibrationButton = CreateButton("Vibration", new Vector2(44f, y), new Vector2(54f, 16f), "ui.on", On, GameText.Style.Body);
             vibrationButton.Clicked += () => { SaveSystem.Data.vibration = !SaveSystem.Data.vibration; SaveSystem.Save(); RefreshToggles(); };
 
+            y -= 22f;
+            nicknameLabel = CreateText("NicknameLabel", new Vector2(0f, y), GameText.Style.Body, TextAlignmentOptions.MidlineLeft, 140f);
+            nicknameLabel.color = new Color(0.75f, 0.8f, 1f);
+            var rename = CreateButton("Rename", new Vector2(44f, y), new Vector2(54f, 16f), "ui.settings.rename", Normal, GameText.Style.Body);
+            rename.Clicked += () => nickname.Ask(true, _ => RefreshToggles());
+
             y -= 30f;
             var tutorial = CreateButton("Tutorial", new Vector2(0f, y), new Vector2(140f, 18f), "ui.settings.tutorial", Normal, GameText.Style.Body);
-            tutorial.Clicked += () =>
-            {
-                SaveSystem.Data.tutorialDone = false;
-                SaveSystem.Save();
-                ShowToast("ui.settings.tutorial_done");
-            };
+            tutorial.Clicked += StartTutorial;
 
             y -= 24f;
             var creditsButton = CreateButton("Credits", new Vector2(0f, y), new Vector2(140f, 18f), "ui.settings.credits", Normal, GameText.Style.Body);
@@ -94,6 +108,16 @@ namespace BouncyUFO
             toast = CreateText("Toast", new Vector2(0f, y - 26f), GameText.Style.Body, TextAlignmentOptions.Center, 150f, true);
             toast.color = new Color(1f, 0.9f, 0.5f);
             toast.gameObject.SetActive(false);
+        }
+
+        /// <summary>튜토리얼을 지금 바로 한다. 게임 중이면 판을 끝내도 되는지 먼저 묻는다(기록·골드는 저장).</summary>
+        private void StartTutorial()
+        {
+            var session = GameSession.Instance;
+            if (session != null && session.IsPlaying)
+                confirm.Ask("ui.settings.tutorial_confirm", session.LeaveForTutorial);
+            else
+                SceneFlow.StartTutorial();
         }
 
         private void Row(string key, float y)
@@ -125,6 +149,8 @@ namespace BouncyUFO
             for (int i = 0; i < 3; i++) languageButtons[i].SetColor(i == current ? On : Normal);
             soundButton.SetColor(d.sound ? On : Off);
             GameText.SetKey(soundButton.Label, d.sound ? "ui.on" : "ui.off");
+            volumeSlider.SetValue(d.volume);
+            GameText.SetPlain(nicknameLabel, Nickname.IsSet ? Nickname.Current : "-");
             vibrationButton.SetColor(d.vibration ? On : Off);
             GameText.SetKey(vibrationButton.Label, d.vibration ? "ui.on" : "ui.off");
         }

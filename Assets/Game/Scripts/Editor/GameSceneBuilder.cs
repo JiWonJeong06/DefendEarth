@@ -18,6 +18,16 @@ namespace BouncyUFO.EditorTools
         private const string UfoSheetPath = "Assets/Art/Temp/Enemy.png";
         private const string EarthSheetPath = "Assets/Art/Temp/Earth-Star.png";
         private const string UiSheetPath = "Assets/Art/Temp/UI.png";
+        private const string CharPath = "Assets/Art/Temp/Character/";
+
+        private static void ReimportFolder(string folder)
+        {
+            foreach (var guid in AssetDatabase.FindAssets("t:Texture2D", new[] { folder.TrimEnd('/') }))
+                AssetDatabase.ImportAsset(AssetDatabase.GUIDToAssetPath(guid), ImportAssetOptions.ForceUpdate);
+        }
+
+        private static Sprite[] Numbered(string prefix, int first, int count) =>
+            Enumerable.Range(first, count).Select(i => LoadSprite(CharPath + prefix + i + ".png")).ToArray();
         private const string ArtPath = "Assets/Art/Temp/";
         private const string DummyPath = "Assets/Art/Temp/Dummy/";
         private const string CardDataFolder = "Assets/Game/Data/Cards";
@@ -47,6 +57,7 @@ namespace BouncyUFO.EditorTools
             BuildScene(SceneFlow.Loading, BuildLoading);
             BuildScene(SceneFlow.Game, BuildGame);
             BuildScene(SceneFlow.Result, BuildResult);
+            AppIconSetup.Apply(); // 앱 아이콘(도트 지구)
 
             EditorBuildSettings.scenes = SceneOrder.Select(n => new EditorBuildSettingsScene(SceneFolder + n + ".unity", true)).ToArray();
             EditorSceneManager.OpenScene(SceneFolder + SceneFlow.Title + ".unity");
@@ -93,10 +104,15 @@ namespace BouncyUFO.EditorTools
             assets.loadingBarFill = FindSprite(UiSheetPath, "UI_4");
             assets.loadingBarEmpty = FindSprite(UiSheetPath, "UI_5");
             assets.starSprite = FindSprite(EarthSheetPath, "Earth-Star_2");
-            assets.pilotSuit = LoadSprite(DummyPath + "PilotSuit.png");
-            assets.pilotFace = LoadSprite(DummyPath + "PilotFace.png");
-            assets.pilotEyes = LoadSprite(DummyPath + "PilotEyes.png");
-            assets.pilotHair = new[] { LoadSprite(DummyPath + "PilotHair0.png"), LoadSprite(DummyPath + "PilotHair1.png"), LoadSprite(DummyPath + "PilotHair2.png") };
+            // 캐릭터(5부품 임시 그림). 아트가 나오면 같은 이름으로 바꾸거나 여기 경로만 바꾼다
+            ReimportFolder(CharPath); // 도트 설정(PixelArtImporter)이 확실히 적용되게
+            assets.charBody = LoadSprite(CharPath + "Body.png");
+            assets.charHairBack = Numbered("HairBack", 0, 3);
+            assets.charHairFront = Numbered("HairFront", 0, 3);
+            assets.charEyes = Numbered("Eyes", 0, 3);
+            assets.charOutfits = Numbered("Outfit", 0, 4);
+            assets.charHeadwear = Numbered("Head", 1, 4);                      // 여우 귀, 토끼 귀, 고글, 모자
+            assets.charHeadwearUsesHairColor = new[] { true, true, false, false }; // 동물 귀는 머리색
             if (assets.titleFont == null || assets.bodyFont == null || assets.textShader == null)
                 Debug.LogWarning("[Bouncy UFO] 폰트나 글자 셰이더를 찾지 못했습니다. Assets/Art/Fonts/Galmuri, " + TextShaderPath + " 확인");
             if (assets.strings == null) Debug.LogWarning("[Bouncy UFO] 번역표가 없습니다: " + StringsPath);

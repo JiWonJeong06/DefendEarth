@@ -59,6 +59,9 @@ namespace BouncyUFO
         private static readonly List<Monster> Scratch = new List<Monster>(64);
         private static int nextOrder;
 
+        /// <summary>내려오는 속도 배율(튜토리얼에서 강조되기 전에 빨리 내려오게). 나올 때 1로.</summary>
+        public float ApproachBoost { get; set; } = 1f;
+
         /// <summary>튕겨 나가는 중이면 true(그동안은 내려오지 않는다).</summary>
         public bool IsKnocked => knocked;
 
@@ -67,6 +70,52 @@ namespace BouncyUFO
             sr = renderer;
             release = onRelease;
             block = new MaterialPropertyBlock();
+            BuildHpBar();
+        }
+
+        // ---- 몸 아래 작은 체력 바 (일반 몬스터·운석, 처음 맞았을 때부터 보임. 보스는 위쪽 큰 바가 따로 있다) ----
+        private Transform hpBarRoot;
+        private SpriteRenderer hpBack;
+        private SpriteRenderer hpFill;
+        private int hpBarWidthPx;
+
+        private void BuildHpBar()
+        {
+            var a = GameAssets.Instance;
+            hpBarRoot = new GameObject("HpBar").transform;
+            hpBarRoot.SetParent(transform, false);
+            hpBack = a.CreateSprite("Back", a.pixelSprite, SortOrder.MonsterHpBar, hpBarRoot);
+            hpBack.color = new Color(0.04f, 0.03f, 0.1f, 0.9f);
+            hpFill = a.CreateSprite("Fill", a.pixelSprite, SortOrder.MonsterHpBar + 1, hpBarRoot);
+            hpFill.color = new Color(0.9f, 0.12f, 0.2f);
+        }
+
+        /// <summary>바 크기·위치를 이 몬스터에 맞춘다(나올 때). 너비는 몸 크기에 맞춘 정수 픽셀. 처음엔 숨겨 둔다.</summary>
+        private void LayoutHpBar()
+        {
+            hpBarRoot.gameObject.SetActive(false); // 처음 맞을 때 보인다
+            if (Definition.kind == MonsterDefinition.Kind.Boss) return;
+            var config = PlayArea.Config;
+            float scale = Mathf.Max(0.01f, Definition.scale);
+            hpBarWidthPx = Mathf.Max(8, Mathf.RoundToInt(Definition.hitRadiusPx * scale * 2f + 2f));
+            // 부모(몬스터)의 크기 배율을 되돌려서 화면에서 정확히 이 픽셀 크기로
+            hpBarRoot.localScale = Vector3.one / scale;
+            hpBarRoot.localPosition = new Vector3(0f, -config.PixelsToUnits(Mathf.Round(Definition.hitRadiusPx * scale + 4f)) / scale, 0f);
+            float px = hpBack.sprite.bounds.size.x;
+            hpBack.transform.localScale = new Vector3(config.PixelsToUnits(hpBarWidthPx + 2f) / px, config.PixelsToUnits(4f) / px, 1f);
+            RefreshHpBar();
+        }
+
+        private void RefreshHpBar()
+        {
+            if (hpFill == null || hpBarWidthPx <= 0 || Definition.kind == MonsterDefinition.Kind.Boss) return;
+            var config = PlayArea.Config;
+            float px = hpFill.sprite.bounds.size.x;
+            int w = MaxHp > 0 ? Mathf.CeilToInt(hpBarWidthPx * Mathf.Clamp01((float)Hp / MaxHp)) : 0;
+            hpFill.gameObject.SetActive(w > 0);
+            float left = -hpBarWidthPx * 0.5f;
+            hpFill.transform.localScale = new Vector3(config.PixelsToUnits(w) / px, config.PixelsToUnits(2f) / px, 1f);
+            hpFill.transform.localPosition = new Vector3(config.PixelsToUnits(left + w * 0.5f), 0f, 0f);
         }
 
         /// <summary>
@@ -79,6 +128,7 @@ namespace BouncyUFO
             MaxHp = Mathf.Max(1, Mathf.RoundToInt(def.maxHp * hpMultiplier));
             Hp = MaxHp;
             speedMul = speedMultiplier;
+            ApproachBoost = 1f;
             sr.sprite = def.PickSprite(); // 같은 몬스터도 색이 여러 가지
             // 한 마리마다 다른 그리는 순서: 겹쳐도 서로 깜빡이며 덮지 않는다(나중에 나온 쪽이 앞)
             sr.sortingOrder = def.kind == MonsterDefinition.Kind.Boss ? SortOrder.Boss : SortOrder.Monster + (nextOrder++ % SortOrder.MonsterSlots);
@@ -100,6 +150,7 @@ namespace BouncyUFO
             SetFlash(0f);
             flashTimer = 0f;
             IsAlive = true;
+            LayoutHpBar();
             MonsterRegistry.Active.Add(this);
         }
 
@@ -119,13 +170,13 @@ namespace BouncyUFO
             else switch (Definition.pattern)
             {
                 case MonsterDefinition.MovePattern.Charge:
-                    p.y -= ChargeSpeed(height, dt) * speedMul * dt;
+                    p.y -= ChargeSpeed(height, dt) * speedMul * ApproachBoost * dt;
                     break;
                 case MonsterDefinition.MovePattern.Patrol:
                     UpdatePatrol(ref p, dt);
                     break;
                 default:
-                    p.y -= Definition.speed * speedMul * height * dt;
+                    p.y -= Definition.speed * speedMul * ApproachBoost * height * dt;
                     break;
             }
             if (!knocked && Definition.wobbleAmplitudePx > 0f && chargeState != 2 && !patrolling)
@@ -256,7 +307,7 @@ namespace BouncyUFO
             float startY = PlayArea.Top - Definition.patrolStartFraction * PlayArea.Size.y;
             if (!patrolling)
             {
-                p.y -= Definition.speed * speedMul * PlayArea.Size.y * dt;
+                p.y -= Definition.speed * speedMul * ApproachBoost * PlayArea.Size.y * dt;
                 if (p.y <= startY) { patrolling = true; patrolY = p.y; }
                 return;
             }
@@ -287,6 +338,8 @@ namespace BouncyUFO
             flashTimer = FlashTime;
             SetFlash(1f);
             Effects.Hit(hitPoint, 0.8f);
+            if (Definition.kind != MonsterDefinition.Kind.Boss) hpBarRoot.gameObject.SetActive(true); // 처음 맞으면 나타남
+            RefreshHpBar();
             if (Hp > 0)
             {
                 Sound.Play(Sfx.Hit, UnityEngine.Random.Range(0.92f, 1.12f));

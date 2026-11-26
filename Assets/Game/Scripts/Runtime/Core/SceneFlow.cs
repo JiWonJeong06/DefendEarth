@@ -37,6 +37,14 @@ namespace BouncyUFO
         public static void GoLobby() => Go(Lobby);
         public static void GoResult() => Go(Result);
 
+        /// <summary>설정의 "튜토리얼 하기": 튜토리얼을 지금 바로(이미 했어도).</summary>
+        public static void StartTutorial()
+        {
+            LoadingTarget = Game;
+            IsTutorial = true;
+            Go(Loading);
+        }
+
         /// <summary>로딩 화면을 거쳐 게임을 시작한다.</summary>
         public static void StartGame()
         {

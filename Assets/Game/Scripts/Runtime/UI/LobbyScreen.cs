@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 namespace BouncyUFO
 {
     /// <summary>
-    /// 로비: 프로필(캐릭터·계정 레벨), 골드, 최고 기록, 게임 시작, 강화·꾸미기·순위표·설정.
+    /// 로비: 프로필(캐릭터·닉네임·계정 레벨), 골드, 최고 기록, 게임 시작, 강화·꾸미기·순위표·설정.
     /// 뒤로 가기(안드로이드 뒤로 버튼)는 열린 창을 닫는다.
     /// </summary>
     public sealed class LobbyScreen : MonoBehaviour
@@ -14,10 +14,12 @@ namespace BouncyUFO
 
         private PilotView pilot;
         private TextMeshPro level;
+        private TextMeshPro nickname;
         private TextMeshPro gold;
         private TextMeshPro best;
         private Transform xpFill;
         private float xpWidth;
+        private float xpLeft;
         private Transform ufo;
         private SquashStretch ufoSquash;
         private int lastBounce;
@@ -26,6 +28,7 @@ namespace BouncyUFO
         private CustomizePanel customize;
         private LeaderboardPanel ranking;
         private SettingsPanel settings;
+        private ProfilePanel profile;
         private ConfirmPanel quitConfirm;
 
         private GameConfig Config => PlayArea.Config;
@@ -37,15 +40,24 @@ namespace BouncyUFO
             float px = a.pixelSprite.bounds.size.x;
             StarField.Create(transform, 30);
 
-            // 위: 프로필(캐릭터 + 계정 레벨 + 경험치 바)
-            pilot = PilotView.Create(transform, new Vector3(PlayArea.Left + U(16f), PlayArea.Top - U(18f), 0f), 1, SortOrder.Hud);
-            level = GameText.Create("Level", transform, GameText.Style.Title, SortOrder.Hud + 2, TextAlignmentOptions.MidlineLeft, 80f);
-            level.transform.position = new Vector3(PlayArea.Left + U(30f + 40f), PlayArea.Top - U(13f), 0f);
-            xpWidth = U(56f);
+            // 위: 프로필(캐릭터 + 닉네임 / 계정 레벨 + 경험치 바). 누르면 프로필 창
+            var card = PixelButton.Create("ProfileCard", transform,
+                new Vector2(-Config.playAreaPixels.x * 0.5f + 55f, Config.playAreaPixels.y * 0.5f - 22f), new Vector2(106f, 40f),
+                null, new Color(0.16f, 0.2f, 0.42f, 0.55f), SortOrder.Hud - 5, 0);
+            pilot = PilotView.Create(transform, new Vector3(PlayArea.Left + U(16f), PlayArea.Top - U(22f), 0f), 1, SortOrder.Hud);
+            // 1줄: 닉네임 (한글 8자 = 80픽셀까지, 골드 숫자와 겹치지 않게)
+            nickname = GameText.Create("Nickname", transform, GameText.Style.Body, SortOrder.Hud + 2, TextAlignmentOptions.MidlineLeft, 84f);
+            nickname.transform.position = new Vector3(PlayArea.Left + U(30f + 42f), PlayArea.Top - U(11f), 0f);
+            // 2줄: "Lv 3" + 경험치 바
+            level = GameText.Create("Level", transform, GameText.Style.Body, SortOrder.Hud + 2, TextAlignmentOptions.MidlineLeft, 30f);
+            level.color = new Color(1f, 0.85f, 0.35f);
+            level.transform.position = new Vector3(PlayArea.Left + U(30f + 15f), PlayArea.Top - U(23f), 0f);
+            xpWidth = U(44f);
+            xpLeft = PlayArea.Left + U(62f);
             var xpBack = a.CreateSprite("XpBack", a.pixelSprite, SortOrder.Hud, transform);
             xpBack.color = new Color(0.1f, 0.12f, 0.25f);
             xpBack.transform.localScale = new Vector3(xpWidth / px, U(3f) / px, 1f);
-            xpBack.transform.position = new Vector3(PlayArea.Left + U(30f) + xpWidth * 0.5f, PlayArea.Top - U(25f), 0f);
+            xpBack.transform.position = new Vector3(xpLeft + xpWidth * 0.5f, PlayArea.Top - U(23f), 0f);
             var xf = a.CreateSprite("XpFill", a.pixelSprite, SortOrder.Hud + 1, xpBack.transform.parent);
             xf.color = new Color(0.6f, 1f, 0.7f);
             xpFill = xf.transform;
@@ -86,14 +98,19 @@ namespace BouncyUFO
             customize = CustomizePanel.Create(transform, panelBase);
             ranking = LeaderboardPanel.Create(transform, panelBase);
             settings = SettingsPanel.Create(transform, panelBase, true);
+            profile = ProfilePanel.Create(transform, panelBase);
+            card.Clicked += profile.Open;
+            profile.Closed += () => { pilot.Refresh(); Refresh(); };
+            profile.CustomizeRequested += customize.Open;
             quitConfirm = ConfirmPanel.Create(transform, panelBase + 60);
             upgrade.GoldSpent += Refresh;
             customize.Closed += () => pilot.Refresh();
+            settings.Closed += Refresh; // 닉네임을 바꿨을 수 있다
 
+            // 꾸미기는 프로필 창(왼쪽 위 프로필 카드)에서 연다
             Menu("Upgrade", "ui.upgrade", new Vector2(-40f, -100f), new Color(0.85f, 0.55f, 0.3f), upgrade.Open);
-            Menu("Custom", "ui.custom", new Vector2(40f, -100f), new Color(0.75f, 0.45f, 0.8f), customize.Open);
-            Menu("Ranking", "ui.ranking", new Vector2(-40f, -124f), new Color(0.35f, 0.55f, 0.9f), ranking.Open);
-            Menu("Settings", "ui.settings", new Vector2(40f, -124f), new Color(0.45f, 0.5f, 0.6f), settings.Open);
+            Menu("Ranking", "ui.ranking", new Vector2(40f, -100f), new Color(0.35f, 0.55f, 0.9f), ranking.Open);
+            Menu("Settings", "ui.settings", new Vector2(0f, -124f), new Color(0.45f, 0.5f, 0.6f), settings.Open);
 
             Refresh();
         }
@@ -108,11 +125,12 @@ namespace BouncyUFO
         {
             var d = SaveSystem.Data;
             var acc = Account.FromTotal(d.accountXp);
+            GameText.SetPlain(nickname, Nickname.IsSet ? Nickname.Current : "-");
             GameText.SetPlain(level, "Lv " + acc.level);
             float k = acc.need > 0 ? Mathf.Clamp01((float)acc.xp / acc.need) : 0f;
             float px = GameAssets.Instance.pixelSprite.bounds.size.x;
             xpFill.localScale = new Vector3(xpWidth * k / px, U(3f) / px, 1f);
-            xpFill.position = new Vector3(PlayArea.Left + U(30f) + xpWidth * k * 0.5f, PlayArea.Top - U(25f), 0f);
+            xpFill.position = new Vector3(xpLeft + xpWidth * k * 0.5f, PlayArea.Top - U(23f), 0f);
             GameText.SetPlain(gold, d.gold.ToString());
             GameText.SetPlain(best, Localization.Get("ui.best") + "  " + d.bestScore);
         }
@@ -136,6 +154,7 @@ namespace BouncyUFO
             {
                 if (quitConfirm.IsOpen) quitConfirm.Close();
                 else if (settings.Back()) { }
+                else if (profile.Back()) { }
                 else if (upgrade.IsOpen) upgrade.Close();
                 else if (customize.IsOpen) customize.Close();
                 else if (ranking.IsOpen) ranking.Close();

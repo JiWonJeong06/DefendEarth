@@ -1,9 +1,10 @@
+using TMPro;
 using UnityEngine;
 
 namespace BouncyUFO
 {
     /// <summary>
-    /// 보스가 나와 있는 동안만 보이는 보스 체력 바(보라색). 지구 체력 바 아래 줄.
+    /// 보스가 나와 있는 동안만 보이는 보스 체력 바(보라색)와 그 아래 체력 숫자("32/40"). 경험치 바 아래 줄.
     /// </summary>
     public sealed class BossHealthBar : MonoBehaviour
     {
@@ -16,6 +17,10 @@ namespace BouncyUFO
         private Transform root;
         private float width;
         private float pixelSize;
+        private TextMeshPro number;
+        private TextMeshPro numberShadow;
+        private int shownHp = -1;
+        private int shownMax = -1;
 
         private void Start()
         {
@@ -40,6 +45,16 @@ namespace BouncyUFO
             f.transform.localScale = new Vector3(width / pixelSize, height / pixelSize, 1f);
             fill = f.transform;
 
+            // 바 바로 아래 숫자(1픽셀 그림자로 잘 보이게)
+            float below = -config.PixelsToUnits(8f);
+            float one = config.PixelsToUnits(1f);
+            numberShadow = GameText.Create("HpShadow", root, GameText.Style.Body, SortOrder.Hud + 3);
+            numberShadow.color = new Color(0f, 0f, 0.05f, 0.85f);
+            numberShadow.transform.localPosition = new Vector3(one, below - one, 0f);
+            number = GameText.Create("Hp", root, GameText.Style.Body, SortOrder.Hud + 4);
+            number.color = new Color(0.9f, 0.75f, 1f);
+            number.transform.localPosition = new Vector3(0f, below, 0f);
+
             root.gameObject.SetActive(false);
             if (waves != null)
             {
@@ -55,7 +70,11 @@ namespace BouncyUFO
             waves.BossEnded -= OnBossEnded;
         }
 
-        private void OnBossAppeared(Monster boss, int round) => root.gameObject.SetActive(true);
+        private void OnBossAppeared(Monster boss, int round)
+        {
+            shownHp = shownMax = -1;
+            root.gameObject.SetActive(true);
+        }
         private void OnBossEnded(bool killed) => root.gameObject.SetActive(false);
 
         private void Update()
@@ -67,6 +86,17 @@ namespace BouncyUFO
             s.x = width / pixelSize * value;
             fill.localScale = s;
             fill.localPosition = new Vector3(-width * 0.5f + width * value * 0.5f, 0f, 0f);
+
+            int hp = boss != null && boss.IsAlive ? Mathf.Max(0, boss.Hp) : 0;
+            int max = boss != null ? boss.MaxHp : 0;
+            if (hp != shownHp || max != shownMax)
+            {
+                shownHp = hp;
+                shownMax = max;
+                string text = hp + "/" + max;
+                GameText.SetPlain(number, text);
+                GameText.SetPlain(numberShadow, text);
+            }
         }
     }
 }

@@ -4,7 +4,7 @@ namespace BouncyUFO
 {
     /// <summary>
     /// 한 판의 기록. 결과 화면에서 "운석 골드 + 단계 보상 = 합계"로 나눠 보여 준다.
-    /// 점수 = 잡은 몬스터 점수 + 버틴 시간 점수 (보스 보너스는 보스의 점수로 들어감).
+    /// 점수 = 무언가 처치·파괴할 때만 오른다(몬스터·보스·운석의 점수). 시간으로는 오르지 않는다(11/27).
     /// </summary>
     public sealed class RunStats
     {
@@ -14,9 +14,7 @@ namespace BouncyUFO
         public int MeteorGold { get; private set; }
         public int StageGold { get; private set; }
         public int TotalGold => MeteorGold + StageGold;
-        public int KillScore { get; private set; }
-        public int TimeScore { get; private set; }
-        public int Score => KillScore + TimeScore;
+        public int Score { get; private set; }
 
         public event Action<int> GoldChanged;
         public event Action<int> ScoreChanged;
@@ -25,17 +23,14 @@ namespace BouncyUFO
         {
             Kills++;
             if (boss) BossKills++;
-            if (score > 0)
-            {
-                KillScore += score;
-                ScoreChanged?.Invoke(Score);
-            }
+            AddScore(score);
         }
 
-        public void SetTimeScore(int value)
+        /// <summary>처치가 아닌 파괴(운석) 점수.</summary>
+        public void AddScore(int score)
         {
-            if (value == TimeScore) return;
-            TimeScore = value;
+            if (score <= 0) return;
+            Score += score;
             ScoreChanged?.Invoke(Score);
         }
 

@@ -3,33 +3,44 @@ using UnityEngine;
 namespace BouncyUFO
 {
     /// <summary>
-    /// 캐릭터(인간 조종사) 얼굴 그림. 프로필용이라 게임 플레이에는 영향이 없다.
-    /// 흰색 부품 그림(옷·얼굴·머리)에 저장된 색을 입혀 겹쳐 그린다. (더미 그림, 아트가 나오면 교체)
+    /// 꾸민 캐릭터(SD 전신 도트). 프로필용이라 게임 플레이에는 영향이 없다.
+    /// 부품 5가지: 몸통(피부색), 머리카락(뒷머리·앞머리 한 쌍 + 머리색), 머리 장식, 눈(+ 눈 색), 옷.
+    /// 모든 부품 그림은 같은 캔버스(24×36, 가운데 기준)라 겹치기만 하면 위치가 맞는다.
+    /// 겹치는 순서(뒤 → 앞): 뒷머리, 몸통, 옷, 눈, 앞머리, 머리 장식.
+    /// 몸통·머리카락·눈(·동물 귀 장식)은 흰/회색 그림에 색을 입히고, 옷·나머지 장식은 그림 색 그대로.
+    /// 아트가 나오면 GameAssets의 부품 그림만 바꾸면 된다(Assets/Art/Character/에 넣으면 도트 설정 자동).
     /// </summary>
     public sealed class PilotView : MonoBehaviour
     {
         public static readonly Color[] HairColors =
         {
-            new Color(0.22f, 0.16f, 0.12f), new Color(0.08f, 0.08f, 0.1f), new Color(0.85f, 0.65f, 0.3f),
-            new Color(0.75f, 0.3f, 0.2f), new Color(0.45f, 0.6f, 1f), new Color(0.9f, 0.5f, 0.75f),
+            new Color(0.24f, 0.18f, 0.14f), new Color(0.12f, 0.12f, 0.16f), new Color(0.9f, 0.6f, 0.25f),
+            new Color(0.95f, 0.85f, 0.5f), new Color(0.45f, 0.6f, 1f), new Color(0.9f, 0.5f, 0.75f),
+            new Color(0.85f, 0.85f, 0.9f), new Color(0.8f, 0.3f, 0.25f),
         };
         public static readonly Color[] SkinColors =
         {
-            new Color(1f, 0.87f, 0.75f), new Color(0.96f, 0.78f, 0.62f), new Color(0.82f, 0.62f, 0.45f),
-            new Color(0.6f, 0.42f, 0.3f), new Color(0.4f, 0.27f, 0.2f),
+            new Color(1f, 0.88f, 0.77f), new Color(0.98f, 0.8f, 0.66f), new Color(0.85f, 0.65f, 0.48f),
+            new Color(0.64f, 0.45f, 0.32f), new Color(0.42f, 0.29f, 0.21f),
         };
-        public static readonly Color[] SuitColors =
+        public static readonly Color[] EyeColors =
         {
-            new Color(0.35f, 0.55f, 1f), new Color(0.95f, 0.45f, 0.35f), new Color(0.4f, 0.8f, 0.45f),
-            new Color(0.95f, 0.8f, 0.3f), new Color(0.65f, 0.45f, 0.9f), new Color(0.85f, 0.88f, 0.92f),
+            new Color(0.3f, 0.55f, 1f), new Color(0.25f, 0.7f, 0.35f), new Color(0.55f, 0.35f, 0.2f),
+            new Color(0.85f, 0.3f, 0.55f), new Color(0.55f, 0.35f, 0.9f), new Color(0.2f, 0.2f, 0.25f),
         };
 
-        private SpriteRenderer suit;
-        private SpriteRenderer face;
-        private SpriteRenderer eyes;
-        private SpriteRenderer hair;
+        /// <summary>캔버스 크기(기준 픽셀).</summary>
+        public const int CanvasWidth = 24;
+        public const int CanvasHeight = 36;
 
-        /// <summary>얼굴 그림을 만든다. scale은 정수 배.</summary>
+        private SpriteRenderer backHair;
+        private SpriteRenderer body;
+        private SpriteRenderer outfit;
+        private SpriteRenderer eyes;
+        private SpriteRenderer frontHair;
+        private SpriteRenderer headwear;
+
+        /// <summary>캐릭터를 만든다. scale은 정수 배(도트가 깨지지 않게). localPos는 캐릭터 가운데.</summary>
         public static PilotView Create(Transform parent, Vector3 localPos, int scale, int sortingOrder)
         {
             var go = new GameObject("Pilot");
@@ -38,25 +49,52 @@ namespace BouncyUFO
             go.transform.localScale = Vector3.one * Mathf.Max(1, scale);
             var view = go.AddComponent<PilotView>();
             var a = GameAssets.Instance;
-            view.suit = a.CreateSprite("Suit", a.pilotSuit, sortingOrder, go.transform);
-            view.face = a.CreateSprite("Face", a.pilotFace, sortingOrder + 1, go.transform);
-            view.eyes = a.CreateSprite("Eyes", a.pilotEyes, sortingOrder + 2, go.transform);
-            view.hair = a.CreateSprite("Hair", null, sortingOrder + 3, go.transform);
+            view.backHair = a.CreateSprite("BackHair", null, sortingOrder, go.transform);
+            view.body = a.CreateSprite("Body", a.charBody, sortingOrder + 1, go.transform);
+            view.outfit = a.CreateSprite("Outfit", null, sortingOrder + 2, go.transform);
+            view.eyes = a.CreateSprite("Eyes", null, sortingOrder + 3, go.transform);
+            view.frontHair = a.CreateSprite("FrontHair", null, sortingOrder + 4, go.transform);
+            view.headwear = a.CreateSprite("Headwear", null, sortingOrder + 5, go.transform);
             view.Refresh();
             return view;
         }
+
+        // ---- 부품 개수(꾸미기 창이 쓴다) ----
+        public static int HairStyleCount => Mathf.Max(1, Mathf.Min(Len(GameAssets.Instance.charHairBack), Len(GameAssets.Instance.charHairFront)));
+        public static int EyeStyleCount => Mathf.Max(1, Len(GameAssets.Instance.charEyes));
+        public static int OutfitCount => Mathf.Max(1, Len(GameAssets.Instance.charOutfits));
+        /// <summary>머리 장식 개수(0번 = 없음 포함).</summary>
+        public static int HeadwearCount => 1 + Len(GameAssets.Instance.charHeadwear);
 
         /// <summary>저장된 꾸미기대로 다시 그린다.</summary>
         public void Refresh()
         {
             var d = SaveSystem.Data;
             var a = GameAssets.Instance;
-            int styles = a.pilotHair != null ? a.pilotHair.Length : 0;
-            hair.sprite = styles > 0 ? a.pilotHair[Mod(d.hairStyle, styles)] : null;
-            hair.color = HairColors[Mod(d.hairColor, HairColors.Length)];
-            face.color = SkinColors[Mod(d.skinColor, SkinColors.Length)];
-            suit.color = SuitColors[Mod(d.suitColor, SuitColors.Length)];
+            Color hairColor = HairColors[Mod(d.hairColor, HairColors.Length)];
+
+            int hs = Mod(d.hairStyle, HairStyleCount);
+            backHair.sprite = Pick(a.charHairBack, hs);
+            frontHair.sprite = Pick(a.charHairFront, hs);
+            backHair.color = frontHair.color = hairColor;
+
+            body.sprite = a.charBody;
+            body.color = SkinColors[Mod(d.skinColor, SkinColors.Length)];
+
+            eyes.sprite = Pick(a.charEyes, Mod(d.eyeStyle, EyeStyleCount));
+            eyes.color = EyeColors[Mod(d.eyeColor, EyeColors.Length)];
+
+            outfit.sprite = Pick(a.charOutfits, Mod(d.outfit, OutfitCount));
+            outfit.color = Color.white;
+
+            int hw = Mod(d.headwear, HeadwearCount); // 0 = 없음
+            headwear.sprite = hw == 0 ? null : Pick(a.charHeadwear, hw - 1);
+            bool tinted = hw > 0 && a.charHeadwearUsesHairColor != null && hw - 1 < a.charHeadwearUsesHairColor.Length && a.charHeadwearUsesHairColor[hw - 1];
+            headwear.color = tinted ? hairColor : Color.white;
         }
+
+        private static int Len(Sprite[] list) => list != null ? list.Length : 0;
+        private static Sprite Pick(Sprite[] list, int i) => list != null && i >= 0 && i < list.Length ? list[i] : null;
 
         public static int Mod(int v, int n) => n <= 0 ? 0 : ((v % n) + n) % n;
     }
