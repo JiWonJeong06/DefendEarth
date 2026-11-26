@@ -57,7 +57,7 @@ namespace BouncyUFO
             public void Play(Vector2 position, float s, Color c)
             {
                 transform.position = position;
-                transform.rotation = Quaternion.Euler(0f, 0f, Random.Range(0, 4) * 22.5f);
+                transform.rotation = Quaternion.Euler(0f, 0f, Random.Range(0, 4) * 90f); // 90도 단위만(비스듬히 돌리면 도트가 깨짐)
                 size = s;
                 color = c;
                 t = 0f;

@@ -15,7 +15,7 @@ namespace BouncyUFO
             /// <summary>돌진 피해 +value</summary>
             DashPower = 0,
             /// <summary>게이지 차는 시간 × (1 - value). 0.15 = 15% 빨라짐</summary>
-            ChargeSpeed = 1,
+            DashRange = 1, // 옛 ChargeSpeed 자리(숫자 그대로)
             /// <summary>몸통 판정 크기 +value (0.2 = 20% 커짐)</summary>
             BodySize = 2,
             /// <summary>연쇄 피해(튕겨 나간 몬스터가 다른 몬스터에 주는 피해) +value</summary>

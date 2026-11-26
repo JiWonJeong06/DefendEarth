@@ -68,8 +68,7 @@ namespace BouncyUFO
             best.color = new Color(0.8f, 0.85f, 1f);
 
             // 가운데: 지구 위에서 통통 튀는 UFO
-            var earth = a.CreateSprite("Earth", a.earthSprite, SortOrder.Earth, transform);
-            earth.transform.localScale = Vector3.one * 1.5f;
+            var earth = EarthGlobe.CreateWhole("Earth", transform, SortOrder.Earth, 44f);
             earth.transform.position = new Vector3(0f, U(-4f), 0f);
             var root = new GameObject("UFO").transform;
             root.SetParent(transform, false);

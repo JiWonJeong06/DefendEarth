@@ -21,22 +21,20 @@ namespace BouncyUFO
         [Tooltip("UFO 몸체 반 너비. 화면 밖으로 나가지 않게 막는 데 쓴다")]
         public float ufoHalfWidthPx = 14f;
 
-        [Header("조준·돌진: 꾹 눌러 게이지를 채우고, 손가락 쪽으로 조준, 떼면 돌진")]
-        [Tooltip("이 시간(초)보다 짧게 누르면 게이지 0(가장 약한 돌진)")]
-        public float chargeMinTime = 0.08f;
-        [Tooltip("이 시간(초)까지 누르면 게이지 가득. 그 이상은 늘지 않는다")]
-        public float chargeFullTime = 0.6f;
-        [Tooltip("돌진 출발 속도: 게이지 0 / 가득 (기준 픽셀/초)")]
-        public Vector2 dashSpeedMinMaxPx = new Vector2(340f, 800f);
+        [Header("조준·돌진(새총): 꾹 누른 채 뒤로 당긴 반대쪽으로 조준, 떼면 돌진. 게이지 없음")]
+        [Tooltip("이만큼(기준 픽셀)보다 덜 당기고 떼면 돌진하지 않는다(취소)")]
+        public float slingMinPullPx = 6f;
+        [Tooltip("돌진 출발 속도(기준 픽셀/초). 클수록 멀리 날아간다. 로비 강화·카드로 배율이 붙는다")]
+        public float dashSpeedPx = 460f;
         [Tooltip("중력(기준 픽셀/초²). 클수록 빨리 떨어진다")]
-        public float dashGravityPx = 1450f;
+        public float dashGravityPx = 750f;
         [Tooltip("조준 각도의 최저치(수평에서 위로, 도). 이보다 아래로는 조준할 수 없다")]
         [Range(0f, 60f)] public float aimMinElevationDeg = 12f;
         [Tooltip("공중에서 손을 떼면 이 시간(초) 안에 착지할 때 바로 돌진")]
         public float dashBufferTime = 0.2f;
         [Tooltip("벽·천장에 부딪히면 남는 속도 비율")]
         [Range(0f, 1f)] public float wallBounce = 0.6f;
-        [Tooltip("누르고 있는 동안 최대로 움츠리는 정도(모으는 느낌)")]
+        [Tooltip("당기고 있는 동안 움츠리는 정도(모으는 느낌)")]
         public float squashOnCharge = 0.25f;
         [Tooltip("조준 점선 점 개수 / 점 사이 시간(초)")]
         public int aimDots = 12;
@@ -45,10 +43,10 @@ namespace BouncyUFO
         [Header("몸통 박치기")]
         [Tooltip("UFO 몸통 판정 반지름(기준 픽셀). 그림보다 살짝 크게")]
         public float ufoBodyRadiusPx = 11f;
-        [Tooltip("돌진 피해: 게이지 0 / 가득")]
-        public Vector2 dashDamageMinMax = new Vector2(1f, 4f);
-        [Tooltip("튕겨 나가는 몬스터 속도: 게이지 0 / 가득 (기준 픽셀/초)")]
-        public Vector2 knockSpeedMinMaxPx = new Vector2(220f, 520f);
+        [Tooltip("돌진 피해(카드 '돌진 힘'으로 늘어남)")]
+        public int dashDamage = 1;
+        [Tooltip("튕겨 나가는 몬스터 속도(기준 픽셀/초)")]
+        public float knockSpeedPx = 380f;
         [Tooltip("튕겨 나간 몬스터가 느려지는 정도(초당 감속 비율)")]
         public float knockDrag = 2.2f;
         [Tooltip("이 속도(기준 픽셀/초) 아래로 느려지면 다시 내려오기 시작")]
@@ -74,18 +72,22 @@ namespace BouncyUFO
 
         [Header("지구")]
         public int earthMaxHp = 100;
-        [Tooltip("몬스터가 이 높이(플레이 영역 아래 끝에서 기준 픽셀)에 닿으면 지구 피해")]
-        public float earthLinePx = 22f;
+        [Tooltip("지구 반지름(기준 픽셀). 화면보다 커서 윗부분만 보인다. 몬스터가 이 표면에 닿으면 지구 피해")]
+        public float earthRadiusPx = 150f;
+        [Tooltip("화면 아래 끝에서 지구 꼭대기까지 높이(기준 픽셀)")]
+        public float earthVisiblePx = 44f;
+        [Tooltip("지구가 한 바퀴 도는 시간(초)")]
+        public float earthSpinSeconds = 90f;
 
-        [Header("웨이브 (몬스터가 무리로 몰려온다)")]
+        [Header("웨이브 (몬스터가 한 마리씩 내려온다)")]
         [Tooltip("웨이브 하나의 길이(초)")]
         public float waveDuration = 18f;
         [Tooltip("웨이브 사이 쉬는 시간(초)")]
         public float waveBreak = 2.5f;
-        [Tooltip("1웨이브에 나오는 무리 수")]
-        public int groupsPerWaveBase = 7;
-        [Tooltip("웨이브마다 늘어나는 무리 수")]
-        public float groupsPerWaveStep = 1.5f;
+        [Tooltip("1웨이브에 나오는 몬스터 수")]
+        public int groupsPerWaveBase = 5;
+        [Tooltip("웨이브마다 늘어나는 몬스터 수")]
+        public float groupsPerWaveStep = 1f;
         [Tooltip("웨이브마다 몬스터 체력 증가(0.1 = +10%씩)")]
         public float hpGrowthPerWave = 0.1f;
         [Tooltip("웨이브마다 몬스터 속도 증가(0.03 = +3%씩)")]
@@ -100,8 +102,8 @@ namespace BouncyUFO
         public int rushEveryWaves = 3;
         [Tooltip("러시 길이(초). 웨이브 끝부분에 온다")]
         public float rushDuration = 4f;
-        [Tooltip("러시 중 무리 간격(초)")]
-        public float rushInterval = 0.35f;
+        [Tooltip("러시 중 몬스터 간격(초)")]
+        public float rushInterval = 0.8f;
         [Tooltip("러시 전 경고 시간(초)")]
         public float rushWarning = 1.2f;
 
@@ -145,7 +147,7 @@ namespace BouncyUFO
         public UpgradeDefinition[] upgrades =
         {
             new UpgradeDefinition { nameKey = "upgrade.earth.name", descKey = "upgrade.earth.desc", effect = UpgradeDefinition.Effect.EarthHp, valuePerLevel = 10f, costs = new[] { 40, 80, 150, 250, 400 } },
-            new UpgradeDefinition { nameKey = "upgrade.charge.name", descKey = "upgrade.charge.desc", effect = UpgradeDefinition.Effect.ChargeSpeed, valuePerLevel = 0.05f, costs = new[] { 60, 120, 220, 350, 500 } },
+            new UpgradeDefinition { nameKey = "upgrade.range.name", descKey = "upgrade.range.desc", effect = UpgradeDefinition.Effect.DashRange, valuePerLevel = 0.04f, costs = new[] { 60, 120, 220, 350, 500 } },
             new UpgradeDefinition { nameKey = "upgrade.meteor.name", descKey = "upgrade.meteor.desc", effect = UpgradeDefinition.Effect.MeteorGold, valuePerLevel = 0.1f, costs = new[] { 50, 100, 180, 300, 450 } },
         };
 

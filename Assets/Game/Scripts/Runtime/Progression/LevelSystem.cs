@@ -131,8 +131,8 @@ namespace BouncyUFO
                 case CardDefinition.Effect.DashPower:
                     if (ufo != null) ufo.DamageBonus += Mathf.RoundToInt(card.value);
                     break;
-                case CardDefinition.Effect.ChargeSpeed:
-                    if (ufo != null) ufo.ChargeTimeMultiplier = Mathf.Max(0.25f, ufo.ChargeTimeMultiplier * Mathf.Clamp01(1f - card.value));
+                case CardDefinition.Effect.DashRange:
+                    if (ufo != null) ufo.RangeMultiplier += card.value;
                     break;
                 case CardDefinition.Effect.BodySize:
                     if (ufo != null) ufo.BodyScale += card.value;

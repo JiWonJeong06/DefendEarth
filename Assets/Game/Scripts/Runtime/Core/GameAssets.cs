@@ -85,11 +85,13 @@ namespace BouncyUFO
     {
         public const int Background = -100;
         public const int Earth = -50;
+        /// <summary>몬스터는 한 마리마다 다른 순서(Monster ~ Monster+MonsterSlots-1)를 받아 겹쳐도 깜빡이지 않는다.</summary>
         public const int Monster = 0;
-        public const int Bullet = 5;
-        public const int Ufo = 10;
-        public const int Effect = 20;
-        public const int Hud = 50;
-        public const int Overlay = 100;
+        public const int MonsterSlots = 200;
+        public const int Boss = 300;
+        public const int Ufo = 400;
+        public const int Effect = 500;
+        public const int Hud = 1000;
+        public const int Overlay = 2000;
     }
 }

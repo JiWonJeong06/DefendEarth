@@ -31,9 +31,7 @@ namespace BouncyUFO
             var a = GameAssets.Instance;
             StarField.Create(transform, 40);
 
-            var earth = a.CreateSprite("Earth", a.earthSprite, SortOrder.Earth, transform);
-            earth.transform.localScale = Vector3.one * 2f;
-            earth.transform.position = new Vector3(0f, PlayArea.Bottom - U(10f), 0f);
+            EarthGlobe.CreateHorizon("Earth", transform, SortOrder.Earth, PlayArea.Bottom);
 
             var ufoRoot = new GameObject("UFO").transform;
             ufoRoot.SetParent(transform, false);

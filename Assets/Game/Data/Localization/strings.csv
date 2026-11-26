@@ -1,8 +1,8 @@
 key,ko,en,ja
 card.dash.name,돌진 힘,Ram Power,体当たりパワー
 card.dash.desc,돌진 피해 +1,Ram damage +1,体当たりダメージ +1
-card.charge.name,빠른 충전,Quick Charge,クイックチャージ
-card.charge.desc,게이지가 15% 빨리 참,Gauge fills 15% faster,ゲージが15% 早くたまる
+card.range.name,멀리 날기,Long Flight,ロングフライト
+card.range.desc,돌진 속도 10% 증가로 더 멀리,Dash 10% faster and farther,突進が10% 速く遠くへ
 card.body.name,큰 몸통,Big Body,ビッグボディ
 card.body.desc,부딪히는 범위 20% 넓어짐,Hit area +20%,当たり範囲 +20%
 card.chain.name,연쇄 충돌,Chain Crash,連鎖クラッシュ
@@ -27,8 +27,8 @@ ui.gold.stage,단계 보상,Stage Reward,ステージ報酬
 ui.gold.total,이번 판 골드,Gold Earned,獲得ゴールド
 ui.gold.wallet,가진 골드,Total Gold,所持ゴールド
 ui.tap_retry,화면을 눌러 다시 하기,Tap to play again,タップでもう一度
-tut.move,꾹 눌러 조준하고 손을 떼면 돌진!,Hold to aim then release to dash!,長押しでねらって 離すと体当たり！
-tut.move_long,오래 누를수록 멀리 세게 날아가요,Hold longer to fly farther and hit harder,長く押すほど遠く 強く飛ぶよ
+tut.move,꾹 누른 채 뒤로 당겼다 놓으면 날아가요!,Hold and pull back then release to fly!,長押しで後ろに引いて 離すと飛ぶよ！
+tut.move_long,점선을 보고 방향을 맞춰 보세요,Use the dotted line to aim,点線を見て方向を合わせよう
 tut.attack,날아가며 몬스터를 들이받으세요!,Ram the monsters while flying!,飛びながらモンスターに体当たり！
 tut.earth,몬스터가 지구에 닿으면 지구 체력이 줄어요,Monsters that reach Earth hurt it,モンスターが地球に届くと体力が減るよ
 tut.go,이제 지구를 지켜 주세요!,Now protect the Earth!,さあ、地球を守ってね！
@@ -36,7 +36,7 @@ game.title,통통 UFO,Bouncy UFO,ぽよぽよUFO
 game.subtitle,지구 방어,Earth Defense,地球防衛
 ui.touch_to_start,화면을 터치하세요,Touch to start,タッチしてスタート
 ui.loading,로딩 중...,Loading...,ロード中...
-tip.1,오래 누를수록 멀리 세게 돌진해요,Hold longer to dash farther and harder,長く押すほど遠く 強く体当たり
+tip.1,멀리 날기 카드로 더 멀리 날아가요,Long Flight cards make you fly farther,ロングフライトでもっと遠くへ
 tip.2,운석을 부수면 골드가 나와요,Break meteors for gold,隕石を壊すとゴールドが出るよ
 tip.3,보스를 잡으면 단계 보상 골드!,Beat the boss for bonus gold!,ボスを倒すと報酬ゴールド！
 tip.4,튕겨 나간 몬스터가 다른 몬스터를 쳐요,Knocked monsters crash into others,はじかれたモンスターが他のモンスターにぶつかるよ
@@ -60,8 +60,8 @@ ui.credits.body,통통 UFO\n만든 곳: KKANGJUNG\n\n폰트: 갈무리 (Galmuri)
 ui.upgrade.max,최대,MAX,最大
 upgrade.earth.name,지구 체력,Earth HP,地球の体力
 upgrade.earth.desc,지구 최대 체력 +10,Max Earth HP +10,地球の最大体力 +10
-upgrade.charge.name,빠른 충전,Quick Charge,クイックチャージ
-upgrade.charge.desc,게이지가 5% 빨리 참,Gauge fills 5% faster,ゲージが5% 早くたまる
+upgrade.range.name,멀리 날기,Long Flight,ロングフライト
+upgrade.range.desc,돌진 속도 4% 증가,Dash 4% faster,突進が4% 速くなる
 upgrade.meteor.name,운석 골드,Meteor Gold,隕石ゴールド
 upgrade.meteor.desc,운석 골드 10% 증가,Meteor gold +10%,隕石ゴールド +10%
 ui.custom.hairstyle,머리 모양,Hair style,髪型

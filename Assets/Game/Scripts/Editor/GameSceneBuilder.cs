@@ -135,12 +135,9 @@ namespace BouncyUFO.EditorTools
             var session = GameObject.Find("GameRoot").AddComponent<GameSession>();
             new GameObject("Effects").AddComponent<Effects>();
 
-            // 지구 (임시 그림, 아래쪽 가운데) + 체력 바
-            var earthGo = CreateSprite("Earth", FindSprite(EarthSheetPath, "Earth-Star_0"), spriteMat, SortOrder.Earth);
-            earthGo.transform.position = new Vector3(0f, PlayArea.Bottom, 0f);
+            // 지구 (화면 아래를 꽉 채우고 윗부분만 보이는 큰 지구, 스스로 돈다) + 체력 바
+            var earthGo = new GameObject("Earth");
             var earth = earthGo.AddComponent<Earth>();
-            SetField(earth, "spriteRenderer", earthGo.GetComponent<SpriteRenderer>());
-            SetField(earth, "visual", earthGo.AddComponent<SquashStretch>());
             SetField(session, "earth", earth);
             var bar = new GameObject("EarthHealthBar").AddComponent<EarthHealthBar>();
             SetField(bar, "earth", earth);
@@ -215,10 +212,10 @@ namespace BouncyUFO.EditorTools
             var swarm = LoadOrCreateMonster("Swarm", d =>
             {
                 d.nameKey = "monster.swarm"; d.sprite = FindSprite(UfoSheetPath, "Enemy_3");
-                d.scale = 0.8f; d.hitRadiusPx = 7f;
+                d.scale = 1f; d.hitRadiusPx = 6f;
                 d.maxHp = 2; d.earthDamage = 3; d.speed = 0.09f; d.knockbackScale = 1f;
                 d.wobbleAmplitudePx = 6f; d.wobbleFrequency = 0.8f;
-                d.groupSize = 5; d.groupSpreadPx = 56f; d.spawnWeight = 4f; d.unlockWave = 1;
+                d.groupSize = 1; d.groupSpreadPx = 56f; d.spawnWeight = 4f; d.unlockWave = 1;
                 d.exp = 1; d.score = 10;
             });
             var charger = LoadOrCreateMonster("Charger", d =>
@@ -234,7 +231,7 @@ namespace BouncyUFO.EditorTools
             var tank = LoadOrCreateMonster("Tank", d =>
             {
                 d.nameKey = "monster.tank"; d.sprite = FindSprite(UfoSheetPath, "Enemy_11");
-                d.scale = 1.5f; d.hitRadiusPx = 10f;
+                d.scale = 1f; d.hitRadiusPx = 13f;
                 d.maxHp = 10; d.earthDamage = 15; d.speed = 0.04f; d.knockbackScale = 0.5f;
                 d.groupSize = 1; d.spawnWeight = 1.5f; d.unlockWave = 3;
                 d.exp = 6; d.score = 80;
@@ -292,10 +289,10 @@ namespace BouncyUFO.EditorTools
                     c.nameKey = "card.dash.name"; c.descKey = "card.dash.desc"; c.icon = LoadSprite(DummyPath + "IconDamage.png");
                     c.color = new Color(1f, 0.45f, 0.4f); c.effect = CardDefinition.Effect.DashPower; c.value = 1f; c.maxStacks = 5; c.weight = 1f;
                 }),
-                LoadOrCreateCard("ChargeSpeed", c =>
+                LoadOrCreateCard("DashRange", c =>
                 {
-                    c.nameKey = "card.charge.name"; c.descKey = "card.charge.desc"; c.icon = LoadSprite(DummyPath + "IconFireRate.png");
-                    c.color = new Color(1f, 0.85f, 0.3f); c.effect = CardDefinition.Effect.ChargeSpeed; c.value = 0.15f; c.maxStacks = 5; c.weight = 1f;
+                    c.nameKey = "card.range.name"; c.descKey = "card.range.desc"; c.icon = LoadSprite(DummyPath + "IconFireRate.png");
+                    c.color = new Color(1f, 0.85f, 0.3f); c.effect = CardDefinition.Effect.DashRange; c.value = 0.1f; c.maxStacks = 5; c.weight = 1f;
                 }),
                 LoadOrCreateCard("BodySize", c =>
                 {

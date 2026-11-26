@@ -33,7 +33,7 @@ namespace BouncyUFO
         [Tooltip("화면에 보일 이름의 번역 키(나중에 3개 언어)")]
         public string nameKey = "monster.unknown";
         public Sprite sprite;
-        [Tooltip("그림 크기 배율")]
+        [Tooltip("그림 크기 배율. 도트가 깨지지 않게 1, 2 같은 정수로")]
         public float scale = 1f;
         [Tooltip("판정 반지름(기준 픽셀, 배율 적용 전)")]
         public float hitRadiusPx = 7f;

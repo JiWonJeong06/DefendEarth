@@ -23,6 +23,14 @@ namespace BouncyUFO
             Size = config.PlayAreaSize;
         }
 
+        /// <summary>가로 위치 x(유닛)에서 지구 표면 높이(유닛). 큰 지구라 가운데가 가장 높고 양옆이 낮다.</summary>
+        public static float EarthSurfaceY(float x)
+        {
+            float r = Config.PixelsToUnits(Config.earthRadiusPx);
+            float top = Bottom + Config.PixelsToUnits(Config.earthVisiblePx);
+            return top - r + Mathf.Sqrt(Mathf.Max(0f, r * r - x * x));
+        }
+
         public static float ClampX(float x, float halfWidth)
         {
             return Mathf.Clamp(x, Left + halfWidth, Right - halfWidth);

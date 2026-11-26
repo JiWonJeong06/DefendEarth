@@ -42,6 +42,8 @@ namespace BouncyUFO
         private float wobblePhase;
         private float speedMul = 1f;
         private int chargeState; // 0 접근, 1 멈칫, 2 돌진
+        private float shakeX;
+        private float appliedShake;
         private float chargeTimer;
         private int patrolDir = 1;
         private bool patrolling;
@@ -55,6 +57,7 @@ namespace BouncyUFO
         private int chainDepth;
         private readonly List<Monster> chainHit = new List<Monster>(4);
         private static readonly List<Monster> Scratch = new List<Monster>(64);
+        private static int nextOrder;
 
         /// <summary>튕겨 나가는 중이면 true(그동안은 내려오지 않는다).</summary>
         public bool IsKnocked => knocked;
@@ -77,7 +80,8 @@ namespace BouncyUFO
             Hp = MaxHp;
             speedMul = speedMultiplier;
             sr.sprite = def.sprite;
-            sr.sortingOrder = def.kind == MonsterDefinition.Kind.Boss ? SortOrder.Monster + 2 : SortOrder.Monster;
+            // 한 마리마다 다른 그리는 순서: 겹쳐도 서로 깜빡이며 덮지 않는다(나중에 나온 쪽이 앞)
+            sr.sortingOrder = def.kind == MonsterDefinition.Kind.Boss ? SortOrder.Boss : SortOrder.Monster + (nextOrder++ % SortOrder.MonsterSlots);
             baseScale = Vector3.one * def.scale;
             transform.localScale = baseScale;
             transform.position = position;
@@ -87,6 +91,8 @@ namespace BouncyUFO
             age = 0f;
             chargeState = 0;
             chargeTimer = 0f;
+            shakeX = 0f;
+            appliedShake = 0f;
             patrolling = false;
             knocked = false;
             knockVelocity = Vector2.zero;
@@ -102,10 +108,10 @@ namespace BouncyUFO
             if (!IsAlive) return;
             float dt = Time.deltaTime;
             age += dt;
-            var config = PlayArea.Config;
             float height = PlayArea.Size.y;
 
             Vector3 p = transform.position;
+            p.x -= appliedShake;
             if (knocked)
             {
                 UpdateKnock(ref p, dt);
@@ -125,7 +131,8 @@ namespace BouncyUFO
             if (!knocked && Definition.wobbleAmplitudePx > 0f && chargeState != 2 && !patrolling)
                 p.x = baseX + WobbleOffset();
             p.x = PlayArea.ClampX(p.x, HitRadius);
-            transform.position = p;
+            appliedShake = shakeX; // 떨림은 보이는 위치에만 더한다(다음 프레임에 뺀다)
+            transform.position = p + new Vector3(shakeX, 0f, 0f);
 
             if (flashTimer > 0f)
             {
@@ -133,8 +140,8 @@ namespace BouncyUFO
                 SetFlash(flashTimer > 0f ? 1f : 0f);
             }
 
-            float earthLine = PlayArea.Bottom + config.PixelsToUnits(config.earthLinePx);
-            if (p.y - (IsBoss ? HitRadius * 0.5f : 0f) <= earthLine) ReachEarth(p);
+            // 몸 아래쪽이 지구 표면에 닿으면
+            if (p.y - HitRadius * 0.5f <= PlayArea.EarthSurfaceY(p.x)) ReachEarth(p);
         }
 
         private float WobbleOffset()
@@ -159,7 +166,7 @@ namespace BouncyUFO
             if (Definition.pattern == MonsterDefinition.MovePattern.Charge && chargeState != 0)
             {
                 chargeState = 0; // 처음부터 다시 다가와서 멈칫·돌진
-                transform.localScale = baseScale;
+                shakeX = 0f;
             }
         }
 
@@ -234,10 +241,10 @@ namespace BouncyUFO
                     return Definition.speed * height;
                 case 1:
                     chargeTimer += dt;
-                    // 멈칫하는 동안 몸을 움츠렸다가(예고) 돌진
+                    // 멈칫하는 동안 좌우로 1픽셀씩 떨다가(예고) 돌진. 그림 크기는 바꾸지 않는다(도트가 깨짐)
                     float k = Mathf.Clamp01(chargeTimer / Mathf.Max(0.01f, Definition.chargeWindup));
-                    transform.localScale = new Vector3(baseScale.x * (1f + 0.2f * k), baseScale.y * (1f - 0.2f * k), 1f);
-                    if (k >= 1f) { chargeState = 2; transform.localScale = new Vector3(baseScale.x * 0.85f, baseScale.y * 1.2f, 1f); }
+                    shakeX = (Mathf.FloorToInt(chargeTimer * 30f) % 2 == 0 ? 1f : -1f) * PlayArea.Config.PixelsToUnits(1f);
+                    if (k >= 1f) { chargeState = 2; shakeX = 0f; }
                     return 0f;
                 default:
                     return Definition.chargeSpeed * height;
@@ -261,9 +268,6 @@ namespace BouncyUFO
             if (p.x > limit) { p.x = limit; patrolDir = -1; }
             if (p.x < -limit) { p.x = -limit; patrolDir = 1; }
             baseX = p.x;
-            // 둥실둥실
-            float bob = Mathf.Sin(age * 3f) * 0.04f;
-            transform.localScale = new Vector3(baseScale.x * (1f + bob), baseScale.y * (1f - bob), 1f);
         }
 
         /// <summary>너무 가까운 몬스터와 벌어지도록 옆으로 민다.</summary>
@@ -301,7 +305,9 @@ namespace BouncyUFO
 
         private void SetFlash(float amount)
         {
-            sr.GetPropertyBlock(block);
+            // GetPropertyBlock으로 읽어 오면 그때 그림(_MainTex)까지 붙어 와서, 풀에서 다른 몬스터로 다시 쓸 때
+            // 예전 그림판 전체가 찌그러져 덮였다(11/27 "깨져 보이는 몬스터"). 번쩍임 값만 새로 넣는다.
+            block.Clear();
             block.SetFloat(FlashId, amount);
             sr.SetPropertyBlock(block);
         }

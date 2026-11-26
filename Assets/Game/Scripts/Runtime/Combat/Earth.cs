@@ -5,6 +5,7 @@ namespace BouncyUFO
 {
     /// <summary>
     /// 지구. 이 게임에서 체력이 있는 건 지구뿐이다. 0이 되면 판이 끝난다.
+    /// 그림은 판이 시작할 때 스스로 도는 큰 지구(EarthGlobe)를 만들어 쓴다.
     /// </summary>
     public sealed class Earth : MonoBehaviour
     {
@@ -22,6 +23,11 @@ namespace BouncyUFO
 
         private void Awake()
         {
+            if (spriteRenderer == null)
+            {
+                var globe = EarthGlobe.CreateHorizon("Globe", transform, SortOrder.Earth, PlayArea.Bottom);
+                spriteRenderer = globe.GetComponent<SpriteRenderer>();
+            }
             // 로비 강화(지구 체력)만큼 더한다
             MaxHp = Mathf.Max(1, PlayArea.Config.earthMaxHp + Mathf.RoundToInt(Upgrades.Total(UpgradeDefinition.Effect.EarthHp)));
             Hp = MaxHp;
