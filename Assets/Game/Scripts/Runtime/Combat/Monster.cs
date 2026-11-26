@@ -44,6 +44,7 @@ namespace BouncyUFO
         private int chargeState; // 0 접근, 1 멈칫, 2 돌진
         private float shakeX;
         private float appliedShake;
+        private float hitShakeUntil; // 맞은 뒤 떨림이 끝나는 실제 시간(역경직 중에도 떤다)
         private float chargeTimer;
         private int patrolDir = 1;
         private bool patrolling;
@@ -143,6 +144,7 @@ namespace BouncyUFO
             chargeTimer = 0f;
             shakeX = 0f;
             appliedShake = 0f;
+            hitShakeUntil = 0f;
             patrolling = false;
             knocked = false;
             knockVelocity = Vector2.zero;
@@ -182,8 +184,12 @@ namespace BouncyUFO
             if (!knocked && Definition.wobbleAmplitudePx > 0f && chargeState != 2 && !patrolling)
                 p.x = baseX + WobbleOffset();
             p.x = PlayArea.ClampX(p.x, HitRadius);
-            appliedShake = shakeX; // 떨림은 보이는 위치에만 더한다(다음 프레임에 뺀다)
-            transform.position = p + new Vector3(shakeX, 0f, 0f);
+            // 떨림은 보이는 위치에만 더한다(다음 프레임에 뺀다). 맞은 직후엔 좌우로 2픽셀씩 덜덜
+            float hit = Time.unscaledTime < hitShakeUntil
+                ? (Mathf.FloorToInt(Time.unscaledTime * 60f) % 2 == 0 ? 2f : -2f) * PlayArea.Config.PixelsToUnits(1f)
+                : 0f;
+            appliedShake = shakeX + hit;
+            transform.position = p + new Vector3(appliedShake, 0f, 0f);
 
             if (flashTimer > 0f)
             {
@@ -337,19 +343,37 @@ namespace BouncyUFO
             Hp -= damage;
             flashTimer = FlashTime;
             SetFlash(1f);
-            Effects.Hit(hitPoint, 0.8f);
+            // 타격감: 맞은 몬스터 가운데에서 반짝·흰 파편·충격파, 피해 숫자, 몬스터 떨림,
+            // 역경직·화면 흔들림·진동(HitFeedback), 한 번 날아가는 동안 맞힐수록 올라가는 음(콤보)
+            Vector2 center = transform.position;
+            float pitch = HitFeedback.RegisterHit();
+            hitShakeUntil = Time.unscaledTime + (IsBoss ? 0.16f : 0.12f);
+            Effects.Hit(center, 0.8f);
+            Effects.DamageNumber(center + new Vector2(0f, HitRadius + PlayArea.Config.PixelsToUnits(4f)), damage,
+                Hp > 0 ? Color.white : new Color(1f, 0.9f, 0.4f));
+            if (Hp > 0)
+            {
+                Effects.Burst(center, IsBoss ? 14 : 12, 1f);
+                Effects.Ring(center, Mathf.RoundToInt(Definition.hitRadiusPx * Definition.scale) + 8, 0.15f);
+                HitFeedback.Hit(false, IsBoss);
+            }
             if (Definition.kind != MonsterDefinition.Kind.Boss) hpBarRoot.gameObject.SetActive(true); // 처음 맞으면 나타남
             RefreshHpBar();
             if (Hp > 0)
             {
-                Sound.Play(Sfx.Hit, UnityEngine.Random.Range(0.92f, 1.12f));
+                Sound.Play(Sfx.Hit, pitch);
                 return;
             }
-            if (Definition.kind == MonsterDefinition.Kind.Meteor) Sound.Play(Sfx.MeteorBreak);
-            else Sound.Play(Sfx.Kill, IsBoss ? 0.6f : UnityEngine.Random.Range(0.95f, 1.1f));
+            if (Definition.kind == MonsterDefinition.Kind.Meteor) Sound.Play(Sfx.MeteorBreak, pitch);
+            else Sound.Play(Sfx.Kill, IsBoss ? 0.6f : pitch);
 
+            // 처치: 한 프레임 2배로 하얗게 커졌다가 → 큰 파편(몇 개는 지구 쪽으로 떨어지며 남음) + 큰 충격파
+            Effects.Ghost(sr.sprite, center, Quaternion.identity, Vector3.one * Definition.scale * 2f, Color.white, 0.07f, true, SortOrder.Effect);
             Color burst = Definition.kind == MonsterDefinition.Kind.Meteor ? new Color(1f, 0.85f, 0.3f) : new Color(1f, 0.9f, 0.5f);
-            Effects.Hit(transform.position, (IsBoss ? 3.5f : 1.6f) * Definition.scale, burst);
+            Effects.Hit(center, (IsBoss ? 3.5f : 1.6f) * Definition.scale, burst);
+            Effects.Burst(center, IsBoss ? 44 : 24, IsBoss ? 1.8f : 1.4f, IsBoss ? 14 : 6);
+            Effects.Ring(center, Mathf.RoundToInt(Definition.hitRadiusPx * Definition.scale) + (IsBoss ? 30 : 16), IsBoss ? 0.3f : 0.2f);
+            HitFeedback.Hit(true, IsBoss);
             Killed?.Invoke(this);
             Despawn();
         }

@@ -176,7 +176,7 @@ namespace BouncyUFO
                 m.ApproachBoost = ApproachBoost;
                 float showY = PlayArea.Top - PlayArea.Size.y * 0.3f;
                 while (outcome == Outcome.None && m.transform.position.y > showY) yield return null;
-                m.ApproachBoost = 1f;
+                m.ApproachBoost = Config.tutorialMonsterSpeed; // 강조 뒤에는 천천히(잡기 쉽게)
                 if (first && outcome == Outcome.None)
                 {
                     first = false;

@@ -68,7 +68,17 @@ namespace BouncyUFO
         }
 
         private float HpMultiplier => 1f + Config.hpGrowthPerWave * Mathf.Max(0, Wave - 1);
-        private float SpeedMultiplier => Mathf.Min(Config.speedMaxMultiplier, 1f + Config.speedGrowthPerWave * Mathf.Max(0, Wave - 1));
+        private float SpeedMultiplier
+        {
+            get
+            {
+                // 초반 웨이브는 느리게(처음 하는 사람용), 그 뒤로 웨이브마다 조금씩 빨라진다
+                var early = Config.earlyWaveSpeed;
+                if (early != null && Wave >= 1 && Wave <= early.Length) return early[Wave - 1];
+                int after = early != null ? early.Length : 0;
+                return Mathf.Min(Config.speedMaxMultiplier, 1f + Config.speedGrowthPerWave * Mathf.Max(0, Wave - 1 - after));
+            }
+        }
         private bool IsBossWave(int wave) => Config.bossEveryWaves > 0 && wave % Config.bossEveryWaves == 0;
 
         private void Update()
@@ -219,11 +229,17 @@ namespace BouncyUFO
         private void OnMonsterKilled(Monster m)
         {
             var stats = GameSession.Instance != null ? GameSession.Instance.Stats : null;
+            // 연쇄 보너스: 한 번 날아가는 동안 맞힌 수(HitFeedback.Combo)가 많을수록 점수 +, 3연쇄부터 골드 동전
+            int combo = HitFeedback.Combo;
+            float mult = 1f + Mathf.Min(Config.chainScoreBonusMax, Config.chainScoreBonusPerStep * Mathf.Max(0, combo - 1));
+            int score = Mathf.RoundToInt(m.Definition.score * mult);
             if (stats != null)
             {
-                if (m.Kind == MonsterDefinition.Kind.Meteor) stats.AddScore(m.Definition.score); // 운석 파괴도 점수
-                else stats.AddKill(m.IsBoss, m.Definition.score);
+                if (m.Kind == MonsterDefinition.Kind.Meteor) stats.AddScore(score); // 운석 파괴도 점수
+                else stats.AddKill(m.IsBoss, score);
             }
+            if (combo >= Config.chainGoldFrom && gold != null && m.Kind != MonsterDefinition.Kind.Meteor)
+                gold.Burst(m.transform.position, Mathf.Min(Config.chainGoldMax, combo - Config.chainGoldFrom + 1), GoldDrops.Source.Stage);
 
             if (m.IsBoss && m == CurrentBoss)
             {

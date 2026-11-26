@@ -61,7 +61,34 @@ namespace BouncyUFO
             Fit();
         }
 
-        private void LateUpdate() => Fit();
+        private float shakeUntil;
+        private float shakeDuration;
+        private float shakePx;
+
+        /// <summary>화면을 잠깐 흔든다(정수 픽셀, 실제 시간 기준이라 역경직 중에도 흔들린다). 더 센 쪽이 이긴다.</summary>
+        public static void Shake(float pixels, float seconds)
+        {
+            var c = Main;
+            if (c == null || seconds <= 0f || !SaveSystem.Data.screenShake) return; // 설정에서 끌 수 있다
+            if (Time.unscaledTime < c.shakeUntil && pixels < c.shakePx) return;
+            c.shakePx = pixels;
+            c.shakeDuration = seconds;
+            c.shakeUntil = Time.unscaledTime + seconds;
+        }
+
+        private void LateUpdate()
+        {
+            Fit();
+            float z = transform.position.z;
+            if (Time.unscaledTime < shakeUntil && PlayArea.Config != null)
+            {
+                float k = (shakeUntil - Time.unscaledTime) / Mathf.Max(0.01f, shakeDuration); // 1 → 0 으로 약해짐
+                int amp = Mathf.Max(1, Mathf.RoundToInt(shakePx * k));
+                float one = PlayArea.Config.PixelsToUnits(1f);
+                transform.position = new Vector3(Random.Range(-amp, amp + 1) * one, Random.Range(-amp, amp + 1) * one, z);
+            }
+            else transform.position = new Vector3(0f, 0f, z);
+        }
 
         private void Fit()
         {

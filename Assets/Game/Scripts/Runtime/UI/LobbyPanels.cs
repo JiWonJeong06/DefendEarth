@@ -29,7 +29,8 @@ namespace BouncyUFO
             var go = new GameObject("UpgradePanel");
             go.transform.SetParent(parent, false);
             var p = go.AddComponent<UpgradePanel>();
-            p.Build(new Vector2(170f, 250f), "ui.upgrade", sortingOrder);
+            int count = PlayArea.Config.upgrades != null ? PlayArea.Config.upgrades.Length : 3;
+            p.Build(new Vector2(170f, 64f + count * 62f), "ui.upgrade", sortingOrder);
             p.BuildContent();
             return p;
         }
@@ -38,15 +39,16 @@ namespace BouncyUFO
         {
             var a = GameAssets.Instance;
             // 가진 골드: 동전 + 숫자 (숫자 상자는 왼쪽 정렬, 상자 왼쪽 끝 = 동전 오른쪽)
-            CreateSprite("Coin", a.coinSprite, new Vector2(-24f, 96f));
-            gold = CreateText("Gold", new Vector2(-18f + 40f, 96f), GameText.Style.Title, TextAlignmentOptions.MidlineLeft, 80f);
+            float top = SizePx.y * 0.5f; // 줄이 늘면 창이 커지고, 내용은 위에서부터
+            CreateSprite("Coin", a.coinSprite, new Vector2(-24f, top - 29f));
+            gold = CreateText("Gold", new Vector2(-18f + 40f, top - 29f), GameText.Style.Title, TextAlignmentOptions.MidlineLeft, 80f);
             gold.color = new Color(1f, 0.86f, 0.4f);
 
             var ups = Config.upgrades;
             for (int i = 0; i < ups.Length; i++)
             {
                 var u = ups[i];
-                float y = 66f - i * 62f;
+                float y = top - 59f - i * 62f;
                 var row = new Row { index = i };
 
                 var name = CreateText("Name" + i, new Vector2(0f, y), GameText.Style.Title, TextAlignmentOptions.MidlineLeft, 150f);

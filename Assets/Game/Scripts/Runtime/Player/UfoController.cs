@@ -35,6 +35,9 @@ namespace BouncyUFO
 
         private bool aiming;
         private Vector2 pressScreen;
+        private float ghostTimer;
+        private SpriteRenderer visualRenderer;
+        private const float GhostInterval = 0.07f; // 잔상 간격(초). 11/27: 너무 진해서 간격을 넓히고 옅게
         private Vector2 velocity;
         private readonly List<Monster> hitThisDash = new List<Monster>(16);
         private readonly List<Monster> scratch = new List<Monster>(64);
@@ -45,6 +48,9 @@ namespace BouncyUFO
 
         private Transform guideRoot;
         private SpriteRenderer[] dots;
+        // 조준 보조: 점선 길 위(맞을 몬스터)를 노란 네모로 표시
+        private readonly List<Vector2> pathPoints = new List<Vector2>(64);
+        private readonly List<SpriteRenderer[]> markers = new List<SpriteRenderer[]>();
         private float px;
 
         private GameConfig Config => PlayArea.Config;
@@ -58,6 +64,10 @@ namespace BouncyUFO
             transform.position = new Vector3(0f, GroundY, 0f);
             // 로비 강화(멀리 날기)만큼 빨리 날아간다
             RangeMultiplier = 1f + Upgrades.Total(UpgradeDefinition.Effect.DashRange);
+            // 로비 강화(공격력)만큼 돌진 피해 + (카드 '돌진 힘'은 판 안에서 여기에 더해진다)
+            DamageBonus = Mathf.RoundToInt(Upgrades.Total(UpgradeDefinition.Effect.DashDamage));
+            // 튜토리얼은 몸통 판정을 크게(맞히기 쉽게)
+            if (SceneFlow.IsTutorial) BodyScale = Config.tutorialBodyScale;
             BuildGuide();
         }
 
@@ -141,6 +151,8 @@ namespace BouncyUFO
             hitThisDash.Clear();
             if (visual != null) visual.Punch(-Config.squashOnDash);
             Sound.Play(Sfx.Dash, UnityEngine.Random.Range(0.95f, 1.05f));
+            HitFeedback.ResetCombo();
+            ghostTimer = 0f;
             Dashed?.Invoke(aim);
         }
 
@@ -161,6 +173,16 @@ namespace BouncyUFO
 
             if (IsDashing && dt > 0f)
             {
+                // 잔상: 날아가는 동안 짧은 간격으로 옅은 하늘색 UFO를 남긴다
+                ghostTimer -= dt;
+                if (ghostTimer <= 0f && visual != null)
+                {
+                    ghostTimer = GhostInterval;
+                    if (visualRenderer == null) visualRenderer = visual.GetComponent<SpriteRenderer>();
+                    if (visualRenderer != null)
+                        Effects.Ghost(visualRenderer.sprite, visual.transform.position, visual.transform.rotation, visual.transform.lossyScale,
+                            new Color(0.55f, 0.85f, 1f, 0.28f), 0.1f, false, SortOrder.Ufo - 1);
+                }
                 // 빠를 때 몬스터를 건너뛰지 않게 잘게 나눠 움직인다
                 float step = Mathf.Max(0.01f, BodyRadius * 0.6f);
                 int n = Mathf.Clamp(Mathf.CeilToInt(velocity.magnitude * dt / step), 1, 8);
@@ -257,8 +279,10 @@ namespace BouncyUFO
             Vector2 v = aim * DashSpeed;
             if (aim == Vector2.zero)
             {
-                // 아직 안 당겼으면 점선은 숨긴다
+                // 아직 안 당겼으면 점선·조준 표시는 숨긴다
                 for (int i = 0; i < dots.Length; i++) dots[i].gameObject.SetActive(false);
+                for (int i = 0; i < markers.Count; i++)
+                    foreach (var line in markers[i]) line.gameObject.SetActive(false);
                 return;
             }
             float g = U(Config.dashGravityPx);
@@ -282,6 +306,75 @@ namespace BouncyUFO
                 dot.transform.position = p;
                 dot.color = new Color(1f, 1f, 1f, Mathf.Lerp(0.9f, 0.25f, (float)i / dots.Length));
             }
+            MarkTargets(start, AimDirection(input.Position) * DashSpeed);
+        }
+
+        /// <summary>
+        /// 조준 보조: 날아갈 길(점선보다 조금 더 멀리까지)을 따라가며 몸통에 닿을 몬스터를 찾아 노란 네모로 표시한다.
+        /// 몬스터는 움직이므로 "지금 위치 기준" 예상이다.
+        /// </summary>
+        private void MarkTargets(Vector2 p, Vector2 v)
+        {
+            pathPoints.Clear();
+            float g = U(Config.dashGravityPx);
+            float half = HalfWidth;
+            float dt = 0.01f;
+            for (int i = 0; i < 160; i++) // 최대 1.6초
+            {
+                v.y -= g * dt;
+                p += v * dt;
+                if (p.x < PlayArea.Left + half) { p.x = PlayArea.Left + half; v.x = Mathf.Abs(v.x) * Config.wallBounce; }
+                if (p.x > PlayArea.Right - half) { p.x = PlayArea.Right - half; v.x = -Mathf.Abs(v.x) * Config.wallBounce; }
+                if (p.y > PlayArea.Top - half) { p.y = PlayArea.Top - half; v.y = -Mathf.Abs(v.y) * Config.wallBounce; }
+                if (p.y < GroundY && v.y < 0f) break;
+                pathPoints.Add(p);
+            }
+
+            int used = 0;
+            var active = MonsterRegistry.Active;
+            for (int m = 0; m < active.Count; m++)
+            {
+                var mon = active[m];
+                if (!mon.IsAlive) continue;
+                Vector2 mp = mon.transform.position;
+                float r = BodyRadius + mon.HitRadius;
+                bool hit = false;
+                for (int i = 0; i < pathPoints.Count && !hit; i += 2)
+                    hit = (pathPoints[i] - mp).sqrMagnitude <= r * r;
+                if (!hit) continue;
+                PlaceMarker(used++, mp, Mathf.Round(mon.HitRadius * Config.pixelsPerUnit) + 3f);
+            }
+            for (int i = used; i < markers.Count; i++)
+                foreach (var line in markers[i]) line.gameObject.SetActive(false);
+        }
+
+        /// <summary>노란 네모 테두리(1픽셀) 하나를 몬스터에 맞춘다. 깜빡여서 잘 보이게.</summary>
+        private void PlaceMarker(int index, Vector2 center, float halfPx)
+        {
+            var a = GameAssets.Instance;
+            while (markers.Count <= index)
+            {
+                var lines = new SpriteRenderer[4];
+                for (int k = 0; k < 4; k++) lines[k] = a.CreateSprite("Target", a.pixelSprite, SortOrder.Ufo + 1, guideRoot);
+                markers.Add(lines);
+            }
+            float one = U(1f);
+            float cx = Mathf.Round(center.x / one) * one, cy = Mathf.Round(center.y / one) * one;
+            float h = U(halfPx), e = h + one;
+            bool on = Mathf.PingPong(Time.unscaledTime * 4f, 1f) > 0.3f;
+            var c = new Color(1f, 0.9f, 0.3f, on ? 1f : 0.35f);
+            Line(markers[index][0], cx - e, cx + e, cy + h, cy + e, c);
+            Line(markers[index][1], cx - e, cx + e, cy - e, cy - h, c);
+            Line(markers[index][2], cx - e, cx - h, cy - h, cy + h, c);
+            Line(markers[index][3], cx + h, cx + e, cy - h, cy + h, c);
+        }
+
+        private void Line(SpriteRenderer sr, float x0, float x1, float y0, float y1, Color c)
+        {
+            sr.gameObject.SetActive(true);
+            sr.color = c;
+            sr.transform.position = new Vector3((x0 + x1) * 0.5f, (y0 + y1) * 0.5f, 0f);
+            sr.transform.localScale = new Vector3((x1 - x0) / px, (y1 - y0) / px, 1f);
         }
     }
 }

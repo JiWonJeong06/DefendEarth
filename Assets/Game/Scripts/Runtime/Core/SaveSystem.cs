@@ -22,7 +22,7 @@ namespace BouncyUFO
     [Serializable]
     public sealed class SaveData
     {
-        public const int CurrentVersion = 3;
+        public const int CurrentVersion = 4;
 
         public int version = CurrentVersion;
         public int bestScore;
@@ -44,6 +44,9 @@ namespace BouncyUFO
         public string nickname = "";
         /// <summary>지금까지 게임(튜토리얼 포함)을 한 시간 합계(초). 프로필에 보여 준다.</summary>
         public float playSeconds;
+        // v4 ---------------------------------------------------------
+        /// <summary>타격 때 화면 흔들림(설정에서 끄기).</summary>
+        public bool screenShake = true;
         /// <summary>플레이어 계정 경험치(누적). 레벨은 계산해서 구한다.</summary>
         public int accountXp;
         /// <summary>강화 단계. 순서는 GameConfig.upgrades와 같다.</summary>
@@ -125,6 +128,7 @@ namespace BouncyUFO
                     d.topScores.Add(new ScoreEntry { score = d.bestScore, wave = d.bestWave, date = "-" });
             }
             if (d.version < 3) d.volume = 1f; // v2 이하 저장엔 없어서 0으로 읽힌다
+            if (d.version < 4) d.screenShake = true; // 없으면 false로 읽힌다
             if (d.upgradeLevels == null) d.upgradeLevels = new List<int>();
             if (d.topScores == null) d.topScores = new List<ScoreEntry>();
             d.version = SaveData.CurrentVersion;

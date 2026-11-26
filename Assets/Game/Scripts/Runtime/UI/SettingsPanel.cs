@@ -5,7 +5,7 @@ namespace BouncyUFO
 {
     /// <summary>
     /// 설정 창(로비·일시정지 공용): 언어, 소리 켜기/끄기 + 소리 크기 막대, 진동, 닉네임 바꾸기, 튜토리얼 하기, 크레딧·라이선스.
-    /// 진동은 아직 없어서 설정만 저장한다(진동을 실제로 쓰면 VIBRATE 권한이 추가되므로 그때 확인).
+    /// 진동 = 폰 진동(타격·지구 피해, Haptics), 화면 흔들림은 따로.
     /// </summary>
     public sealed class SettingsPanel : ModalPanel
     {
@@ -17,6 +17,7 @@ namespace BouncyUFO
         private readonly PixelButton[] languageButtons = new PixelButton[3];
         private PixelButton soundButton;
         private PixelButton vibrationButton;
+        private PixelButton shakeButton;
         private PixelSlider volumeSlider;
         private NicknamePanel nickname;
         private TextMeshPro nicknameLabel;
@@ -32,14 +33,14 @@ namespace BouncyUFO
             var go = new GameObject("SettingsPanel");
             go.transform.SetParent(parent, false);
             var p = go.AddComponent<SettingsPanel>();
-            p.Build(new Vector2(164f, showQuitGame ? 284f : 258f), "ui.settings", sortingOrder);
-            p.BuildContent(showQuitGame ? 13f : 0f);
+            p.Build(new Vector2(164f, showQuitGame ? 306f : 280f), "ui.settings", sortingOrder);
+            p.BuildContent(showQuitGame ? 35f : 22f); // 줄이 늘어서 내용을 위로 올린다(맨 아래 버튼이 창 안에 들어가게)
             p.credits = CreditsPanel.Create(parent, sortingOrder + 20);
             p.confirm = ConfirmPanel.Create(parent, sortingOrder + 40);
             p.nickname = NicknamePanel.Create(parent, sortingOrder + 30);
             if (showQuitGame)
             {
-                var quit = p.CreateButton("QuitGame", new Vector2(0f, -144f), new Vector2(140f, 18f), "ui.quit_game", new Color(0.8f, 0.35f, 0.35f), GameText.Style.Body);
+                var quit = p.CreateButton("QuitGame", new Vector2(0f, -166f), new Vector2(140f, 18f), "ui.quit_game", new Color(0.8f, 0.35f, 0.35f), GameText.Style.Body);
                 quit.Clicked += () => p.confirm.Ask("ui.quit_confirm", AppQuit.Now);
             }
             return p;
@@ -89,7 +90,18 @@ namespace BouncyUFO
             y -= 22f;
             Row("ui.settings.vibration", y);
             vibrationButton = CreateButton("Vibration", new Vector2(44f, y), new Vector2(54f, 16f), "ui.on", On, GameText.Style.Body);
-            vibrationButton.Clicked += () => { SaveSystem.Data.vibration = !SaveSystem.Data.vibration; SaveSystem.Save(); RefreshToggles(); };
+            vibrationButton.Clicked += () =>
+            {
+                SaveSystem.Data.vibration = !SaveSystem.Data.vibration;
+                SaveSystem.Save();
+                RefreshToggles();
+                Haptics.Pulse(40, 0.7f); // 켰으면 바로 한 번 울려서 느낌을 보여 준다
+            };
+
+            y -= 22f;
+            Row("ui.settings.shake", y);
+            shakeButton = CreateButton("Shake", new Vector2(44f, y), new Vector2(54f, 16f), "ui.on", On, GameText.Style.Body);
+            shakeButton.Clicked += () => { SaveSystem.Data.screenShake = !SaveSystem.Data.screenShake; SaveSystem.Save(); RefreshToggles(); };
 
             y -= 22f;
             nicknameLabel = CreateText("NicknameLabel", new Vector2(0f, y), GameText.Style.Body, TextAlignmentOptions.MidlineLeft, 140f);
@@ -153,6 +165,8 @@ namespace BouncyUFO
             GameText.SetPlain(nicknameLabel, Nickname.IsSet ? Nickname.Current : "-");
             vibrationButton.SetColor(d.vibration ? On : Off);
             GameText.SetKey(vibrationButton.Label, d.vibration ? "ui.on" : "ui.off");
+            shakeButton.SetColor(d.screenShake ? On : Off);
+            GameText.SetKey(shakeButton.Label, d.screenShake ? "ui.on" : "ui.off");
         }
 
         protected override void OnOpened()

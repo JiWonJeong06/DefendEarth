@@ -81,6 +81,7 @@ ui.settings.language,언어,Language,言語
 ui.settings.sound,소리,Sound,サウンド
 ui.settings.volume,볼륨,Volume,音量
 ui.settings.vibration,진동,Vibration,振動
+ui.settings.shake,화면 흔들림,Screen shake,画面の揺れ
 ui.on,켜짐,On,オン
 ui.off,꺼짐,Off,オフ
 ui.settings.tutorial,튜토리얼 하기,Play tutorial,チュートリアルをする
@@ -97,6 +98,8 @@ upgrade.range.name,멀리 날기,Long Flight,ロングフライト
 upgrade.range.desc,돌진 속도 4% 증가,Dash 4% faster,突進が4% 速くなる
 upgrade.meteor.name,운석 골드,Meteor Gold,隕石ゴールド
 upgrade.meteor.desc,운석 골드 10% 증가,Meteor gold +10%,隕石ゴールド +10%
+upgrade.attack.name,공격력,Attack,攻撃力
+upgrade.attack.desc,돌진 피해 +1,Dash damage +1,体当たりダメージ+1
 ui.custom.hairstyle,머리 모양,Hair style,髪型
 ui.custom.haircolor,머리색,Hair color,髪の色
 ui.custom.skin,피부색,Skin,肌の色

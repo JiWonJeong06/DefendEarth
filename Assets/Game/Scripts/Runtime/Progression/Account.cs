@@ -49,10 +49,12 @@ namespace BouncyUFO
         {
             /// <summary>지구 최대 체력 +value</summary>
             EarthHp,
-            /// <summary>게이지 차는 시간 × (1 - value). (숫자 1은 옛 '연사' 자리, 저장된 강화 단계를 그대로 이어 쓴다)</summary>
+            /// <summary>돌진 속도 × (1 + value) = 멀리 날기. (숫자 1은 옛 '연사'·'충전' 자리, 저장된 강화 단계를 그대로 이어 쓴다)</summary>
             DashRange = 1, // 옛 ChargeSpeed 자리(저장된 숫자 그대로)
             /// <summary>운석 골드 × (1 + value)</summary>
             MeteorGold,
+            /// <summary>돌진 피해 +value (11/27 추가, 숫자 3)</summary>
+            DashDamage = 3,
         }
 
         public string nameKey;

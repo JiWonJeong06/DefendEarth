@@ -29,6 +29,8 @@ namespace BouncyUFO
         public event Action<RunResult> Finished;
 
         private int pauseCount;
+        private float hitStopUntil;   // 실제 시간(초)
+        private const float HitStopScale = 0.02f; // 0이면 입력이 막히므로 거의 0
         private float resultAt = -1f;
 
         /// <summary>잠깐 멈춤 중인지(레벨업 카드 고르기, 일시정지 창). 판은 계속 진행 중이다.</summary>
@@ -60,8 +62,21 @@ namespace BouncyUFO
             if (earth != null) earth.Died -= OnEarthDied;
         }
 
+        /// <summary>역경직: 맞는 순간 아주 잠깐 시간을 거의 멈춘다. 여러 번 불리면 더 긴 쪽으로.</summary>
+        public void HitStop(float seconds)
+        {
+            if (!IsPlaying || IsPaused || seconds <= 0f) return;
+            hitStopUntil = Mathf.Max(hitStopUntil, Time.unscaledTime + seconds);
+            Time.timeScale = HitStopScale;
+        }
+
         private void Update()
         {
+            if (hitStopUntil > 0f && Time.unscaledTime >= hitStopUntil)
+            {
+                hitStopUntil = 0f;
+                if (IsPlaying && pauseCount == 0) Time.timeScale = 1f;
+            }
             if (resultAt >= 0f && Time.unscaledTime >= resultAt)
             {
                 resultAt = -1f;
@@ -175,6 +190,7 @@ namespace BouncyUFO
         public void Pause()
         {
             pauseCount++;
+            hitStopUntil = 0f;
             Time.timeScale = 0f;
         }
 

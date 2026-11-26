@@ -92,6 +92,8 @@ namespace BouncyUFO
         public float hpGrowthPerWave = 0.1f;
         [Tooltip("웨이브마다 몬스터 속도 증가(0.03 = +3%씩)")]
         public float speedGrowthPerWave = 0.03f;
+        [Tooltip("초반 웨이브 속도 배율(1웨이브, 2웨이브…). 그 뒤로는 1부터 웨이브마다 증가. 처음 하는 사람이 막히지 않게")]
+        public float[] earlyWaveSpeed = { 0.75f, 0.88f };
         [Tooltip("몬스터 속도 배율 최대치")]
         public float speedMaxMultiplier = 1.6f;
         [Tooltip("플레이 영역 좌우 끝에서 이만큼(기준 픽셀) 안쪽에서 나온다")]
@@ -112,6 +114,10 @@ namespace BouncyUFO
         public int bossEveryWaves = 4;
         [Tooltip("보스 회차마다 체력 증가(0.6 = +60%씩)")]
         public float bossHpGrowth = 0.6f;
+        [Tooltip("튜토리얼: 몬스터가 강조된 뒤(직접 잡을 때) 내려오는 속도 배율(느리게)")]
+        public float tutorialMonsterSpeed = 0.5f;
+        [Tooltip("튜토리얼: UFO 몸통 판정 크기 배율(맞히기 쉽게)")]
+        public float tutorialBodyScale = 1.3f;
         [Tooltip("튜토리얼 보스 체력 배율(약하게)")]
         public float tutorialBossHpMultiplier = 0.3f;
         [Tooltip("보스 등장 전 경고 시간(초)")]
@@ -148,7 +154,19 @@ namespace BouncyUFO
             new UpgradeDefinition { nameKey = "upgrade.earth.name", descKey = "upgrade.earth.desc", effect = UpgradeDefinition.Effect.EarthHp, valuePerLevel = 10f, costs = new[] { 40, 80, 150, 250, 400 } },
             new UpgradeDefinition { nameKey = "upgrade.range.name", descKey = "upgrade.range.desc", effect = UpgradeDefinition.Effect.DashRange, valuePerLevel = 0.04f, costs = new[] { 60, 120, 220, 350, 500 } },
             new UpgradeDefinition { nameKey = "upgrade.meteor.name", descKey = "upgrade.meteor.desc", effect = UpgradeDefinition.Effect.MeteorGold, valuePerLevel = 0.1f, costs = new[] { 50, 100, 180, 300, 450 } },
+            // 11/27 추가(저장된 강화 단계는 배열 순서로 맞추므로 항상 맨 뒤에 붙인다)
+            new UpgradeDefinition { nameKey = "upgrade.attack.name", descKey = "upgrade.attack.desc", effect = UpgradeDefinition.Effect.DashDamage, valuePerLevel = 1f, costs = new[] { 120, 300, 600 } },
         };
+
+        [Header("연쇄 보너스 (한 번 날아가는 동안 여러 마리)")]
+        [Tooltip("연쇄 한 단계마다 처치 점수 +비율(0.1 = +10%)")]
+        public float chainScoreBonusPerStep = 0.1f;
+        [Tooltip("처치 점수 보너스 최대(1 = +100%)")]
+        public float chainScoreBonusMax = 1f;
+        [Tooltip("이 연쇄 수부터 처치할 때마다 골드 동전")]
+        public int chainGoldFrom = 3;
+        [Tooltip("연쇄 골드 최대(한 마리당)")]
+        public int chainGoldMax = 5;
 
         [Header("판 끝")]
         [Tooltip("지구가 함락된 뒤 결과 씬으로 넘어가기까지(초)")]
