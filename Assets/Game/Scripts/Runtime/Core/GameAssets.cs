@@ -43,6 +43,14 @@ namespace BouncyUFO
         public Sprite earthSprite;
         public Sprite starSprite;
 
+        [Header("로딩바 (9칸 나누기 그림)")]
+        [Tooltip("틀(UI_3)")]
+        public Sprite loadingBarFrame;
+        [Tooltip("검정 안 채움(UI_5)")]
+        public Sprite loadingBarEmpty;
+        [Tooltip("빨강 채움(UI_4)")]
+        public Sprite loadingBarFill;
+
         [Header("캐릭터 꾸미기 (더미 그림, 흰색 그림에 색을 입힌다)")]
         public Sprite pilotSuit;
         public Sprite pilotFace;

@@ -14,6 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: BouncyUFO::BouncyUFO.MonsterDefinition
   nameKey: monster.tank
   sprite: {fileID: -8714037839689498976, guid: 65781b0b93144b1f94313740b3b44ef1, type: 3}
+  colorVariants:
+  - {fileID: -7734248497391147085, guid: 65781b0b93144b1f94313740b3b44ef1, type: 3}
+  - {fileID: -8714037839689498976, guid: 65781b0b93144b1f94313740b3b44ef1, type: 3}
+  - {fileID: 7867557418624504665, guid: 65781b0b93144b1f94313740b3b44ef1, type: 3}
   scale: 1
   hitRadiusPx: 13
   maxHp: 10

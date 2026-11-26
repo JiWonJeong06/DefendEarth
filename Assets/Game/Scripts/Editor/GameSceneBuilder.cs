@@ -17,6 +17,7 @@ namespace BouncyUFO.EditorTools
         private const string ConfigPath = "Assets/Game/Data/GameConfig.asset";
         private const string UfoSheetPath = "Assets/Art/Temp/Enemy.png";
         private const string EarthSheetPath = "Assets/Art/Temp/Earth-Star.png";
+        private const string UiSheetPath = "Assets/Art/Temp/UI.png";
         private const string ArtPath = "Assets/Art/Temp/";
         private const string DummyPath = "Assets/Art/Temp/Dummy/";
         private const string CardDataFolder = "Assets/Game/Data/Cards";
@@ -88,6 +89,9 @@ namespace BouncyUFO.EditorTools
             assets.fontLicense = AssetDatabase.LoadAssetAtPath<TextAsset>(FontPath + "Galmuri-OFL.txt");
             assets.ufoSprite = FindSprite(UfoSheetPath, "Enemy_0");
             assets.earthSprite = FindSprite(EarthSheetPath, "Earth-Star_0");
+            assets.loadingBarFrame = FindSprite(UiSheetPath, "UI_3");
+            assets.loadingBarFill = FindSprite(UiSheetPath, "UI_4");
+            assets.loadingBarEmpty = FindSprite(UiSheetPath, "UI_5");
             assets.starSprite = FindSprite(EarthSheetPath, "Earth-Star_2");
             assets.pilotSuit = LoadSprite(DummyPath + "PilotSuit.png");
             assets.pilotFace = LoadSprite(DummyPath + "PilotFace.png");
@@ -179,9 +183,10 @@ namespace BouncyUFO.EditorTools
             SetField(cardUi, "levels", levels);
 
             // 간단 튜토리얼(처음 한 번), 일시정지
-            var tutorial = new GameObject("TutorialHints").AddComponent<TutorialHints>();
+            var tutorial = new GameObject("TutorialDirector").AddComponent<TutorialDirector>();
             SetField(tutorial, "ufo", controller);
             SetField(tutorial, "waves", waves);
+            SetField(tutorial, "levels", levels);
             new GameObject("PauseMenu").AddComponent<PauseMenu>();
         }
 
@@ -211,7 +216,7 @@ namespace BouncyUFO.EditorTools
 
             var swarm = LoadOrCreateMonster("Swarm", d =>
             {
-                d.nameKey = "monster.swarm"; d.sprite = FindSprite(UfoSheetPath, "Enemy_3");
+                d.nameKey = "monster.swarm"; d.sprite = FindSprite(UfoSheetPath, "Enemy_3"); d.colorVariants = EnemySprites(3, 4, 5, 6);
                 d.scale = 1f; d.hitRadiusPx = 6f;
                 d.maxHp = 2; d.earthDamage = 3; d.speed = 0.09f; d.knockbackScale = 1f;
                 d.wobbleAmplitudePx = 6f; d.wobbleFrequency = 0.8f;
@@ -220,7 +225,7 @@ namespace BouncyUFO.EditorTools
             });
             var charger = LoadOrCreateMonster("Charger", d =>
             {
-                d.nameKey = "monster.charger"; d.sprite = FindSprite(UfoSheetPath, "Enemy_8");
+                d.nameKey = "monster.charger"; d.sprite = FindSprite(UfoSheetPath, "Enemy_8"); d.colorVariants = EnemySprites(7, 8, 9);
                 d.scale = 1f; d.hitRadiusPx = 8f;
                 d.maxHp = 4; d.earthDamage = 6; d.speed = 0.08f; d.knockbackScale = 0.9f;
                 d.pattern = MonsterDefinition.MovePattern.Charge;
@@ -230,7 +235,7 @@ namespace BouncyUFO.EditorTools
             });
             var tank = LoadOrCreateMonster("Tank", d =>
             {
-                d.nameKey = "monster.tank"; d.sprite = FindSprite(UfoSheetPath, "Enemy_11");
+                d.nameKey = "monster.tank"; d.sprite = FindSprite(UfoSheetPath, "Enemy_11"); d.colorVariants = EnemySprites(10, 11, 12);
                 d.scale = 1f; d.hitRadiusPx = 13f;
                 d.maxHp = 10; d.earthDamage = 15; d.speed = 0.04f; d.knockbackScale = 0.5f;
                 d.groupSize = 1; d.spawnWeight = 1.5f; d.unlockWave = 3;
@@ -324,6 +329,8 @@ namespace BouncyUFO.EditorTools
             AssetDatabase.CreateAsset(card, path);
             return card;
         }
+
+        private static Sprite[] EnemySprites(params int[] index) => index.Select(i => FindSprite(UfoSheetPath, "Enemy_" + i)).ToArray();
 
         private static MonsterDefinition LoadOrCreateMonster(string name, System.Action<MonsterDefinition> init)
         {

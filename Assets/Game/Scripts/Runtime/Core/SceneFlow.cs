@@ -22,11 +22,15 @@ namespace BouncyUFO
         public static RunResult LastResult { get; set; }
         public static bool HasResult { get; set; }
 
+        /// <summary>이번 판이 튜토리얼인지(처음 한 번, 또는 설정의 "튜토리얼 다시 보기" 뒤). 게임 시작 때 정한다.</summary>
+        public static bool IsTutorial { get; private set; }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {
             LoadingTarget = Game;
             HasResult = false;
+            IsTutorial = false;
         }
 
         public static void GoTitle() => Go(Title);
@@ -37,11 +41,13 @@ namespace BouncyUFO
         public static void StartGame()
         {
             LoadingTarget = Game;
+            IsTutorial = !SaveSystem.Data.tutorialDone;
             Go(Loading);
         }
 
         private static void Go(string scene)
         {
+            if (scene != Loading && scene != Game) IsTutorial = false; // 게임을 떠나면 튜토리얼 표시도 끝(로비 강화 표시가 원래대로)
             Time.timeScale = 1f;
             UiLayer.Reset();
             SceneManager.LoadScene(scene);

@@ -69,6 +69,7 @@ namespace BouncyUFO
 
         internal void Collect(Coin coin)
         {
+            Sound.Play(Sfx.Coin, Random.Range(0.97f, 1.06f), 0.6f);
             Deposit(coin);
             flying.Remove(coin);
             pool.Release(coin);

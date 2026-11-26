@@ -40,6 +40,11 @@ namespace BouncyUFO
             Time.timeScale = 1f;
         }
 
+        private void Start()
+        {
+            StarField.Create(transform, 40); // 반짝이는 별 배경
+        }
+
         private void OnDestroy()
         {
             if (Instance == this) Instance = null;
@@ -70,14 +75,36 @@ namespace BouncyUFO
 
         private void OnEarthDied() => End(false, PlayArea.Config.gameOverDelay);
 
-        /// <summary>일시정지의 '나가기': 지금까지 기록을 그대로 인정하고 결과로.</summary>
-        public void Quit() => End(true, 0f);
+        /// <summary>일시정지의 '나가기': 지금까지 기록을 그대로 인정하고 결과로. 튜토리얼이면 로비로(다음에 다시 나옴).</summary>
+        public void Quit()
+        {
+            if (SceneFlow.IsTutorial) { FinishTutorial(false); return; }
+            End(true, 0f);
+        }
+
+        /// <summary>
+        /// 튜토리얼 끝(다 봤거나 건너뜀 = completed, 중간에 나감 = false). 점수·순위는 남기지 않고
+        /// 얻은 골드만 저장한 뒤 로비로 간다. completed면 다음부터 튜토리얼이 나오지 않는다.
+        /// </summary>
+        public void FinishTutorial(bool completed)
+        {
+            if (!IsPlaying) return;
+            Current = State.GameOver;
+            Time.timeScale = 0f;
+            GameOver?.Invoke(); // 날아가던 동전 정산
+            var save = SaveSystem.Data;
+            save.gold += Stats.TotalGold;
+            if (completed) save.tutorialDone = true;
+            SaveSystem.Save();
+            SceneFlow.GoLobby();
+        }
 
         private void End(bool quit, float delay)
         {
             if (!IsPlaying) return;
             Current = State.GameOver;
             Time.timeScale = 0f;
+            if (!quit) Sound.Play(Sfx.GameOver);
             GameOver?.Invoke();
             var result = FinalizeRun(quit);
             SceneFlow.LastResult = result;

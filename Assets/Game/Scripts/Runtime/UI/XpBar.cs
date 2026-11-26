@@ -9,7 +9,7 @@ namespace BouncyUFO
     {
         [SerializeField] private LevelSystem levels;
         [Tooltip("플레이 영역 위쪽 끝에서 바 중심까지(기준 픽셀)")]
-        [SerializeField] private float topOffsetPx = 22f;
+        [SerializeField] private float topOffsetPx = 17f;
         [Tooltip("좌우 끝에서 띄우는 거리(기준 픽셀)")]
         [SerializeField] private float sidePaddingPx = 6f;
         [SerializeField] private float heightPx = 2f;

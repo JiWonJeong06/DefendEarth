@@ -49,7 +49,7 @@ namespace BouncyUFO
 
         private void OnKilled(Monster m)
         {
-            if (m.Definition.exp <= 0) return;
+            if (m.Definition.exp <= 0 || SceneFlow.IsTutorial) return; // 튜토리얼은 경험치·카드 없음
             var session = GameSession.Instance;
             if (session != null && !session.IsPlaying) return;
             AddXp(m.Definition.exp);
@@ -76,6 +76,7 @@ namespace BouncyUFO
             pendingLevelUps--;
             choosing = true;
             if (ufoVisual != null) ufoVisual.Punch(-Config.squashOnLevelUp); // 레벨업: 크게 통!
+            Sound.Play(Sfx.LevelUp);
             Effects.Hit(ufo != null ? (Vector2)ufo.transform.position : Vector2.zero, 2.5f, new Color(0.6f, 1f, 0.7f));
             GameSession.Instance?.Pause();
             ChoiceRequested?.Invoke(Level, offer);
@@ -118,6 +119,7 @@ namespace BouncyUFO
             int count = StacksOf(card) + 1;
             stacks[card] = count;
             Apply(card);
+            Sound.Play(Sfx.CardPick);
             CardPicked?.Invoke(card, count);
             GameSession.Instance?.Resume();
 

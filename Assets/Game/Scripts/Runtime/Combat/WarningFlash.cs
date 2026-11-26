@@ -46,6 +46,7 @@ namespace BouncyUFO
             color = kind == Kind.Rush ? new Color(1f, 0.25f, 0.2f) : new Color(0.75f, 0.35f, 1f);
             timer = duration;
             SetVisible(true);
+            Sound.Play(Sfx.Warning, kind == Kind.Rush ? 1.15f : 0.85f);
         }
 
         private void Update()

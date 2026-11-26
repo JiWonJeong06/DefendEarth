@@ -80,6 +80,7 @@ namespace BouncyUFO
                 skipped = true; // 연출 건너뛰기
                 return;
             }
+            Sound.Play(Sfx.Start);
             SceneFlow.GoLobby();
         }
 

@@ -69,6 +69,9 @@ namespace BouncyUFO
     /// <summary>판 밖 강화를 게임에 적용할 때 쓰는 계산.</summary>
     public static class Upgrades
     {
+        /// <summary>
+        /// 이 효과의 로비 강화 합계. 튜토리얼 판에서는 임시로 모든 강화를 최대 단계로 친다(쉽게 깨도록).
+        /// </summary>
         public static float Total(UpgradeDefinition.Effect effect)
         {
             var c = PlayArea.Config;
@@ -77,7 +80,9 @@ namespace BouncyUFO
             for (int i = 0; i < c.upgrades.Length; i++)
             {
                 var u = c.upgrades[i];
-                if (u != null && u.effect == effect) sum += u.valuePerLevel * Mathf.Min(SaveSystem.Data.UpgradeLevel(i), u.MaxLevel);
+                if (u == null || u.effect != effect) continue;
+                int level = SceneFlow.IsTutorial ? u.MaxLevel : Mathf.Min(SaveSystem.Data.UpgradeLevel(i), u.MaxLevel);
+                sum += u.valuePerLevel * level;
             }
             return sum;
         }

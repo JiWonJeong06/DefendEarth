@@ -38,8 +38,9 @@ namespace BouncyUFO
         public void TakeDamage(int amount)
         {
             if (Hp <= 0 || amount <= 0) return;
-            Hp = Mathf.Max(0, Hp - amount);
+            Hp = Mathf.Max(SceneFlow.IsTutorial ? 1 : 0, Hp - amount); // 튜토리얼에서는 지구가 함락되지 않는다
             hurtTimer = 0.15f;
+            Sound.Play(Sfx.EarthHurt);
             if (visual != null) visual.Punch(0.12f);
             HpChanged?.Invoke(Hp, MaxHp);
             if (Hp == 0) Died?.Invoke();

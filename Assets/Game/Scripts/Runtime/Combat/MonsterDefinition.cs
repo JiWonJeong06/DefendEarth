@@ -33,6 +33,8 @@ namespace BouncyUFO
         [Tooltip("화면에 보일 이름의 번역 키(나중에 3개 언어)")]
         public string nameKey = "monster.unknown";
         public Sprite sprite;
+        [Tooltip("같은 몬스터의 다른 색 그림들. 나올 때마다 이 중 하나를 고른다(비어 있으면 sprite)")]
+        public Sprite[] colorVariants = new Sprite[0];
         [Tooltip("그림 크기 배율. 도트가 깨지지 않게 1, 2 같은 정수로")]
         public float scale = 1f;
         [Tooltip("판정 반지름(기준 픽셀, 배율 적용 전)")]
@@ -81,5 +83,13 @@ namespace BouncyUFO
         public int score = 10;
         [Tooltip("[운석] 부수면 주는 골드")]
         public int gold = 0;
+
+        /// <summary>이번에 나올 그림: 색 그림 중 하나를 무작위로(없으면 기본 그림).</summary>
+        public Sprite PickSprite()
+        {
+            if (colorVariants == null || colorVariants.Length == 0) return sprite;
+            var pick = colorVariants[UnityEngine.Random.Range(0, colorVariants.Length)];
+            return pick != null ? pick : sprite;
+        }
     }
 }

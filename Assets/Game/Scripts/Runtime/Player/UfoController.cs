@@ -138,6 +138,7 @@ namespace BouncyUFO
             IsDashing = true;
             hitThisDash.Clear();
             if (visual != null) visual.Punch(-Config.squashOnDash);
+            Sound.Play(Sfx.Dash, UnityEngine.Random.Range(0.95f, 1.05f));
             Dashed?.Invoke(aim);
         }
 
@@ -146,6 +147,7 @@ namespace BouncyUFO
             IsDashing = false;
             velocity = Vector2.zero;
             if (visual != null) visual.Punch(Config.squashOnLand); // 착지하며 납작하게
+            Sound.Play(Sfx.Land, 0.6f);
             if (hasBuffer && Time.time <= bufferedUntil) Launch(bufferedAim);
             hasBuffer = false;
         }

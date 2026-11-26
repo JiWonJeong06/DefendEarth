@@ -79,7 +79,7 @@ namespace BouncyUFO
             MaxHp = Mathf.Max(1, Mathf.RoundToInt(def.maxHp * hpMultiplier));
             Hp = MaxHp;
             speedMul = speedMultiplier;
-            sr.sprite = def.sprite;
+            sr.sprite = def.PickSprite(); // 같은 몬스터도 색이 여러 가지
             // 한 마리마다 다른 그리는 순서: 겹쳐도 서로 깜빡이며 덮지 않는다(나중에 나온 쪽이 앞)
             sr.sortingOrder = def.kind == MonsterDefinition.Kind.Boss ? SortOrder.Boss : SortOrder.Monster + (nextOrder++ % SortOrder.MonsterSlots);
             baseScale = Vector3.one * def.scale;
@@ -287,7 +287,13 @@ namespace BouncyUFO
             flashTimer = FlashTime;
             SetFlash(1f);
             Effects.Hit(hitPoint, 0.8f);
-            if (Hp > 0) return;
+            if (Hp > 0)
+            {
+                Sound.Play(Sfx.Hit, UnityEngine.Random.Range(0.92f, 1.12f));
+                return;
+            }
+            if (Definition.kind == MonsterDefinition.Kind.Meteor) Sound.Play(Sfx.MeteorBreak);
+            else Sound.Play(Sfx.Kill, IsBoss ? 0.6f : UnityEngine.Random.Range(0.95f, 1.1f));
 
             Color burst = Definition.kind == MonsterDefinition.Kind.Meteor ? new Color(1f, 0.85f, 0.3f) : new Color(1f, 0.9f, 0.5f);
             Effects.Hit(transform.position, (IsBoss ? 3.5f : 1.6f) * Definition.scale, burst);

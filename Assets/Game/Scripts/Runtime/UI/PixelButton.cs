@@ -128,7 +128,11 @@ namespace BouncyUFO
             bool click = pressed && CanReact && Contains(pos);
             pressed = false;
             Apply();
-            if (click) Clicked?.Invoke();
+            if (click)
+            {
+                Sound.Play(Sfx.Click);
+                Clicked?.Invoke();
+            }
         }
 
         private void Apply()

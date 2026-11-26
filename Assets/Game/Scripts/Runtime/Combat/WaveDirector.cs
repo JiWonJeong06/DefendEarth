@@ -20,8 +20,11 @@ namespace BouncyUFO
         public int Wave { get; private set; }
         public int BossRound { get; private set; }
         public Monster CurrentBoss { get; private set; }
-        /// <summary>true인 동안 첫 웨이브를 시작하지 않는다(튜토리얼 이동 연습 중).</summary>
+        /// <summary>true인 동안 첫 웨이브를 시작하지 않는다.</summary>
         public bool HoldStart { get; set; }
+        /// <summary>튜토리얼: 웨이브·운석을 스스로 내보내지 않고, 보스 싸움(부하 부르기)만 돌린다.</summary>
+        public bool Scripted { get; set; }
+        public MonsterSpawner Spawner => spawner;
 
         /// <summary>새 웨이브 시작(웨이브 번호).</summary>
         public event Action<int> WaveStarted;
@@ -74,6 +77,11 @@ namespace BouncyUFO
             if (session == null || !session.IsPlaying) return;
             float dt = Time.deltaTime;
 
+            if (Scripted)
+            {
+                if (phase == Phase.Boss) UpdateBoss(dt);
+                return;
+            }
             if (HoldStart && Wave == 0) return;
             UpdateMeteors(dt);
 
@@ -166,14 +174,21 @@ namespace BouncyUFO
 
         private void SpawnBoss()
         {
-            BossRound++;
+            StartBoss(1f + Config.bossHpGrowth * BossRound);
+        }
+
+        /// <summary>보스를 바로 내보낸다(보스 체력 바·부하 부르기·처치 보상 포함). 튜토리얼은 체력을 약하게 준다.</summary>
+        public Monster StartBoss(float hpMultiplier)
+        {
             var def = GameAssets.Instance.boss;
+            if (def == null) return null;
+            BossRound++;
             float radius = Config.PixelsToUnits(def.hitRadiusPx) * def.scale;
-            float hpMul = 1f + Config.bossHpGrowth * (BossRound - 1);
-            CurrentBoss = spawner.SpawnAt(def, new Vector2(0f, PlayArea.Top + radius), hpMul, 1f);
+            CurrentBoss = spawner.SpawnAt(def, new Vector2(0f, PlayArea.Top + radius), hpMultiplier, 1f);
             phase = Phase.Boss;
             summonTimer = Config.bossSummonInterval * 0.5f;
             BossAppeared?.Invoke(CurrentBoss, BossRound);
+            return CurrentBoss;
         }
 
         private void UpdateBoss(float dt)
@@ -211,6 +226,7 @@ namespace BouncyUFO
                 // 단계 보상: 보스 회차가 오를수록 커진다
                 int reward = Config.bossRewardBase + Config.bossRewardStep * (BossRound - 1);
                 if (gold != null) gold.Burst(m.transform.position, reward, GoldDrops.Source.Stage);
+                Sound.Play(Sfx.BossDown);
                 EndBoss(true);
             }
         }

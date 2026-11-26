@@ -112,6 +112,8 @@ namespace BouncyUFO
         public int bossEveryWaves = 4;
         [Tooltip("보스 회차마다 체력 증가(0.6 = +60%씩)")]
         public float bossHpGrowth = 0.6f;
+        [Tooltip("튜토리얼 보스 체력 배율(약하게)")]
+        public float tutorialBossHpMultiplier = 0.3f;
         [Tooltip("보스 등장 전 경고 시간(초)")]
         public float bossWarning = 2f;
         [Tooltip("보스가 부하(떼거리형)를 부르는 간격(초)")]
