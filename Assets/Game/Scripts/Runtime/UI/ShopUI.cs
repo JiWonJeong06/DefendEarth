@@ -14,8 +14,9 @@ namespace BouncyUFO
     /// </summary>
     public sealed class ShopUI : ModalPanel
     {
-        private const int SlotCount = 3;
-        private const float CardW = 52f;
+        private const int MaxSlots = 4;            // 과학자는 4칸, 기본 3칸
+        private int slotCount = 3;
+        private float cardW = 52f;
         private const float CardH = 86f;
         private const float CardY = 22f;
 
@@ -25,6 +26,7 @@ namespace BouncyUFO
         {
             public Transform root;
             public SpriteRenderer frame;
+            public SpriteRenderer inner;
             public SpriteRenderer icon;
             public TextMeshPro name;
             public TextMeshPro desc;
@@ -37,7 +39,8 @@ namespace BouncyUFO
         }
 
         private readonly List<Slot> slots = new List<Slot>();
-        private readonly List<CardDefinition> offer = new List<CardDefinition>(SlotCount);
+        private readonly List<CardDefinition> offer = new List<CardDefinition>(MaxSlots);
+        private bool freeRefresh;
         private TextMeshPro diamonds;
         private TextMeshPro empty;
         private PixelButton refreshButton;
@@ -71,33 +74,34 @@ namespace BouncyUFO
             diamonds = CreateText("Diamonds", new Vector2(-8f + 30f, Top - 28f), GameText.Style.Title, TextAlignmentOptions.MidlineLeft, 60f);
             diamonds.color = new Color(0.85f, 0.95f, 1f);
 
-            for (int i = 0; i < SlotCount; i++)
+            for (int i = 0; i < MaxSlots; i++)
             {
                 int index = i;
                 var s = new Slot { root = new GameObject("Slot" + i).transform };
                 s.root.SetParent(Content, false);
-                s.root.localPosition = new Vector3(U(-(CardW + 4f) + (CardW + 4f) * i), U(CardY), 0f);
+                s.root.localPosition = new Vector3(U(-(cardW + 4f) + (cardW + 4f) * i), U(CardY), 0f);
 
                 s.frame = a.CreateSprite("Frame", a.pixelSprite, Order + 3, s.root);
-                s.frame.transform.localScale = new Vector3(U(CardW) / px, U(CardH) / px, 1f);
+                s.frame.transform.localScale = new Vector3(U(cardW) / px, U(CardH) / px, 1f);
                 var inner = a.CreateSprite("Inner", a.pixelSprite, Order + 4, s.root);
+                s.inner = inner;
                 inner.color = new Color(0.1f, 0.1f, 0.18f);
-                inner.transform.localScale = new Vector3(U(CardW - 4f) / px, U(CardH - 4f) / px, 1f);
+                inner.transform.localScale = new Vector3(U(cardW - 4f) / px, U(CardH - 4f) / px, 1f);
 
                 s.icon = a.CreateSprite("Icon", null, Order + 5, s.root);
                 s.icon.transform.localScale = Vector3.one * 2f;
                 s.icon.transform.localPosition = new Vector3(0f, U(CardH * 0.5f - 18f), 0f);
 
-                s.name = GameText.Create("Name", s.root, GameText.Style.Body, Order + 5, TextAlignmentOptions.Center, CardW - 4f, true);
+                s.name = GameText.Create("Name", s.root, GameText.Style.Body, Order + 5, TextAlignmentOptions.Center, cardW - 4f, true);
                 s.name.transform.localPosition = new Vector3(0f, U(CardH * 0.5f - 38f), 0f);
-                s.desc = GameText.Create("Desc", s.root, GameText.Style.Body, Order + 5, TextAlignmentOptions.Top, CardW - 4f, true);
+                s.desc = GameText.Create("Desc", s.root, GameText.Style.Body, Order + 5, TextAlignmentOptions.Top, cardW - 4f, true);
                 s.desc.color = new Color(0.78f, 0.82f, 0.95f);
                 s.desc.rectTransform.pivot = new Vector2(0.5f, 1f);
                 s.desc.transform.localPosition = new Vector3(0f, U(CardH * 0.5f - 46f), 0f);
 
                 // 가격 버튼(카드 아래): 다이아 그림 + 숫자
-                Vector2 buyPos = new Vector2(-(CardW + 4f) + (CardW + 4f) * i, CardY - CardH * 0.5f - 12f);
-                s.buy = CreateButton("Buy" + i, buyPos, new Vector2(CardW - 4f, 16f), null, new Color(0.3f, 0.6f, 0.85f), GameText.Style.Body);
+                Vector2 buyPos = new Vector2(-(cardW + 4f) + (cardW + 4f) * i, CardY - CardH * 0.5f - 12f);
+                s.buy = CreateButton("Buy" + i, buyPos, new Vector2(cardW - 4f, 16f), null, new Color(0.3f, 0.6f, 0.85f), GameText.Style.Body);
                 s.priceGem = a.CreateSprite("Gem", a.diamondSprite, Order + 9, s.buy.transform);
                 s.priceGem.transform.localPosition = new Vector3(-U(9f), 0f, 0f);
                 s.priceLabel = GameText.Create("Price", s.buy.transform, GameText.Style.Body, Order + 9, TextAlignmentOptions.MidlineLeft, 30f);
@@ -117,11 +121,36 @@ namespace BouncyUFO
             next.Clicked += Close;
         }
 
+        /// <summary>진열 칸 수에 맞춰 카드 너비·위치를 다시 잡는다(3칸 52픽셀, 4칸 40픽셀).</summary>
+        private void Layout()
+        {
+            var job = JobTypes.Current;
+            slotCount = job.shopSlots > 0 ? Mathf.Min(MaxSlots, job.shopSlots) : 3;
+            cardW = slotCount >= 4 ? 40f : 52f;
+            float px = GameAssets.Instance.pixelSprite.bounds.size.x;
+            float gap = 4f;
+            float total = slotCount * cardW + (slotCount - 1) * gap;
+            for (int i = 0; i < slots.Count; i++)
+            {
+                var s = slots[i];
+                float x = -total * 0.5f + cardW * 0.5f + (cardW + gap) * i;
+                s.root.localPosition = new Vector3(U(x), U(CardY), 0f);
+                s.frame.transform.localScale = new Vector3(U(cardW) / px, U(CardH) / px, 1f);
+                s.inner.transform.localScale = new Vector3(U(cardW - 4f) / px, U(CardH - 4f) / px, 1f);
+                s.name.rectTransform.sizeDelta = new Vector2(U(cardW - 4f), s.name.rectTransform.sizeDelta.y);
+                s.desc.rectTransform.sizeDelta = new Vector2(U(cardW - 4f), s.desc.rectTransform.sizeDelta.y);
+                s.buy.transform.localPosition = new Vector3(U(x), U(CardY - CardH * 0.5f - 12f), 0f);
+                s.buy.Resize(new Vector2(cardW - 4f, 16f));
+            }
+        }
+
         /// <summary>상점을 연다(게임 멈춤). 닫히면 closed.</summary>
         public void Open(Action closed)
         {
             onClosed = closed;
+            Layout();
             refreshCost = PlayArea.Config.shopRefreshBaseCost;
+            freeRefresh = JobTypes.Current.freeFirstRefresh; // 과학자: 상점마다 첫 새로고침 무료
             GameSession.Instance?.Pause();
             Open();
             Restock();
@@ -139,7 +168,7 @@ namespace BouncyUFO
         /// <summary>남은 다이아 이하 가격의 증강으로 새로 진열.</summary>
         private void Restock()
         {
-            if (levels != null) levels.BuildOffer(offer, SlotCount, Diamonds);
+            if (levels != null) levels.BuildOffer(offer, slotCount, Diamonds);
             else offer.Clear();
             for (int i = 0; i < slots.Count; i++)
             {
@@ -153,16 +182,18 @@ namespace BouncyUFO
         {
             var s = slots[index];
             if (s.card == null || s.sold || Stats == null) return;
-            if (!Stats.SpendDiamonds(s.card.price)) { Sound.Play(Sfx.Hit, 0.7f); return; }
+            if (!Stats.SpendDiamonds(LevelSystem.PriceOf(s.card))) { Sound.Play(Sfx.Hit, 0.7f); return; }
             s.sold = true;
             levels.Add(s.card);
             Redraw();
         }
 
+        private int CurrentRefreshCost => freeRefresh ? 0 : refreshCost;
+
         private void Refresh()
         {
-            if (Stats == null || !Stats.SpendDiamonds(refreshCost)) { Sound.Play(Sfx.Hit, 0.7f); return; }
-            refreshCost++;
+            if (Stats == null || !Stats.SpendDiamonds(CurrentRefreshCost)) { Sound.Play(Sfx.Hit, 0.7f); return; }
+            if (freeRefresh) freeRefresh = false; else refreshCost++;
             Sound.Play(Sfx.CardPick);
             Restock();
         }
@@ -171,9 +202,10 @@ namespace BouncyUFO
         {
             GameText.SetPlain(diamonds, Diamonds.ToString());
             bool any = false;
-            foreach (var s in slots)
+            for (int si = 0; si < slots.Count; si++)
             {
-                bool show = s.card != null;
+                var s = slots[si];
+                bool show = s.card != null && si < slotCount;
                 s.root.gameObject.SetActive(show);
                 s.buy.gameObject.SetActive(show);
                 if (!show) continue;
@@ -187,7 +219,8 @@ namespace BouncyUFO
                 GameText.SetKey(s.desc, c.descKey);
                 BuildPips(s);
 
-                bool afford = Diamonds >= c.price;
+                int price = LevelSystem.PriceOf(c);
+                bool afford = Diamonds >= price;
                 s.buy.Interactable = !s.sold && afford;
                 if (s.sold)
                 {
@@ -201,17 +234,17 @@ namespace BouncyUFO
                 {
                     s.buy.SetColor(afford ? new Color(0.3f, 0.6f, 0.85f) : new Color(0.3f, 0.32f, 0.4f));
                     s.priceGem.gameObject.SetActive(true);
-                    GameText.SetPlain(s.priceLabel, c.price.ToString());
+                    GameText.SetPlain(s.priceLabel, price.ToString());
                     s.priceLabel.alignment = TextAlignmentOptions.MidlineLeft;
                     s.priceLabel.transform.localPosition = new Vector3(U(-4f + 15f), 0f, 0f);
                 }
             }
             empty.gameObject.SetActive(!any);
 
-            bool canRefresh = Diamonds >= refreshCost;
+            bool canRefresh = Diamonds >= CurrentRefreshCost;
             refreshButton.Interactable = canRefresh;
             refreshButton.SetColor(canRefresh ? new Color(0.45f, 0.4f, 0.75f) : new Color(0.3f, 0.3f, 0.4f));
-            GameText.SetPlain(refreshLabel, Localization.Get("shop.refresh") + " " + refreshCost);
+            GameText.SetPlain(refreshLabel, Localization.Get("shop.refresh") + " " + (CurrentRefreshCost == 0 ? Localization.Get("shop.free") : CurrentRefreshCost.ToString()));
         }
 
         /// <summary>카드 아래 점: 이미 산 단계는 흰색, 이번에 오를 단계는 카드 색.</summary>

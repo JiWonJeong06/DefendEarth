@@ -135,8 +135,6 @@ profile.best,최고 점수,Best score,ベストスコア
 profile.bestwave,최고 웨이브,Best wave,最高ウェーブ
 profile.time_hm,{0}시간 {1}분,{0}h {1}m,{0}時間{1}分
 ui.ufo,UFO,UFO,UFO
-ui.ufo.using,사용 중,In use,使用中
-ui.ufo.select,선택,Select,選択
 ufo.basic.name,기본형,Classic,ノーマル
 ufo.basic.desc,균형 잡힌 UFO,A balanced UFO,バランス型
 ufo.wide.name,넓은접시형,Wide Dish,ワイド
@@ -164,3 +162,30 @@ tut.shop2,우주선이 다 내려오면 상점이 열려요. 다이아로 증강
 tut.shop3,가진 다이아 이하 가격의 증강만 나와요. 같은 진열품은 한 번씩 살 수 있어요.,Only augments you can afford appear. Each item can be bought once.,買える値段の強化だけ並ぶよ。同じ品は1回ずつ買えるよ。
 tut.shop4,새로고침도 다이아로 할 수 있고 안 사려면 다음에 사기를 누르세요.,You can refresh with diamonds or tap Buy later to leave.,ダイヤで更新もできるよ。買わないならまた今度を押してね。
 tut.shop5,산 증강은 이번 판이 끝날 때까지 유지돼요.,Augments you buy last until this run ends.,買った強化はこのプレイが終わるまで続くよ。
+launch.title,출격 준비,Launch Prep,出撃準備
+launch.job,직업,Job,職業
+launch.ufo,UFO,UFO,UFO
+launch.go,출격!,Launch!,出撃！
+launch.owned,보유 중,Owned,所持中
+launch.need_level,Lv {0} 필요,Need Lv {0},Lv{0}が必要
+launch.unlock,해금 {0}골드,Unlock {0} gold,解放 {0}ゴールド
+shop.free,무료,Free,無料
+job.rookie.name,신입,Rookie,新人
+job.rookie.desc,특별한 능력 없음,No special ability,特別な能力なし
+job.pilot.name,파일럿,Pilot,パイロット
+job.pilot.desc,돌진 15% 더 멀리,Dash 15% farther,突進が15%遠くへ
+job.brawler.name,격투가,Brawler,格闘家
+job.brawler.desc,돌진 피해 +1 / 연쇄 피해 +1,Dash dmg +1 / chain dmg +1,突進ダメージ+1 / 連鎖+1
+job.merchant.name,상인,Merchant,商人
+job.merchant.desc,다이아 운석 +1 / 증강 1 싸게,Diamond meteor +1 / augments 1 cheaper,ダイヤ隕石+1 / 強化が1安い
+job.engineer.name,정비사,Engineer,整備士
+job.engineer.desc,지구 체력 +30 / 지구 회복 2배,Earth HP +30 / repair x2,地球体力+30 / 回復2倍
+job.scientist.name,과학자,Scientist,科学者
+job.scientist.desc,상점 4칸 / 첫 새로고침 무료,Shop shows 4 / first refresh free,ショップ4枠 / 最初の更新無料
+village.deco_hint,빈 칸을 눌러 놓기 / 물건을 눌러 가방에 넣기,Tap an empty tile to place / tap an item to pick it up,空いたマスで置く / 物をタップでしまう
+deco.rock,바위,Rock,岩
+deco.flag,깃발,Flag,旗
+deco.antenna,안테나,Antenna,アンテナ
+deco.lamp,가로등,Lamp,街灯
+deco.plant,달 식물,Moon Plant,月の植物
+deco.dome,작은 돔,Mini Dome,ミニドーム

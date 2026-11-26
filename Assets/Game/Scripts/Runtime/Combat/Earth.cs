@@ -28,7 +28,7 @@ namespace BouncyUFO
                 var globe = EarthGlobe.CreateHorizon("Globe", transform, SortOrder.Earth, PlayArea.Bottom);
                 spriteRenderer = globe.GetComponent<SpriteRenderer>();
             }
-            MaxHp = Mathf.Max(1, PlayArea.Config.earthMaxHp);
+            MaxHp = Mathf.Max(1, PlayArea.Config.earthMaxHp + JobTypes.Current.earthHp); // 정비사는 더 튼튼
             Hp = MaxHp;
         }
 

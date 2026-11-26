@@ -22,7 +22,7 @@ namespace BouncyUFO
     [Serializable]
     public sealed class SaveData
     {
-        public const int CurrentVersion = 7;
+        public const int CurrentVersion = 9;
 
         public int version = CurrentVersion;
         public int bestScore;
@@ -55,6 +55,16 @@ namespace BouncyUFO
         public List<int> ownedUfos = new List<int>();
         /// <summary>지금 타는 UFO 번호.</summary>
         public int selectedUfo;
+        // v8 ---------------------------------------------------------
+        /// <summary>해금한 직업 번호(신입 0은 늘 가진 것으로 친다). JobTypes.All 순서.</summary>
+        public List<int> ownedJobs = new List<int>();
+        /// <summary>지금 고른 직업 번호.</summary>
+        public int selectedJob;
+        // v9 ---------------------------------------------------------
+        /// <summary>달 기지 마을에 놓은 꾸밈 물건.</summary>
+        public List<PlacedDeco> villageItems = new List<PlacedDeco>();
+        /// <summary>가방에 있는 꾸밈 물건 개수(Village.Items 순서).</summary>
+        public List<int> villageBag = new List<int>();
         /// <summary>플레이어 계정 경험치(누적). 레벨은 계산해서 구한다.</summary>
         public int accountXp;
         /// <summary>강화 단계. 순서는 GameConfig.upgrades와 같다.</summary>
@@ -140,6 +150,9 @@ namespace BouncyUFO
             if (d.version < 5) d.aimAssist = true;
             if (d.upgradeLevels == null) d.upgradeLevels = new List<int>();
             if (d.ownedUfos == null) d.ownedUfos = new List<int>();
+            if (d.ownedJobs == null) d.ownedJobs = new List<int>();
+            if (d.villageItems == null) d.villageItems = new List<PlacedDeco>();
+            if (d.villageBag == null) d.villageBag = new List<int>();
             if (d.version < 7) RefundUpgrades(d);
             if (d.topScores == null) d.topScores = new List<ScoreEntry>();
             d.version = SaveData.CurrentVersion;

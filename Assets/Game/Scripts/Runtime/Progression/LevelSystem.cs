@@ -24,6 +24,9 @@ namespace BouncyUFO
 
         public int StacksOf(CardDefinition card) => card != null && stacks.TryGetValue(card, out int s) ? s : 0;
 
+        /// <summary>이번 판의 가격(상인은 1 싸게, 최소 1).</summary>
+        public static int PriceOf(CardDefinition card) => card == null ? 0 : Mathf.Max(1, card.price - JobTypes.Current.priceDiscount);
+
         public bool IsMaxed(CardDefinition card) => card != null && card.maxStacks > 0 && StacksOf(card) >= card.maxStacks;
 
         /// <summary>
@@ -39,7 +42,7 @@ namespace BouncyUFO
             foreach (var c in all)
             {
                 if (c == null || c.weight <= 0f || IsMaxed(c)) continue;
-                if (c.price > maxPrice) continue;
+                if (PriceOf(c) > maxPrice) continue;
                 pool.Add(c);
             }
             while (offer.Count < count && pool.Count > 0)
@@ -87,7 +90,7 @@ namespace BouncyUFO
                     if (ufo != null) ufo.ChainDamageBonus += Mathf.RoundToInt(card.value);
                     break;
                 case CardDefinition.Effect.HealEarth:
-                    GameSession.Instance?.Earth?.Heal(Mathf.RoundToInt(card.value));
+                    GameSession.Instance?.Earth?.Heal(Mathf.RoundToInt(card.value * JobTypes.Current.healMultiplier)); // 정비사 2배
                     break;
             }
         }

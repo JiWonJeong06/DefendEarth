@@ -25,6 +25,15 @@ namespace BouncyUFO
         public MonsterDefinition diamondMeteor;
         [Tooltip("다이아 아이콘(위쪽 표시·떨어지는 보석·상점 가격)")]
         public Sprite diamondSprite;
+        [Tooltip("로비 오른쪽 위 아이콘(순위표·설정·마을 꾸미기)")]
+        public Sprite iconRanking;
+        public Sprite iconSettings;
+        public Sprite iconDecorate;
+        [Header("달 기지 마을 (임시 그림)")]
+        public Sprite buildingPad;
+        public Sprite buildingTower;
+        [Tooltip("꾸밈 물건(Village.Items 순서)")]
+        public Sprite[] decoSprites = new Sprite[0];
         [Tooltip("웨이브가 끝나면 오는 상점 우주선")]
         public Sprite shopShipSprite;
         public Sprite coinSprite;

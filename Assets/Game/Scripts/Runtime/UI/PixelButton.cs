@@ -20,6 +20,8 @@ namespace BouncyUFO
         public bool Interactable { get; set; } = true;
 
         private Vector2 sizeUnits;
+        private SpriteRenderer border;
+        private SpriteRenderer shine;
         private SpriteRenderer face;
         private Color faceColor;
         private bool pressed;
@@ -51,6 +53,7 @@ namespace BouncyUFO
             b.sizeUnits = new Vector2(config.PixelsToUnits(sizePx.x), config.PixelsToUnits(sizePx.y));
 
             var border = assets.CreateSprite("Border", assets.pixelSprite, sortingOrder, go.transform);
+            b.border = border;
             border.color = new Color(0f, 0f, 0f, 0.85f);
             border.transform.localScale = new Vector3((b.sizeUnits.x + config.PixelsToUnits(2f)) / px, (b.sizeUnits.y + config.PixelsToUnits(2f)) / px, 1f);
 
@@ -60,6 +63,7 @@ namespace BouncyUFO
             b.face.transform.localScale = new Vector3(b.sizeUnits.x / px, b.sizeUnits.y / px, 1f);
 
             var shine = assets.CreateSprite("Shine", assets.pixelSprite, sortingOrder + 2, go.transform);
+            b.shine = shine;
             shine.color = new Color(1f, 1f, 1f, 0.18f);
             shine.transform.localScale = new Vector3(b.sizeUnits.x / px, config.PixelsToUnits(2f) / px, 1f);
             shine.transform.localPosition = new Vector3(0f, b.sizeUnits.y * 0.5f - config.PixelsToUnits(1f), 0f);
@@ -70,6 +74,23 @@ namespace BouncyUFO
                 GameText.SetKey(b.Label, labelKey);
             }
             return b;
+        }
+
+        /// <summary>버튼 크기를 바꾼다(기준 픽셀). 누르는 범위도 함께.</summary>
+        public void Resize(Vector2 sizePx)
+        {
+            var config = PlayArea.Config;
+            float px = GameAssets.Instance.pixelSprite.bounds.size.x;
+            sizeUnits = new Vector2(config.PixelsToUnits(sizePx.x), config.PixelsToUnits(sizePx.y));
+            float two = config.PixelsToUnits(2f);
+            if (border != null) border.transform.localScale = new Vector3((sizeUnits.x + two) / px, (sizeUnits.y + two) / px, 1f);
+            if (face != null) face.transform.localScale = new Vector3(sizeUnits.x / px, sizeUnits.y / px, 1f);
+            if (shine != null)
+            {
+                shine.transform.localScale = new Vector3(sizeUnits.x / px, two / px, 1f);
+                shine.transform.localPosition = new Vector3(0f, sizeUnits.y * 0.5f - config.PixelsToUnits(1f), 0f);
+            }
+            if (Label != null) Label.rectTransform.sizeDelta = new Vector2(sizeUnits.x - config.PixelsToUnits(4f), Label.rectTransform.sizeDelta.y);
         }
 
         public void SetColor(Color color)

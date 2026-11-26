@@ -69,6 +69,17 @@ namespace BouncyUFO
         /// <summary>저장된 꾸미기대로 다시 그린다.</summary>
         public void Refresh() => Refresh(CharacterLook.FromSave());
 
+        /// <summary>그리는 순서를 바꾼다(마을에서 위·아래 위치에 따라 앞뒤가 바뀌게). 부품 6개가 order~order+5.</summary>
+        public void SetSortingOrder(int order)
+        {
+            backHair.sortingOrder = order;
+            body.sortingOrder = order + 1;
+            outfit.sortingOrder = order + 2;
+            eyes.sortingOrder = order + 3;
+            frontHair.sortingOrder = order + 4;
+            headwear.sortingOrder = order + 5;
+        }
+
         /// <summary>주어진 모습대로 그린다(꾸미기 창에서 적용 전 미리보기).</summary>
         public void Refresh(CharacterLook d)
         {

@@ -103,6 +103,12 @@ namespace BouncyUFO.EditorTools
             assets.ufoSprite = FindSprite(UfoSheetPath, "Enemy_0");
             assets.diamondSprite = LoadSprite(ItemPath + "Diamond.png");
             assets.shopShipSprite = LoadSprite(ItemPath + "ShopShip.png");
+            assets.iconRanking = LoadSprite(ItemPath + "IconRanking.png");
+            assets.iconSettings = LoadSprite(ItemPath + "IconSettings.png");
+            assets.iconDecorate = LoadSprite(ItemPath + "IconDecorate.png");
+            assets.buildingPad = LoadSprite(ItemPath + "BuildingPad.png");
+            assets.buildingTower = LoadSprite(ItemPath + "BuildingTower.png");
+            assets.decoSprites = new[] { "Rock", "Flag", "Antenna", "Lamp", "Plant", "Dome" }.Select(n => LoadSprite(ItemPath + "Deco" + n + ".png")).ToArray();
             assets.ufoSprites = new[] { FindSprite(UfoSheetPath, "Enemy_0"), FindSprite(UfoSheetPath, "Enemy_1"), FindSprite(UfoSheetPath, "Enemy_2") };
             assets.earthSprite = FindSprite(EarthSheetPath, "Earth-Star_0");
             assets.loadingBarFrame = FindSprite(UiSheetPath, "UI_3");

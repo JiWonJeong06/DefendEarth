@@ -75,6 +75,11 @@ namespace BouncyUFO
             BodyScale = Type.bodyScale;
             RangeMultiplier *= Type.dashSpeed;
             DamageBonus += Type.damage;
+            // 직업(파일럿·격투가…). 튜토리얼은 신입(능력 없음)
+            var job = JobTypes.Current;
+            RangeMultiplier *= job.dashSpeed;
+            DamageBonus += job.damage;
+            ChainDamageBonus += job.chainDamage;
             // 튜토리얼은 몸통 판정을 크게(맞히기 쉽게)
             if (SceneFlow.IsTutorial) BodyScale *= Config.tutorialBodyScale;
             BuildGuide();

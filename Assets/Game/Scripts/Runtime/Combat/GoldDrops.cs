@@ -39,7 +39,7 @@ namespace BouncyUFO
 
         private void OnKilled(Monster m)
         {
-            if (m.Definition.diamonds > 0) Burst(m.transform.position, m.Definition.diamonds, Source.Diamond);
+            if (m.Definition.diamonds > 0) Burst(m.transform.position, m.Definition.diamonds + JobTypes.Current.diamondBonus, Source.Diamond); // 상인은 +1
             if (m.Kind == MonsterDefinition.Kind.Meteor && m.Definition.gold > 0)
             {
                 // 자석형 UFO는 더 많이

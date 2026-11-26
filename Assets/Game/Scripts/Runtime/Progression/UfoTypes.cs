@@ -4,14 +4,14 @@ namespace BouncyUFO
 {
     /// <summary>
     /// UFO 종류 하나(11/27 박치기 기준으로 다시 정함). 강한 순서가 아니라 플레이 방식이 다르게.
-    /// 로비 강화는 모든 UFO에 공통으로 적용되고, 여기 값은 그 위에 곱하거나 더한다.
+    /// 직업 효과와 함께(곱하거나 더해서) 적용된다. 해금은 플레이 레벨 + 골드(로비 시작 → 출격 준비 창).
     /// </summary>
     public sealed class UfoType
     {
         public string nameKey;
         public string descKey;
-        /// <summary>해금 가격(골드). 0 = 처음부터.</summary>
-        public int price;
+        /// <summary>해금 조건(플레이 레벨 + 골드, 11/27). 기본형은 처음부터.</summary>
+        public UnlockRule unlock = new UnlockRule();
         /// <summary>GameAssets.ufoSprites 번호(임시 그림).</summary>
         public int sprite;
         /// <summary>그림 색 곱하기(같은 그림을 다르게 보이게, 임시).</summary>
@@ -38,13 +38,13 @@ namespace BouncyUFO
         public static readonly UfoType[] All =
         {
             // 0 기본형: 균형
-            new UfoType { nameKey = "ufo.basic.name", descKey = "ufo.basic.desc", price = 0, sprite = 0 },
+            new UfoType { nameKey = "ufo.basic.name", descKey = "ufo.basic.desc", sprite = 0 },
             // 1 넓은접시형: 몸통 1.5배(맞히기 쉬움), 돌진 15% 짧게 → 떼거리형이 몰려올 때
-            new UfoType { nameKey = "ufo.wide.name", descKey = "ufo.wide.desc", price = 400, sprite = 1, bodyScale = 1.5f, dashSpeed = 0.85f },
+            new UfoType { nameKey = "ufo.wide.name", descKey = "ufo.wide.desc", unlock = new UnlockRule { level = 2, gold = 400 }, sprite = 1, bodyScale = 1.5f, dashSpeed = 0.85f },
             // 2 자석형: 운석 골드 +30%, 동전 2배 빨리 끌어옴, 연쇄는 1단계만 → 골드 모으기
-            new UfoType { nameKey = "ufo.magnet.name", descKey = "ufo.magnet.desc", price = 600, sprite = 0, tint = new Color(0.75f, 0.78f, 0.9f), meteorGold = 0.3f, coinMagnet = 2f, chainDepth = 1 },
+            new UfoType { nameKey = "ufo.magnet.name", descKey = "ufo.magnet.desc", unlock = new UnlockRule { level = 3, gold = 600 }, sprite = 0, tint = new Color(0.75f, 0.78f, 0.9f), meteorGold = 0.3f, coinMagnet = 2f, chainDepth = 1 },
             // 3 드릴형: 피해 +1, 덩치형·보스 +2 더, 돌진 15% 멀리, 몸통 0.8배(정확히 노려야) → 단단한 몬스터
-            new UfoType { nameKey = "ufo.drill.name", descKey = "ufo.drill.desc", price = 900, sprite = 2, bodyScale = 0.8f, dashSpeed = 1.15f, damage = 1, heavyDamage = 2 },
+            new UfoType { nameKey = "ufo.drill.name", descKey = "ufo.drill.desc", unlock = new UnlockRule { level = 5, gold = 900 }, sprite = 2, bodyScale = 0.8f, dashSpeed = 1.15f, damage = 1, heavyDamage = 2 },
         };
 
         public static bool IsOwned(int index) => index == 0 || SaveSystem.Data.ownedUfos.Contains(index);
