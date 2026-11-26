@@ -99,6 +99,7 @@ namespace BouncyUFO.EditorTools
             assets.textShader = AssetDatabase.LoadAssetAtPath<Shader>(TextShaderPath);
             assets.fontLicense = AssetDatabase.LoadAssetAtPath<TextAsset>(FontPath + "Galmuri-OFL.txt");
             assets.ufoSprite = FindSprite(UfoSheetPath, "Enemy_0");
+            assets.ufoSprites = new[] { FindSprite(UfoSheetPath, "Enemy_0"), FindSprite(UfoSheetPath, "Enemy_1"), FindSprite(UfoSheetPath, "Enemy_2") };
             assets.earthSprite = FindSprite(EarthSheetPath, "Earth-Star_0");
             assets.loadingBarFrame = FindSprite(UiSheetPath, "UI_3");
             assets.loadingBarFill = FindSprite(UiSheetPath, "UI_4");

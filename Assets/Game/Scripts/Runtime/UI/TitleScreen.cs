@@ -38,6 +38,7 @@ namespace BouncyUFO
             var ufoRoot = new GameObject("UFO").transform;
             ufoRoot.SetParent(transform, false);
             var ufoSprite = a.CreateSprite("Visual", a.ufoSprite, SortOrder.Ufo, ufoRoot);
+            UfoTypes.Apply(ufoSprite, UfoTypes.SelectedIndex);
             ufoSprite.transform.localScale = Vector3.one * 2f;
             ufoSquash = ufoSprite.gameObject.AddComponent<SquashStretch>();
             ufo = ufoRoot;

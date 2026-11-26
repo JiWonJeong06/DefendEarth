@@ -29,6 +29,8 @@ namespace BouncyUFO
         private LeaderboardPanel ranking;
         private SettingsPanel settings;
         private ProfilePanel profile;
+        private UfoPanel ufoPanel;
+        private SpriteRenderer ufoRenderer;
         private ConfirmPanel quitConfirm;
 
         private GameConfig Config => PlayArea.Config;
@@ -85,6 +87,8 @@ namespace BouncyUFO
             var root = new GameObject("UFO").transform;
             root.SetParent(transform, false);
             var sr = a.CreateSprite("Visual", a.ufoSprite, SortOrder.Ufo, root);
+            UfoTypes.Apply(sr, UfoTypes.SelectedIndex); // 고른 UFO
+            ufoRenderer = sr;
             sr.transform.localScale = Vector3.one * 2f;
             ufoSquash = sr.gameObject.AddComponent<SquashStretch>();
             ufo = root;
@@ -107,10 +111,14 @@ namespace BouncyUFO
             customize.Closed += () => pilot.Refresh();
             settings.Closed += Refresh; // 닉네임을 바꿨을 수 있다
 
+            ufoPanel = UfoPanel.Create(transform, panelBase);
+            ufoPanel.Changed += () => { Refresh(); UfoTypes.Apply(ufoRenderer, UfoTypes.SelectedIndex); };
+
             // 꾸미기는 프로필 창(왼쪽 위 프로필 카드)에서 연다
             Menu("Upgrade", "ui.upgrade", new Vector2(-40f, -100f), new Color(0.85f, 0.55f, 0.3f), upgrade.Open);
-            Menu("Ranking", "ui.ranking", new Vector2(40f, -100f), new Color(0.35f, 0.55f, 0.9f), ranking.Open);
-            Menu("Settings", "ui.settings", new Vector2(0f, -124f), new Color(0.45f, 0.5f, 0.6f), settings.Open);
+            Menu("Ufo", "ui.ufo", new Vector2(40f, -100f), new Color(0.3f, 0.7f, 0.75f), ufoPanel.Open);
+            Menu("Ranking", "ui.ranking", new Vector2(-40f, -124f), new Color(0.35f, 0.55f, 0.9f), ranking.Open);
+            Menu("Settings", "ui.settings", new Vector2(40f, -124f), new Color(0.45f, 0.5f, 0.6f), settings.Open);
 
             Refresh();
         }
@@ -135,8 +143,26 @@ namespace BouncyUFO
             GameText.SetPlain(best, Localization.Get("ui.best") + "  " + d.bestScore);
         }
 
-        private void OnEnable() => Localization.Changed += OnLanguageChanged;
-        private void OnDisable() => Localization.Changed -= OnLanguageChanged;
+        private void OnEnable()
+        {
+            Localization.Changed += OnLanguageChanged;
+            DevCheats.Changed += OnDevChanged;
+        }
+
+        private void OnDisable()
+        {
+            Localization.Changed -= OnLanguageChanged;
+            DevCheats.Changed -= OnDevChanged;
+        }
+
+        /// <summary>개발 키(F1 골드)로 골드가 바뀌면 로비 숫자와 열린 창을 다시 그린다.</summary>
+        private void OnDevChanged()
+        {
+            if (best == null) return;
+            Refresh();
+            if (upgrade.IsOpen) { upgrade.Close(); upgrade.Open(); }
+            if (ufoPanel.IsOpen) { ufoPanel.Close(); ufoPanel.Open(); }
+        }
         private void OnLanguageChanged() { if (best != null) Refresh(); }
 
         private void Update()
@@ -156,6 +182,7 @@ namespace BouncyUFO
                 else if (settings.Back()) { }
                 else if (profile.Back()) { }
                 else if (upgrade.IsOpen) upgrade.Close();
+                else if (ufoPanel.IsOpen) ufoPanel.Close();
                 else if (customize.IsOpen) customize.Close();
                 else if (ranking.IsOpen) ranking.Close();
                 else quitConfirm.Ask("ui.quit_confirm", AppQuit.Now);

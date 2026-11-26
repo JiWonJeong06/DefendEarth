@@ -40,6 +40,8 @@ namespace BouncyUFO
 
         [Header("타이틀·로비용 (임시 그림)")]
         public Sprite ufoSprite;
+        [Tooltip("UFO 종류별 그림(임시: 빨강·초록·파랑 UFO). UfoType.sprite 번호")]
+        public Sprite[] ufoSprites = new Sprite[0];
         public Sprite earthSprite;
         public Sprite starSprite;
 

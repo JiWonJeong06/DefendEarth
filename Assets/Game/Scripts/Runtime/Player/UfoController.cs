@@ -26,6 +26,8 @@ namespace BouncyUFO
         public int ChainDamageBonus { get; set; }
 
         public bool IsDashing { get; private set; }
+        /// <summary>이번 판에 타는 UFO 종류.</summary>
+        public UfoType Type { get; private set; } = UfoTypes.All[0];
         /// <summary>true면 새로 조준할 수 없다(튜토리얼에서 몬스터가 강조되기 전).</summary>
         public bool InputLocked { get; set; }
         public bool IsAiming => aiming;
@@ -66,8 +68,14 @@ namespace BouncyUFO
             RangeMultiplier = 1f + Upgrades.Total(UpgradeDefinition.Effect.DashRange);
             // 로비 강화(공격력)만큼 돌진 피해 + (카드 '돌진 힘'은 판 안에서 여기에 더해진다)
             DamageBonus = Mathf.RoundToInt(Upgrades.Total(UpgradeDefinition.Effect.DashDamage));
+            // 고른 UFO 종류(넓은접시·자석·드릴…): 그림, 몸통 크기, 돌진 거리, 피해
+            Type = UfoTypes.Selected;
+            if (visual != null) UfoTypes.Apply(visual.GetComponent<SpriteRenderer>(), UfoTypes.SelectedIndex);
+            BodyScale = Type.bodyScale;
+            RangeMultiplier *= Type.dashSpeed;
+            DamageBonus += Type.damage;
             // 튜토리얼은 몸통 판정을 크게(맞히기 쉽게)
-            if (SceneFlow.IsTutorial) BodyScale = Config.tutorialBodyScale;
+            if (SceneFlow.IsTutorial) BodyScale *= Config.tutorialBodyScale;
             BuildGuide();
         }
 
@@ -229,6 +237,7 @@ namespace BouncyUFO
 
                 hitThisDash.Add(m);
                 int damage = Config.dashDamage + DamageBonus;
+                if (m.IsHeavy) damage += Type.heavyDamage; // 드릴형: 덩치형·보스에 추가 피해
 
                 // 맞은 쪽 + 날아가던 방향으로, 주로 위로 튕긴다
                 Vector2 away = (mp - p).sqrMagnitude > 1e-6f ? (mp - p).normalized : Vector2.up;
@@ -237,7 +246,8 @@ namespace BouncyUFO
                 float speed = U(Config.knockSpeedPx);
 
                 m.TakeHit(damage, Vector2.Lerp(p, mp, 0.5f));
-                if (m.IsAlive) m.Knock(dir * speed, Config.chainDamage + ChainDamageBonus, Config.chainMaxDepth);
+                int depth = Type.chainDepth >= 0 ? Type.chainDepth : Config.chainMaxDepth; // 자석형은 연쇄 약하게
+                if (m.IsAlive) m.Knock(dir * speed, Config.chainDamage + ChainDamageBonus, depth);
                 if (visual != null) visual.Nudge(Config.squashOnHit);
             }
         }

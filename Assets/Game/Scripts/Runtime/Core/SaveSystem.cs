@@ -22,7 +22,7 @@ namespace BouncyUFO
     [Serializable]
     public sealed class SaveData
     {
-        public const int CurrentVersion = 5;
+        public const int CurrentVersion = 6;
 
         public int version = CurrentVersion;
         public int bestScore;
@@ -50,6 +50,11 @@ namespace BouncyUFO
         // v5 ---------------------------------------------------------
         /// <summary>조준 보조(맞을 몬스터에 노란 네모).</summary>
         public bool aimAssist = true;
+        // v6 ---------------------------------------------------------
+        /// <summary>해금한 UFO 번호(기본형 0은 늘 가진 것으로 친다). UfoTypes.All 순서.</summary>
+        public List<int> ownedUfos = new List<int>();
+        /// <summary>지금 타는 UFO 번호.</summary>
+        public int selectedUfo;
         /// <summary>플레이어 계정 경험치(누적). 레벨은 계산해서 구한다.</summary>
         public int accountXp;
         /// <summary>강화 단계. 순서는 GameConfig.upgrades와 같다.</summary>
@@ -134,6 +139,7 @@ namespace BouncyUFO
             if (d.version < 4) d.screenShake = true; // 없으면 false로 읽힌다
             if (d.version < 5) d.aimAssist = true;
             if (d.upgradeLevels == null) d.upgradeLevels = new List<int>();
+            if (d.ownedUfos == null) d.ownedUfos = new List<int>();
             if (d.topScores == null) d.topScores = new List<ScoreEntry>();
             d.version = SaveData.CurrentVersion;
             return d;

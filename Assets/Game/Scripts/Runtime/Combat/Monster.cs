@@ -23,6 +23,8 @@ namespace BouncyUFO
         public MonsterDefinition Definition { get; private set; }
         public MonsterDefinition.Kind Kind => Definition.kind;
         public bool IsBoss => Definition != null && Definition.kind == MonsterDefinition.Kind.Boss;
+        /// <summary>단단한 몬스터(보스, 잘 안 밀리는 덩치형). 드릴형 UFO의 추가 피해 대상.</summary>
+        public bool IsHeavy => IsBoss || (Definition != null && Definition.knockbackScale <= 0.6f);
         public bool IsAlive { get; private set; }
         public float HitRadius { get; private set; }
         public int Hp { get; private set; }

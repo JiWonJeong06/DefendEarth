@@ -42,7 +42,7 @@ namespace BouncyUFO
             if (m.Kind == MonsterDefinition.Kind.Meteor && m.Definition.gold > 0)
             {
                 // 로비 강화(운석 골드)만큼 늘어난다
-                int amount = Mathf.RoundToInt(m.Definition.gold * (1f + Upgrades.Total(UpgradeDefinition.Effect.MeteorGold)));
+                int amount = Mathf.RoundToInt(m.Definition.gold * (1f + Upgrades.Total(UpgradeDefinition.Effect.MeteorGold) + UfoTypes.Selected.meteorGold));
                 Burst(m.transform.position, amount, Source.Meteor);
             }
         }
@@ -115,7 +115,8 @@ namespace BouncyUFO
                 var config = PlayArea.Config;
                 Vector2 pos = transform.position;
 
-                if (age < config.coinMagnetDelay)
+                float magnet = UfoTypes.Selected.coinMagnet; // 자석형은 빨리 끌어온다
+                if (age < config.coinMagnetDelay / magnet)
                 {
                     velocity *= Mathf.Exp(-6f * dt); // 튀어나왔다가 잠깐 멈칫
                 }
@@ -123,8 +124,8 @@ namespace BouncyUFO
                 {
                     // UFO가 빛줄기로 빨아들이듯 점점 빨라지며 날아간다
                     Vector2 to = owner.TargetPosition - pos;
-                    float maxSpeed = config.coinMagnetSpeed * PlayArea.Size.y;
-                    float t = Mathf.Clamp01((age - config.coinMagnetDelay) / 0.35f);
+                    float maxSpeed = config.coinMagnetSpeed * magnet * PlayArea.Size.y;
+                    float t = Mathf.Clamp01((age - config.coinMagnetDelay / magnet) / (0.35f / magnet));
                     velocity = Vector2.Lerp(velocity, to.normalized * maxSpeed, t);
                     if (to.sqrMagnitude < 0.25f * 0.25f)
                     {
