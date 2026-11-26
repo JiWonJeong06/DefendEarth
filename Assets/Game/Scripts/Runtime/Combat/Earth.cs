@@ -28,8 +28,7 @@ namespace BouncyUFO
                 var globe = EarthGlobe.CreateHorizon("Globe", transform, SortOrder.Earth, PlayArea.Bottom);
                 spriteRenderer = globe.GetComponent<SpriteRenderer>();
             }
-            // 로비 강화(지구 체력)만큼 더한다
-            MaxHp = Mathf.Max(1, PlayArea.Config.earthMaxHp + Mathf.RoundToInt(Upgrades.Total(UpgradeDefinition.Effect.EarthHp)));
+            MaxHp = Mathf.Max(1, PlayArea.Config.earthMaxHp);
             Hp = MaxHp;
         }
 

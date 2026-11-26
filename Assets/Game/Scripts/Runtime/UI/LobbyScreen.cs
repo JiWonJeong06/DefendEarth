@@ -24,7 +24,6 @@ namespace BouncyUFO
         private SquashStretch ufoSquash;
         private int lastBounce;
 
-        private UpgradePanel upgrade;
         private CustomizePanel customize;
         private LeaderboardPanel ranking;
         private SettingsPanel settings;
@@ -98,7 +97,6 @@ namespace BouncyUFO
             start.Clicked += SceneFlow.StartGame;
 
             int panelBase = PanelOrder;
-            upgrade = UpgradePanel.Create(transform, panelBase);
             customize = CustomizePanel.Create(transform, panelBase);
             ranking = LeaderboardPanel.Create(transform, panelBase);
             settings = SettingsPanel.Create(transform, panelBase, true);
@@ -107,7 +105,6 @@ namespace BouncyUFO
             profile.Closed += () => { pilot.Refresh(); Refresh(); };
             profile.CustomizeRequested += customize.Open;
             quitConfirm = ConfirmPanel.Create(transform, panelBase + 60);
-            upgrade.GoldSpent += Refresh;
             customize.Closed += () => pilot.Refresh();
             settings.Closed += Refresh; // 닉네임을 바꿨을 수 있다
 
@@ -115,10 +112,10 @@ namespace BouncyUFO
             ufoPanel.Changed += () => { Refresh(); UfoTypes.Apply(ufoRenderer, UfoTypes.SelectedIndex); };
 
             // 꾸미기는 프로필 창(왼쪽 위 프로필 카드)에서 연다
-            Menu("Upgrade", "ui.upgrade", new Vector2(-40f, -100f), new Color(0.85f, 0.55f, 0.3f), upgrade.Open);
-            Menu("Ufo", "ui.ufo", new Vector2(40f, -100f), new Color(0.3f, 0.7f, 0.75f), ufoPanel.Open);
-            Menu("Ranking", "ui.ranking", new Vector2(-40f, -124f), new Color(0.35f, 0.55f, 0.9f), ranking.Open);
-            Menu("Settings", "ui.settings", new Vector2(40f, -124f), new Color(0.45f, 0.5f, 0.6f), settings.Open);
+            // 11/27: 로비 강화는 없앴다(판 안 상점 증강으로 대신)
+            Menu("Ufo", "ui.ufo", new Vector2(-40f, -100f), new Color(0.3f, 0.7f, 0.75f), ufoPanel.Open);
+            Menu("Ranking", "ui.ranking", new Vector2(40f, -100f), new Color(0.35f, 0.55f, 0.9f), ranking.Open);
+            Menu("Settings", "ui.settings", new Vector2(0f, -124f), new Color(0.45f, 0.5f, 0.6f), settings.Open);
 
             Refresh();
         }
@@ -160,7 +157,6 @@ namespace BouncyUFO
         {
             if (best == null) return;
             Refresh();
-            if (upgrade.IsOpen) { upgrade.Close(); upgrade.Open(); }
             if (ufoPanel.IsOpen) { ufoPanel.Close(); ufoPanel.Open(); }
         }
         private void OnLanguageChanged() { if (best != null) Refresh(); }
@@ -181,7 +177,6 @@ namespace BouncyUFO
                 if (quitConfirm.IsOpen) quitConfirm.Close();
                 else if (settings.Back()) { }
                 else if (profile.Back()) { }
-                else if (upgrade.IsOpen) upgrade.Close();
                 else if (ufoPanel.IsOpen) ufoPanel.Close();
                 else if (customize.IsOpen) customize.Close();
                 else if (ranking.IsOpen) ranking.Close();

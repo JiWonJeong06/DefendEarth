@@ -67,9 +67,11 @@ namespace BouncyUFO
         public static int HeadwearCount => 1 + Len(GameAssets.Instance.charHeadwear);
 
         /// <summary>저장된 꾸미기대로 다시 그린다.</summary>
-        public void Refresh()
+        public void Refresh() => Refresh(CharacterLook.FromSave());
+
+        /// <summary>주어진 모습대로 그린다(꾸미기 창에서 적용 전 미리보기).</summary>
+        public void Refresh(CharacterLook d)
         {
-            var d = SaveSystem.Data;
             var a = GameAssets.Instance;
             Color hairColor = HairColors[Mod(d.hairColor, HairColors.Length)];
 
@@ -97,5 +99,60 @@ namespace BouncyUFO
         private static Sprite Pick(Sprite[] list, int i) => list != null && i >= 0 && i < list.Length ? list[i] : null;
 
         public static int Mod(int v, int n) => n <= 0 ? 0 : ((v % n) + n) % n;
+    }
+
+    /// <summary>캐릭터 모습 7가지 값(저장과 꾸미기 미리보기 사이에서 주고받는다).</summary>
+    public struct CharacterLook
+    {
+        public int hairStyle, hairColor, headwear, eyeStyle, eyeColor, skinColor, outfit;
+
+        public static CharacterLook FromSave()
+        {
+            var d = SaveSystem.Data;
+            return new CharacterLook
+            {
+                hairStyle = d.hairStyle, hairColor = d.hairColor, headwear = d.headwear, eyeStyle = d.eyeStyle,
+                eyeColor = d.eyeColor, skinColor = d.skinColor, outfit = d.outfit,
+            };
+        }
+
+        public void WriteTo(SaveData d)
+        {
+            d.hairStyle = hairStyle; d.hairColor = hairColor; d.headwear = headwear; d.eyeStyle = eyeStyle;
+            d.eyeColor = eyeColor; d.skinColor = skinColor; d.outfit = outfit;
+        }
+
+        /// <summary>꾸미기 창 줄 번호(0 머리 모양 … 6 옷)로 읽고 쓰기.</summary>
+        public int Get(int part)
+        {
+            switch (part)
+            {
+                case 0: return hairStyle;
+                case 1: return hairColor;
+                case 2: return headwear;
+                case 3: return eyeStyle;
+                case 4: return eyeColor;
+                case 5: return skinColor;
+                default: return outfit;
+            }
+        }
+
+        public void Set(int part, int v)
+        {
+            switch (part)
+            {
+                case 0: hairStyle = v; break;
+                case 1: hairColor = v; break;
+                case 2: headwear = v; break;
+                case 3: eyeStyle = v; break;
+                case 4: eyeColor = v; break;
+                case 5: skinColor = v; break;
+                default: outfit = v; break;
+            }
+        }
+
+        public bool SameAs(CharacterLook o) =>
+            hairStyle == o.hairStyle && hairColor == o.hairColor && headwear == o.headwear && eyeStyle == o.eyeStyle &&
+            eyeColor == o.eyeColor && skinColor == o.skinColor && outfit == o.outfit;
     }
 }

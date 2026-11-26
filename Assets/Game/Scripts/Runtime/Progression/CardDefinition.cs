@@ -3,8 +3,8 @@ using UnityEngine;
 namespace BouncyUFO
 {
     /// <summary>
-    /// 판 안 강화 카드 한 장의 데이터. 레벨업 때 3장 중 1장을 고른다. 판이 끝나면 초기화.
-    /// 같은 카드를 여러 번 고르면 쌓인다(최대 단계까지).
+    /// 판 안 증강(능력치) 한 가지의 데이터. 웨이브가 끝날 때 오는 상점 우주선에서 다이아로 산다. 판이 끝나면 초기화.
+    /// 같은 증강을 여러 번 사면 쌓인다(최대 단계까지).
     /// </summary>
     [CreateAssetMenu(fileName = "Card", menuName = "Bouncy UFO/Card Definition")]
     public sealed class CardDefinition : ScriptableObject
@@ -14,7 +14,7 @@ namespace BouncyUFO
             // 숫자 순서는 카드 데이터에 저장돼 있으니 바꾸지 않는다
             /// <summary>돌진 피해 +value</summary>
             DashPower = 0,
-            /// <summary>게이지 차는 시간 × (1 - value). 0.15 = 15% 빨라짐</summary>
+            /// <summary>돌진 속도 +value(0.2 = 20% 멀리)</summary>
             DashRange = 1, // 옛 ChargeSpeed 자리(숫자 그대로)
             /// <summary>몸통 판정 크기 +value (0.2 = 20% 커짐)</summary>
             BodySize = 2,
@@ -38,5 +38,7 @@ namespace BouncyUFO
         public int maxStacks = 5;
         [Tooltip("다른 카드와 비교한 등장 비중")]
         public float weight = 1f;
+        [Tooltip("상점 가격(다이아). 가진 다이아보다 비싼 증강은 진열되지 않는다")]
+        public int price = 2;
     }
 }

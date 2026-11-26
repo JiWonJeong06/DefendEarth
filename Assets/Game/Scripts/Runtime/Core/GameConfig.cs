@@ -118,6 +118,10 @@ namespace BouncyUFO
         public float tutorialMonsterSpeed = 0.5f;
         [Tooltip("튜토리얼: UFO 몸통 판정 크기 배율(맞히기 쉽게)")]
         public float tutorialBodyScale = 1.3f;
+        [Tooltip("튜토리얼: 돌진 피해 + (잡기 쉽게. 로비 강화가 없어져서 대신)")]
+        public int tutorialDamageBonus = 3;
+        [Tooltip("튜토리얼 상점에서 최소한 가지고 있게 채워 주는 다이아(증강 하나는 살 수 있게)")]
+        public int tutorialShopDiamonds = 5;
         [Tooltip("튜토리얼 보스 체력 배율(약하게)")]
         public float tutorialBossHpMultiplier = 0.3f;
         [Tooltip("보스 등장 전 경고 시간(초)")]
@@ -148,15 +152,17 @@ namespace BouncyUFO
         [Tooltip("레벨마다 더 필요한 경험치")]
         public float accountXpStep = 30f;
 
-        [Header("판 밖 강화 (로비, 골드 사용)")]
-        public UpgradeDefinition[] upgrades =
-        {
-            new UpgradeDefinition { nameKey = "upgrade.earth.name", descKey = "upgrade.earth.desc", effect = UpgradeDefinition.Effect.EarthHp, valuePerLevel = 10f, costs = new[] { 40, 80, 150, 250, 400 } },
-            new UpgradeDefinition { nameKey = "upgrade.range.name", descKey = "upgrade.range.desc", effect = UpgradeDefinition.Effect.DashRange, valuePerLevel = 0.04f, costs = new[] { 60, 120, 220, 350, 500 } },
-            new UpgradeDefinition { nameKey = "upgrade.meteor.name", descKey = "upgrade.meteor.desc", effect = UpgradeDefinition.Effect.MeteorGold, valuePerLevel = 0.1f, costs = new[] { 50, 100, 180, 300, 450 } },
-            // 11/27 추가(저장된 강화 단계는 배열 순서로 맞추므로 항상 맨 뒤에 붙인다)
-            new UpgradeDefinition { nameKey = "upgrade.attack.name", descKey = "upgrade.attack.desc", effect = UpgradeDefinition.Effect.DashDamage, valuePerLevel = 1f, costs = new[] { 120, 300, 600 } },
-        };
+        [Header("다이아·상점 (11/27: 레벨업 대신 웨이브가 끝나면 상점 우주선)")]
+        [Tooltip("다이아 운석이 나오는 간격(초) 최소~최대")]
+        public Vector2 diamondMeteorIntervalRange = new Vector2(12f, 18f);
+        [Tooltip("보스를 잡으면 주는 다이아")]
+        public int bossDiamonds = 5;
+        [Tooltip("상점 우주선이 내려오는 속도(기준 픽셀/초)")]
+        public float shopShipDescendPx = 45f;
+        [Tooltip("상점 우주선이 오른쪽으로 떠나는 속도(기준 픽셀/초)")]
+        public float shopShipLeavePx = 80f;
+        [Tooltip("새로고침 첫 가격(다이아). 누를 때마다 +1, 상점마다 다시 이 값부터")]
+        public int shopRefreshBaseCost = 1;
 
         [Header("연쇄 보너스 (한 번 날아가는 동안 여러 마리)")]
         [Tooltip("연쇄 한 단계마다 처치 점수 +비율(0.1 = +10%)")]

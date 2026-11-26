@@ -16,7 +16,11 @@ namespace BouncyUFO
         public int TotalGold => MeteorGold + StageGold;
         public int Score { get; private set; }
 
+        /// <summary>다이아(상점 재화). 이 판에서만 쓰고 저장하지 않는다(11/27 사용자 결정). 유료 재화 아님.</summary>
+        public int Diamonds { get; private set; }
+
         public event Action<int> GoldChanged;
+        public event Action<int> DiamondsChanged;
         public event Action<int> ScoreChanged;
 
         public void AddKill(bool boss, int score)
@@ -32,6 +36,22 @@ namespace BouncyUFO
             if (score <= 0) return;
             Score += score;
             ScoreChanged?.Invoke(Score);
+        }
+
+        public void AddDiamonds(int amount)
+        {
+            if (amount <= 0) return;
+            Diamonds += amount;
+            DiamondsChanged?.Invoke(Diamonds);
+        }
+
+        /// <summary>다이아를 쓴다. 모자라면 false(아무것도 안 바뀜).</summary>
+        public bool SpendDiamonds(int amount)
+        {
+            if (amount < 0 || Diamonds < amount) return false;
+            Diamonds -= amount;
+            DiamondsChanged?.Invoke(Diamonds);
+            return true;
         }
 
         public void AddMeteorGold(int amount)

@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d686b487dd7e1434585b8b5ea7ffec6b, type: 3}
+  m_Name: DiamondMeteor
+  m_EditorClassIdentifier: BouncyUFO::BouncyUFO.MonsterDefinition
+  kind: 1
+  nameKey: meteor.diamond
+  sprite: {fileID: 21300000, guid: b500021951a718841ace0dda88f86f95, type: 3}
+  colorVariants: []
+  scale: 1
+  hitRadiusPx: 7
+  maxHp: 3
+  earthDamage: 0
+  speed: 0.07
+  knockbackScale: 1
+  pattern: 0
+  wobbleAmplitudePx: 0
+  wobbleFrequency: 1
+  chargeTriggerFraction: 0.3
+  chargeWindup: 0.45
+  chargeSpeed: 0.55
+  patrolStartFraction: 0.22
+  patrolSpeed: 0.18
+  patrolDescendSpeed: 0.006
+  groupSize: 1
+  groupSpreadPx: 24
+  spawnWeight: 0
+  unlockWave: 1
+  exp: 0
+  score: 10
+  gold: 0
+  diamonds: 2

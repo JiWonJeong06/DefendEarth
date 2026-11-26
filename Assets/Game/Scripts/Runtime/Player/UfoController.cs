@@ -18,7 +18,7 @@ namespace BouncyUFO
         // ---- 판 안 카드로 바뀌는 값 (판마다 초기화) ----
         /// <summary>돌진 피해 추가.</summary>
         public int DamageBonus { get; set; }
-        /// <summary>돌진 속도 배율(클수록 멀리 날아감). 로비 강화·카드 '멀리 날기'.</summary>
+        /// <summary>돌진 속도 배율(클수록 멀리 날아감). UFO 종류·증강 '멀리 날기'.</summary>
         public float RangeMultiplier { get; set; } = 1f;
         /// <summary>몸통 판정 크기 배율.</summary>
         public float BodyScale { get; set; } = 1f;
@@ -60,14 +60,15 @@ namespace BouncyUFO
         private float HalfWidth => U(Config.ufoHalfWidthPx);
         private float GroundY => PlayArea.Bottom + U(Config.ufoHeightFromBottomPx);
         private float BodyRadius => U(Config.ufoBodyRadiusPx) * BodyScale;
+        /// <summary>몸통 판정 반지름(유닛). 상점 우주선 닿기 판정에 쓴다.</summary>
+        public float BodyRadiusUnits => BodyRadius;
 
         private void Start()
         {
             transform.position = new Vector3(0f, GroundY, 0f);
-            // 로비 강화(멀리 날기)만큼 빨리 날아간다
-            RangeMultiplier = 1f + Upgrades.Total(UpgradeDefinition.Effect.DashRange);
-            // 로비 강화(공격력)만큼 돌진 피해 + (카드 '돌진 힘'은 판 안에서 여기에 더해진다)
-            DamageBonus = Mathf.RoundToInt(Upgrades.Total(UpgradeDefinition.Effect.DashDamage));
+            // 판 안 증강(상점)으로만 강해진다. 튜토리얼은 잠깐 세게(잡기 쉽게)
+            RangeMultiplier = 1f;
+            DamageBonus = SceneFlow.IsTutorial ? Config.tutorialDamageBonus : 0;
             // 고른 UFO 종류(넓은접시·자석·드릴…): 그림, 몸통 크기, 돌진 거리, 피해
             Type = UfoTypes.Selected;
             if (visual != null) UfoTypes.Apply(visual.GetComponent<SpriteRenderer>(), UfoTypes.SelectedIndex);

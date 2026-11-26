@@ -18,6 +18,8 @@ namespace BouncyUFO
         private const float BannerSeconds = 1.4f;
 
         private PixelNumber goldNumber;
+        private PixelNumber diamondNumber;
+        private SquashStretch gemBounce;
         private TextMeshPro waveText;
         private TextMeshPro banner;
         private float bannerTimer;
@@ -41,6 +43,17 @@ namespace BouncyUFO
             goldNumber.Configure(PixelNumber.Align.Left, new Color(1f, 0.88f, 0.4f));
             goldNumber.SetValue(0);
 
+            // 2줄: 다이아(상점 재화, 이 판에서만)
+            float y2 = y - config.PixelsToUnits(10f);
+            var gem = assets.CreateSprite("DiamondIcon", assets.diamondSprite, SortOrder.Hud + 5, transform);
+            gem.transform.position = new Vector3(PlayArea.Left + pad + config.PixelsToUnits(3f), y2, 0f);
+            gemBounce = gem.gameObject.AddComponent<SquashStretch>();
+            diamondNumber = new GameObject("Diamonds").AddComponent<PixelNumber>();
+            diamondNumber.transform.SetParent(transform, false);
+            diamondNumber.transform.position = new Vector3(PlayArea.Left + pad + config.PixelsToUnits(8f), y2, 0f);
+            diamondNumber.Configure(PixelNumber.Align.Left, new Color(0.8f, 0.95f, 1f));
+            diamondNumber.SetValue(0);
+
             waveText = GameText.Create("Wave", transform, GameText.Style.Body, SortOrder.Hud + 5, TextAlignmentOptions.MidlineRight, 60f);
             waveText.color = new Color(0.75f, 0.85f, 1f);
             // 오른쪽 끝은 일시정지 버튼(오른쪽 끝에서 16픽셀) 왼쪽에 맞춘다
@@ -63,6 +76,7 @@ namespace BouncyUFO
             {
                 session.Stats.GoldChanged += OnGoldChanged;
                 session.Stats.ScoreChanged += OnScoreChanged;
+                session.Stats.DiamondsChanged += OnDiamondsChanged;
             }
             if (waves != null) waves.WaveStarted += OnWaveStarted;
         }
@@ -74,6 +88,7 @@ namespace BouncyUFO
             {
                 session.Stats.GoldChanged -= OnGoldChanged;
                 session.Stats.ScoreChanged -= OnScoreChanged;
+                session.Stats.DiamondsChanged -= OnDiamondsChanged;
             }
             if (waves != null) waves.WaveStarted -= OnWaveStarted;
         }
@@ -82,6 +97,12 @@ namespace BouncyUFO
         {
             goldNumber.SetValue(total);
             coinBounce.Punch(0.35f);
+        }
+
+        private void OnDiamondsChanged(int total)
+        {
+            diamondNumber.SetValue(total);
+            gemBounce.Punch(0.35f);
         }
 
         private void OnWaveStarted(int wave)

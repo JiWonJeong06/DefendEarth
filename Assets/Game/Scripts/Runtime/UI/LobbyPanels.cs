@@ -6,122 +6,9 @@ using UnityEngine;
 namespace BouncyUFO
 {
     /// <summary>
-    /// 강화(판 밖 성장): 골드로 지구 체력·연사·운석 골드를 단계별로 올린다. 뽑기 없음.
-    /// (데모용 간단 버전. 1월에 UFO별 3트랙 강화로 확장)
-    /// </summary>
-    public sealed class UpgradePanel : ModalPanel
-    {
-        private sealed class Row
-        {
-            public int index;
-            public readonly List<SpriteRenderer> pips = new List<SpriteRenderer>();
-            public PixelButton buy;
-        }
-
-        private readonly List<Row> rows = new List<Row>();
-        private TextMeshPro gold;
-
-        /// <summary>골드를 썼을 때(로비의 골드 숫자를 갱신).</summary>
-        public event Action GoldSpent;
-
-        public static UpgradePanel Create(Transform parent, int sortingOrder)
-        {
-            var go = new GameObject("UpgradePanel");
-            go.transform.SetParent(parent, false);
-            var p = go.AddComponent<UpgradePanel>();
-            int count = PlayArea.Config.upgrades != null ? PlayArea.Config.upgrades.Length : 3;
-            p.Build(new Vector2(170f, 64f + count * 62f), "ui.upgrade", sortingOrder);
-            p.BuildContent();
-            return p;
-        }
-
-        private void BuildContent()
-        {
-            var a = GameAssets.Instance;
-            // 가진 골드: 동전 + 숫자 (숫자 상자는 왼쪽 정렬, 상자 왼쪽 끝 = 동전 오른쪽)
-            float top = SizePx.y * 0.5f; // 줄이 늘면 창이 커지고, 내용은 위에서부터
-            CreateSprite("Coin", a.coinSprite, new Vector2(-24f, top - 29f));
-            gold = CreateText("Gold", new Vector2(-18f + 40f, top - 29f), GameText.Style.Title, TextAlignmentOptions.MidlineLeft, 80f);
-            gold.color = new Color(1f, 0.86f, 0.4f);
-
-            var ups = Config.upgrades;
-            for (int i = 0; i < ups.Length; i++)
-            {
-                var u = ups[i];
-                float y = top - 59f - i * 62f;
-                var row = new Row { index = i };
-
-                var name = CreateText("Name" + i, new Vector2(0f, y), GameText.Style.Title, TextAlignmentOptions.MidlineLeft, 150f);
-                GameText.SetKey(name, u.nameKey);
-                var desc = CreateText("Desc" + i, new Vector2(0f, y - 14f), GameText.Style.Body, TextAlignmentOptions.MidlineLeft, 150f);
-                GameText.SetKey(desc, u.descKey);
-                desc.color = new Color(0.75f, 0.8f, 1f);
-
-                for (int p = 0; p < u.MaxLevel; p++)
-                {
-                    var pip = CreateSprite("Pip", a.pixelSprite, new Vector2(-71f + p * 7f, y - 30f));
-                    pip.transform.localScale = new Vector3(U(5f) / a.pixelSprite.bounds.size.x, U(5f) / a.pixelSprite.bounds.size.y, 1f);
-                    row.pips.Add(pip);
-                }
-
-                row.buy = CreateButton("Buy" + i, new Vector2(42f, y - 30f), new Vector2(66f, 16f), null, new Color(0.35f, 0.7f, 0.4f), GameText.Style.Body);
-                var label = GameText.Create("Label", row.buy.transform, GameText.Style.Body, Order + 8);
-                int index = i;
-                row.buy.Clicked += () => Buy(index);
-                rows.Add(row);
-                labelOf[row] = label; // 가격·"최대"는 Refresh에서 채움
-            }
-        }
-
-        private readonly Dictionary<Row, TextMeshPro> labelOf = new Dictionary<Row, TextMeshPro>();
-
-        private void Buy(int index)
-        {
-            var u = Config.upgrades[index];
-            var save = SaveSystem.Data;
-            int level = save.UpgradeLevel(index);
-            if (level >= u.MaxLevel) return;
-            int cost = u.costs[level];
-            if (save.gold < cost) return;
-            save.gold -= cost;
-            save.SetUpgradeLevel(index, level + 1);
-            SaveSystem.Save();
-            GoldSpent?.Invoke();
-            Refresh();
-        }
-
-        private void Refresh()
-        {
-            var save = SaveSystem.Data;
-            GameText.SetPlain(gold, save.gold.ToString());
-            foreach (var row in rows)
-            {
-                var u = Config.upgrades[row.index];
-                int level = save.UpgradeLevel(row.index);
-                for (int p = 0; p < row.pips.Count; p++)
-                    row.pips[p].color = p < level ? new Color(0.45f, 0.9f, 1f) : new Color(0.25f, 0.27f, 0.4f);
-
-                var label = labelOf[row];
-                if (level >= u.MaxLevel)
-                {
-                    GameText.SetKey(label, "ui.upgrade.max");
-                    row.buy.Interactable = false;
-                }
-                else
-                {
-                    int cost = u.costs[level];
-                    GameText.SetPlain(label, cost + " G");
-                    row.buy.Interactable = save.gold >= cost;
-                }
-            }
-        }
-
-        protected override void OnOpened() => Refresh();
-    }
-
-    /// <summary>
-    /// 캐릭터 꾸미기(프로필용, 게임에 영향 없음): 머리 모양·머리색·머리 장식·눈 모양·눈 색·피부색·옷을 고른다. 데모는 모두 무료.
-    /// 자유 그림·글 입력은 넣지 않는다(정해진 부품만). 프로필 창의 "꾸미기"로 연다.
+    /// 캐릭터 꾸미기(프로필용, 게임에 영향 없음): 머리 모양·머리색·머리 장식·눈 모양·눈 색·피부색·옷.
+    /// 바꾸는 동안은 미리보기만 바뀌고, "적용"을 눌러야 저장된다(11/27). "되돌리기"는 창을 열었을 때(또는 마지막 적용) 모습으로.
+    /// 적용하지 않고 닫으면 "적용하지 않고 나갈까요?"를 묻는다. 자유 그림·글 입력은 넣지 않는다(정해진 부품만).
     /// </summary>
     public sealed class CustomizePanel : ModalPanel
     {
@@ -134,6 +21,15 @@ namespace BouncyUFO
             "ui.custom.eyecolor", "ui.custom.skin", "ui.custom.outfit",
         };
 
+        private CharacterLook saved;    // 창을 열 때(또는 마지막 적용) 모습
+        private CharacterLook working;  // 지금 고르는 중인 모습
+        private PixelButton applyButton;
+        private PixelButton revertButton;
+        private ConfirmPanel confirm;
+        private bool forceClose;
+
+        private bool Dirty => !working.SameAs(saved);
+
         public static CustomizePanel Create(Transform parent, int sortingOrder)
         {
             var go = new GameObject("CustomizePanel");
@@ -141,6 +37,7 @@ namespace BouncyUFO
             var p = go.AddComponent<CustomizePanel>();
             p.Build(new Vector2(170f, 290f), "ui.custom", sortingOrder);
             p.BuildContent();
+            p.confirm = ConfirmPanel.Create(parent, sortingOrder + 40);
             return p;
         }
 
@@ -151,22 +48,27 @@ namespace BouncyUFO
             for (int i = 0; i < Parts; i++)
             {
                 int index = i;
-                float y = 40f - i * 20f;
+                float y = 44f - i * 19f;
                 var label = CreateText("Label" + i, new Vector2(0f, y), GameText.Style.Body, TextAlignmentOptions.MidlineLeft, 150f);
                 GameText.SetKey(label, Keys[i]);
                 label.color = new Color(0.75f, 0.8f, 1f);
 
-                var prev = CreateButton("Prev" + i, new Vector2(14f, y), new Vector2(18f, 16f), null, new Color(0.3f, 0.4f, 0.7f));
+                var prev = CreateButton("Prev" + i, new Vector2(14f, y), new Vector2(18f, 15f), null, new Color(0.3f, 0.4f, 0.7f));
                 GameText.SetPlain(GameText.Create("L", prev.transform, GameText.Style.Title, Order + 8), "<");
                 prev.Clicked += () => Change(index, -1);
-                var next = CreateButton("Next" + i, new Vector2(66f, y), new Vector2(18f, 16f), null, new Color(0.3f, 0.4f, 0.7f));
+                var next = CreateButton("Next" + i, new Vector2(66f, y), new Vector2(18f, 15f), null, new Color(0.3f, 0.4f, 0.7f));
                 GameText.SetPlain(GameText.Create("R", next.transform, GameText.Style.Title, Order + 8), ">");
                 next.Clicked += () => Change(index, 1);
 
                 values[i] = CreateText("Value" + i, new Vector2(40f, y), GameText.Style.Body);
             }
 
-            var note = CreateText("Note", new Vector2(0f, -116f), GameText.Style.Body, TextAlignmentOptions.Center, 150f, true);
+            revertButton = CreateButton("Revert", new Vector2(-38f, -98f), new Vector2(68f, 18f), "ui.custom.revert", new Color(0.45f, 0.5f, 0.6f), GameText.Style.Body);
+            revertButton.Clicked += Revert;
+            applyButton = CreateButton("Apply", new Vector2(38f, -98f), new Vector2(68f, 18f), "ui.custom.apply", new Color(0.3f, 0.75f, 0.45f), GameText.Style.Body);
+            applyButton.Clicked += ApplyLook;
+
+            var note = CreateText("Note", new Vector2(0f, -122f), GameText.Style.Body, TextAlignmentOptions.Center, 150f, true);
             GameText.SetKey(note, "ui.custom.note");
             note.color = new Color(0.6f, 0.65f, 0.8f);
         }
@@ -185,57 +87,68 @@ namespace BouncyUFO
             }
         }
 
-        private static int Get(SaveData d, int part)
-        {
-            switch (part)
-            {
-                case 0: return d.hairStyle;
-                case 1: return d.hairColor;
-                case 2: return d.headwear;
-                case 3: return d.eyeStyle;
-                case 4: return d.eyeColor;
-                case 5: return d.skinColor;
-                default: return d.outfit;
-            }
-        }
-
-        private static void Set(SaveData d, int part, int v)
-        {
-            switch (part)
-            {
-                case 0: d.hairStyle = v; break;
-                case 1: d.hairColor = v; break;
-                case 2: d.headwear = v; break;
-                case 3: d.eyeStyle = v; break;
-                case 4: d.eyeColor = v; break;
-                case 5: d.skinColor = v; break;
-                default: d.outfit = v; break;
-            }
-        }
-
         private void Change(int part, int delta)
         {
-            var d = SaveSystem.Data;
-            Set(d, part, PilotView.Mod(Get(d, part) + delta, Count(part)));
-            SaveSystem.Save();
+            working.Set(part, PilotView.Mod(working.Get(part) + delta, Count(part)));
             Refresh();
+        }
+
+        private void ApplyLook()
+        {
+            working.WriteTo(SaveSystem.Data);
+            SaveSystem.Save();
+            saved = working;
+            Sound.Play(Sfx.CardPick);
+            Refresh();
+        }
+
+        private void Revert()
+        {
+            working = saved;
+            Refresh();
+        }
+
+        /// <summary>적용 안 한 바뀐 것이 있으면 먼저 묻는다(예 = 버리고 닫기, 아니요 = 계속 꾸미기).</summary>
+        public override void Close()
+        {
+            if (IsOpen && Dirty && !forceClose)
+            {
+                confirm.Ask("ui.custom.discard_confirm", () =>
+                {
+                    working = saved;
+                    forceClose = true;
+                    Close();
+                    forceClose = false;
+                });
+                return;
+            }
+            base.Close();
         }
 
         private void Refresh()
         {
-            var d = SaveSystem.Data;
             for (int i = 0; i < Parts; i++)
             {
                 int n = Count(i);
-                int v = PilotView.Mod(Get(d, i), n);
+                int v = PilotView.Mod(working.Get(i), n);
                 // 머리 장식 0번은 "없음"
                 string text = i == 2 && v == 0 ? Localization.Get("ui.custom.none") : (v + 1) + " / " + n;
                 GameText.SetPlain(values[i], text);
             }
-            preview.Refresh();
+            preview.Refresh(working);
+            bool dirty = Dirty;
+            applyButton.Interactable = dirty;
+            revertButton.Interactable = dirty;
+            applyButton.SetColor(dirty ? new Color(0.3f, 0.75f, 0.45f) : new Color(0.25f, 0.32f, 0.3f));
+            revertButton.SetColor(dirty ? new Color(0.45f, 0.5f, 0.6f) : new Color(0.25f, 0.27f, 0.32f));
         }
 
-        protected override void OnOpened() => Refresh();
+        protected override void OnOpened()
+        {
+            saved = CharacterLook.FromSave();
+            working = saved;
+            Refresh();
+        }
     }
 
     /// <summary>

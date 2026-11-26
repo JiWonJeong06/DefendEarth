@@ -11,11 +11,13 @@ namespace BouncyUFO
     /// </summary>
     public sealed class WaveDirector : MonoBehaviour
     {
-        private enum Phase { Break, Wave, BossWarning, Boss }
+        private enum Phase { Break, Wave, BossWarning, Boss, WaitClear, Shop }
 
         [SerializeField] private MonsterSpawner spawner;
         [SerializeField] private WarningFlash warning;
         [SerializeField] private GoldDrops gold;
+        [SerializeField] private UfoController ufo;
+        [SerializeField] private LevelSystem levels;
 
         public int Wave { get; private set; }
         public int BossRound { get; private set; }
@@ -45,6 +47,11 @@ namespace BouncyUFO
         private float rushTimer;
         private float summonTimer;
         private float meteorTimer;
+        private float diamondTimer;
+        private ShopUI shop;
+
+        /// <summary>상점 우주선이 떠났다(튜토리얼이 듣는다).</summary>
+        public event Action ShopEnded;
 
         private GameConfig Config => PlayArea.Config;
 
@@ -65,6 +72,8 @@ namespace BouncyUFO
             phase = Phase.Break;
             phaseTimer = 1f; // 시작하고 잠깐 뒤 1웨이브
             meteorTimer = NextMeteorDelay();
+            diamondTimer = NextDiamondDelay();
+            shop = ShopUI.Create(transform, SortOrder.Overlay + 10, levels);
         }
 
         private float HpMultiplier => 1f + Config.hpGrowthPerWave * Mathf.Max(0, Wave - 1);
@@ -93,7 +102,7 @@ namespace BouncyUFO
                 return;
             }
             if (HoldStart && Wave == 0) return;
-            UpdateMeteors(dt);
+            if (phase == Phase.Wave || phase == Phase.Boss) UpdateMeteors(dt); // 상점 때는 운석도 쉼
 
             switch (phase)
             {
@@ -111,7 +120,31 @@ namespace BouncyUFO
                 case Phase.Boss:
                     UpdateBoss(dt);
                     break;
+                case Phase.WaitClear:
+                    // 남은 몬스터(운석 제외)가 다 없어지면 상점 우주선
+                    if (!AnyMonsterLeft()) StartShop(false, null);
+                    break;
             }
+        }
+
+        private static bool AnyMonsterLeft()
+        {
+            var active = MonsterRegistry.Active;
+            for (int i = 0; i < active.Count; i++)
+                if (active[i].IsAlive && active[i].Kind != MonsterDefinition.Kind.Meteor) return true;
+            return false;
+        }
+
+        /// <summary>상점 우주선을 부른다. 떠나면 다음 웨이브(튜토리얼은 시간 제한 없음, done을 부른다).</summary>
+        public void StartShop(bool tutorial, Action done)
+        {
+            phase = Phase.Shop;
+            ShopShip.Spawn(transform, ufo, shop, tutorial, () =>
+            {
+                if (!Scripted) { phase = Phase.Break; phaseTimer = Config.waveBreak; }
+                ShopEnded?.Invoke();
+                done?.Invoke();
+            });
         }
 
         private void StartNextWave()
@@ -175,11 +208,7 @@ namespace BouncyUFO
                 }
             }
 
-            if (waveElapsed >= Config.waveDuration)
-            {
-                phase = Phase.Break;
-                phaseTimer = Config.waveBreak;
-            }
+            if (waveElapsed >= Config.waveDuration) phase = Phase.WaitClear; // 새 몬스터 없음 → 정리되면 상점
         }
 
         private void SpawnBoss()
@@ -221,8 +250,7 @@ namespace BouncyUFO
         {
             if (phase != Phase.Boss) return;
             CurrentBoss = null;
-            phase = Phase.Break;
-            phaseTimer = Config.waveBreak + 1f;
+            phase = Phase.WaitClear; // 부하까지 정리되면 상점
             BossEnded?.Invoke(killed);
         }
 
@@ -245,7 +273,11 @@ namespace BouncyUFO
             {
                 // 단계 보상: 보스 회차가 오를수록 커진다
                 int reward = Config.bossRewardBase + Config.bossRewardStep * (BossRound - 1);
-                if (gold != null) gold.Burst(m.transform.position, reward, GoldDrops.Source.Stage);
+                if (gold != null)
+                {
+                    gold.Burst(m.transform.position, reward, GoldDrops.Source.Stage);
+                    gold.Burst(m.transform.position, Config.bossDiamonds, GoldDrops.Source.Diamond);
+                }
                 Sound.Play(Sfx.BossDown);
                 EndBoss(true);
             }
@@ -259,11 +291,21 @@ namespace BouncyUFO
         private void UpdateMeteors(float dt)
         {
             var def = GameAssets.Instance.meteor;
-            if (def == null) return;
-            meteorTimer -= dt;
-            if (meteorTimer > 0f) return;
-            meteorTimer = spawner.TrySpawnGroup(def, 1f, 1f) ? NextMeteorDelay() : 0.3f;
+            if (def != null)
+            {
+                meteorTimer -= dt;
+                if (meteorTimer <= 0f) meteorTimer = spawner.TrySpawnGroup(def, 1f, 1f) ? NextMeteorDelay() : 0.3f;
+            }
+
+            // 다이아 운석(상점 재화)
+            var gem = GameAssets.Instance.diamondMeteor;
+            if (gem == null) return;
+            diamondTimer -= dt;
+            if (diamondTimer > 0f) return;
+            diamondTimer = spawner.TrySpawnGroup(gem, 1f, 1f) ? NextDiamondDelay() : 0.3f;
         }
+
+        private float NextDiamondDelay() => UnityEngine.Random.Range(Config.diamondMeteorIntervalRange.x, Config.diamondMeteorIntervalRange.y);
 
         private float NextMeteorDelay() => UnityEngine.Random.Range(Config.meteorIntervalRange.x, Config.meteorIntervalRange.y);
     }

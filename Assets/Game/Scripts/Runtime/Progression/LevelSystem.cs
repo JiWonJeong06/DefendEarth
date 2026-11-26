@@ -5,85 +5,32 @@ using UnityEngine;
 namespace BouncyUFO
 {
     /// <summary>
-    /// 판 안 성장. 몬스터를 잡으면 경험치가 쌓이고, 레벨업하면 게임을 멈추고 카드 3장을 보여 준다.
-    /// 고른 카드는 UFO·지구에 바로 적용된다. 판이 끝나면 모두 초기화(장면을 다시 불러오므로).
+    /// 판 안 증강(능력치 카드) 관리. 11/27부터 경험치·레벨업은 없고, 웨이브가 끝날 때 오는 상점 우주선에서
+    /// 다이아로 산다(ShopUI). 산 증강은 UFO·지구에 바로 적용되고, 판이 끝나면 모두 초기화(장면을 다시 불러오므로).
+    /// (클래스 이름은 옛 "레벨 시스템" 그대로: 씬·장면 만들기에서 이 이름으로 연결돼 있다)
     /// </summary>
     public sealed class LevelSystem : MonoBehaviour
     {
-        public const int ChoiceCount = 3;
-
         [SerializeField] private UfoController ufo;
         [SerializeField] private SquashStretch ufoVisual;
 
-        public int Level { get; private set; } = 1;
-        public float Xp { get; private set; }
-        public float XpToNext => NeedFor(Level);
-
-        /// <summary>경험치가 바뀜 (현재, 다음 레벨까지 필요).</summary>
-        public event Action<float, float> XpChanged;
-        /// <summary>레벨업해서 카드를 골라야 함 (새 레벨, 보여 줄 카드들).</summary>
-        public event Action<int, IReadOnlyList<CardDefinition>> ChoiceRequested;
-        /// <summary>카드를 골랐음 (카드, 그 카드를 고른 횟수).</summary>
+        /// <summary>증강을 샀음 (증강, 산 횟수).</summary>
         public event Action<CardDefinition, int> CardPicked;
 
         private readonly Dictionary<CardDefinition, int> stacks = new Dictionary<CardDefinition, int>();
-        private readonly List<CardDefinition> offer = new List<CardDefinition>(ChoiceCount);
         private readonly List<CardDefinition> pool = new List<CardDefinition>();
-        private int pendingLevelUps;
-        private bool choosing;
 
         private GameConfig Config => PlayArea.Config;
 
-        private void OnEnable() => Monster.Killed += OnKilled;
-        private void OnDisable() => Monster.Killed -= OnKilled;
-
-        private void Start() => XpChanged?.Invoke(Xp, XpToNext);
-
-        public float NeedFor(int level)
-        {
-            int n = Mathf.Max(0, level - 1);
-            return Mathf.Max(1f, Mathf.Round(Config.xpBase + Config.xpStep * n + Config.xpQuadratic * n * n));
-        }
-
         public int StacksOf(CardDefinition card) => card != null && stacks.TryGetValue(card, out int s) ? s : 0;
 
-        private void OnKilled(Monster m)
-        {
-            if (m.Definition.exp <= 0 || SceneFlow.IsTutorial) return; // 튜토리얼은 경험치·카드 없음
-            var session = GameSession.Instance;
-            if (session != null && !session.IsPlaying) return;
-            AddXp(m.Definition.exp);
-        }
+        public bool IsMaxed(CardDefinition card) => card != null && card.maxStacks > 0 && StacksOf(card) >= card.maxStacks;
 
-        public void AddXp(float amount)
-        {
-            Xp += amount;
-            while (Xp >= XpToNext)
-            {
-                Xp -= XpToNext;
-                Level++;
-                pendingLevelUps++;
-            }
-            XpChanged?.Invoke(Xp, XpToNext);
-            if (pendingLevelUps > 0 && !choosing) OpenChoice();
-        }
-
-        private void OpenChoice()
-        {
-            BuildOffer();
-            if (offer.Count == 0) { pendingLevelUps = 0; return; }
-
-            pendingLevelUps--;
-            choosing = true;
-            if (ufoVisual != null) ufoVisual.Punch(-Config.squashOnLevelUp); // 레벨업: 크게 통!
-            Sound.Play(Sfx.LevelUp);
-            Effects.Hit(ufo != null ? (Vector2)ufo.transform.position : Vector2.zero, 2.5f, new Color(0.6f, 1f, 0.7f));
-            GameSession.Instance?.Pause();
-            ChoiceRequested?.Invoke(Level, offer);
-        }
-
-        /// <summary>최대 단계가 아닌 카드 중에서 겹치지 않게 비중대로 3장.</summary>
-        private void BuildOffer()
+        /// <summary>
+        /// 상점 진열: 최대 단계가 아니고 가격이 maxPrice(가진 다이아) 이하인 증강 중에서 겹치지 않게 비중대로 count개.
+        /// (11/27 사용자 결정: 가진 다이아보다 비싼 증강은 나오지 않는다)
+        /// </summary>
+        public void BuildOffer(List<CardDefinition> offer, int count, int maxPrice)
         {
             offer.Clear();
             pool.Clear();
@@ -91,11 +38,11 @@ namespace BouncyUFO
             if (all == null) return;
             foreach (var c in all)
             {
-                if (c == null || c.weight <= 0f) continue;
-                if (c.maxStacks > 0 && StacksOf(c) >= c.maxStacks) continue;
+                if (c == null || c.weight <= 0f || IsMaxed(c)) continue;
+                if (c.price > maxPrice) continue;
                 pool.Add(c);
             }
-            while (offer.Count < ChoiceCount && pool.Count > 0)
+            while (offer.Count < count && pool.Count > 0)
             {
                 float total = 0f;
                 foreach (var c in pool) total += c.weight;
@@ -111,19 +58,16 @@ namespace BouncyUFO
             }
         }
 
-        /// <summary>카드 화면에서 하나를 고르면 부른다.</summary>
-        public void Pick(CardDefinition card)
+        /// <summary>상점에서 산 증강을 적용한다(다이아는 부르는 쪽에서 뺀다).</summary>
+        public void Add(CardDefinition card)
         {
-            if (!choosing || card == null) return;
-            choosing = false;
+            if (card == null) return;
             int count = StacksOf(card) + 1;
             stacks[card] = count;
             Apply(card);
-            Sound.Play(Sfx.CardPick);
+            if (ufoVisual != null) ufoVisual.Punch(-Config.squashOnLevelUp); // 강해졌다: 크게 통!
+            Sound.Play(Sfx.LevelUp);
             CardPicked?.Invoke(card, count);
-            GameSession.Instance?.Resume();
-
-            if (pendingLevelUps > 0) OpenChoice(); // 한 번에 여러 레벨이 올랐으면 이어서
         }
 
         private void Apply(CardDefinition card)

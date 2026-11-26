@@ -21,6 +21,12 @@ namespace BouncyUFO
         public MonsterDefinition[] monsters;
         public MonsterDefinition boss;
         public MonsterDefinition meteor;
+        [Tooltip("다이아 운석(부수면 다이아, 지구 피해 없음)")]
+        public MonsterDefinition diamondMeteor;
+        [Tooltip("다이아 아이콘(위쪽 표시·떨어지는 보석·상점 가격)")]
+        public Sprite diamondSprite;
+        [Tooltip("웨이브가 끝나면 오는 상점 우주선")]
+        public Sprite shopShipSprite;
         public Sprite coinSprite;
         [Tooltip("숫자 0~9 도트 그림(점수·골드 표시)")]
         public Sprite[] digitSprites = new Sprite[10];

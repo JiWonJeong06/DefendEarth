@@ -4,7 +4,7 @@ using UnityEngine;
 namespace BouncyUFO.EditorTools
 {
     /// <summary>
-    /// 캐릭터 부품 그림을 폴더에 넣기만 하면 도트 설정이 자동으로 맞춰진다:
+    /// 캐릭터 부품·아이템(다이아·상점 우주선) 그림을 폴더에 넣기만 하면 도트 설정이 자동으로 맞춰진다:
     /// 스프라이트, PPU 16, Point(흐림 없음), 압축 없음, 밉맵 없음, 기준점 가운데.
     /// (모든 부품이 같은 캔버스 크기라 가운데 기준이면 겹쳤을 때 위치가 맞는다)
     /// </summary>
@@ -13,6 +13,7 @@ namespace BouncyUFO.EditorTools
         private static readonly string[] Folders =
         {
             "Assets/Art/Temp/Character/",
+            "Assets/Art/Temp/Items/",
             "Assets/Art/Character/",
         };
 

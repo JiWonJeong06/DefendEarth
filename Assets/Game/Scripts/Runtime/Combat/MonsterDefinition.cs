@@ -83,6 +83,8 @@ namespace BouncyUFO
         public int score = 10;
         [Tooltip("[운석] 부수면 주는 골드")]
         public int gold = 0;
+        [Tooltip("[다이아 운석] 부수면 주는 다이아(상점 재화)")]
+        public int diamonds = 0;
 
         /// <summary>이번에 나올 그림: 색 그림 중 하나를 무작위로(없으면 기본 그림).</summary>
         public Sprite PickSprite()

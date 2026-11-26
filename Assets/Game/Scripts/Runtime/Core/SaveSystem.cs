@@ -22,7 +22,7 @@ namespace BouncyUFO
     [Serializable]
     public sealed class SaveData
     {
-        public const int CurrentVersion = 6;
+        public const int CurrentVersion = 7;
 
         public int version = CurrentVersion;
         public int bestScore;
@@ -140,6 +140,7 @@ namespace BouncyUFO
             if (d.version < 5) d.aimAssist = true;
             if (d.upgradeLevels == null) d.upgradeLevels = new List<int>();
             if (d.ownedUfos == null) d.ownedUfos = new List<int>();
+            if (d.version < 7) RefundUpgrades(d);
             if (d.topScores == null) d.topScores = new List<ScoreEntry>();
             d.version = SaveData.CurrentVersion;
             return d;
@@ -156,6 +157,28 @@ namespace BouncyUFO
             list.Insert(index, entry);
             if (list.Count > TopScoreCount) list.RemoveRange(TopScoreCount, list.Count - TopScoreCount);
             return index + 1;
+        }
+
+        /// <summary>
+        /// 11/27 로비 강화를 없애면서 그동안 강화에 쓴 골드를 한 번 돌려준다(옛 가격표 그대로).
+        /// 순서: 지구 체력, 멀리 날기, 운석 골드, 공격력.
+        /// </summary>
+        private static void RefundUpgrades(SaveData d)
+        {
+            int[][] oldCosts =
+            {
+                new[] { 40, 80, 150, 250, 400 },
+                new[] { 60, 120, 220, 350, 500 },
+                new[] { 50, 100, 180, 300, 450 },
+                new[] { 120, 300, 600 },
+            };
+            int refund = 0;
+            for (int i = 0; i < oldCosts.Length && i < d.upgradeLevels.Count; i++)
+                for (int lv = 0; lv < d.upgradeLevels[i] && lv < oldCosts[i].Length; lv++)
+                    refund += oldCosts[i][lv];
+            d.gold += refund;
+            d.upgradeLevels.Clear();
+            if (refund > 0) Debug.Log("[Save] 로비 강화를 없애면서 골드 " + refund + "을 돌려줬습니다.");
         }
 
         /// <summary>데이터 초기화(설정의 계정 탭): 저장 파일을 지우고 처음 설치한 상태로(설정 포함).</summary>

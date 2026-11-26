@@ -9,7 +9,7 @@ namespace BouncyUFO
     /// </summary>
     public sealed class GoldDrops : MonoBehaviour
     {
-        public enum Source { Meteor, Stage }
+        public enum Source { Meteor, Stage, Diamond }
 
         private const int MaxCoinsPerBurst = 12;
 
@@ -39,10 +39,11 @@ namespace BouncyUFO
 
         private void OnKilled(Monster m)
         {
+            if (m.Definition.diamonds > 0) Burst(m.transform.position, m.Definition.diamonds, Source.Diamond);
             if (m.Kind == MonsterDefinition.Kind.Meteor && m.Definition.gold > 0)
             {
-                // 로비 강화(운석 골드)만큼 늘어난다
-                int amount = Mathf.RoundToInt(m.Definition.gold * (1f + Upgrades.Total(UpgradeDefinition.Effect.MeteorGold) + UfoTypes.Selected.meteorGold));
+                // 자석형 UFO는 더 많이
+                int amount = Mathf.RoundToInt(m.Definition.gold * (1f + UfoTypes.Selected.meteorGold));
                 Burst(m.transform.position, amount, Source.Meteor);
             }
         }
@@ -60,6 +61,9 @@ namespace BouncyUFO
                 float angle = (i / (float)coins) * Mathf.PI * 2f + Random.Range(-0.3f, 0.3f);
                 float speed = Config.PixelsToUnits(Random.Range(40f, 70f));
                 var coin = pool.Get();
+                var sr = coin.GetComponent<SpriteRenderer>();
+                var a = GameAssets.Instance;
+                sr.sprite = source == Source.Diamond && a.diamondSprite != null ? a.diamondSprite : a.coinSprite;
                 coin.Launch(this, position, new Vector2(Mathf.Cos(angle), Mathf.Sin(angle) + 0.4f) * speed, value, source);
                 flying.Add(coin);
             }
@@ -69,7 +73,8 @@ namespace BouncyUFO
 
         internal void Collect(Coin coin)
         {
-            Sound.Play(Sfx.Coin, Random.Range(0.97f, 1.06f), 0.6f);
+            if (coin.Source == Source.Diamond) Sound.Play(Sfx.Coin, 1.35f, 0.8f); // 보석은 더 높은 소리
+            else Sound.Play(Sfx.Coin, Random.Range(0.97f, 1.06f), 0.6f);
             Deposit(coin);
             flying.Remove(coin);
             pool.Release(coin);
@@ -79,7 +84,8 @@ namespace BouncyUFO
         {
             var stats = GameSession.Instance != null ? GameSession.Instance.Stats : null;
             if (stats == null) return;
-            if (coin.Source == Source.Meteor) stats.AddMeteorGold(coin.Value);
+            if (coin.Source == Source.Diamond) stats.AddDiamonds(coin.Value);
+            else if (coin.Source == Source.Meteor) stats.AddMeteorGold(coin.Value);
             else stats.AddStageGold(coin.Value);
         }
 

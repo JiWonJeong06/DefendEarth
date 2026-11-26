@@ -19,6 +19,7 @@ namespace BouncyUFO.EditorTools
         private const string EarthSheetPath = "Assets/Art/Temp/Earth-Star.png";
         private const string UiSheetPath = "Assets/Art/Temp/UI.png";
         private const string CharPath = "Assets/Art/Temp/Character/";
+        private const string ItemPath = "Assets/Art/Temp/Items/";
 
         private static void ReimportFolder(string folder)
         {
@@ -89,6 +90,7 @@ namespace BouncyUFO.EditorTools
             assets.monsters = LoadOrCreateMonsters();
             assets.boss = LoadOrCreateBoss();
             assets.meteor = LoadOrCreateMeteor();
+            assets.diamondMeteor = LoadOrCreateDiamondMeteor();
             assets.coinSprite = LoadSprite(DummyPath + "Coin.png");
             assets.digitSprites = new Sprite[10];
             for (int i = 0; i < 10; i++) assets.digitSprites[i] = LoadSprite(DummyPath + "Digit" + i + ".png");
@@ -99,6 +101,8 @@ namespace BouncyUFO.EditorTools
             assets.textShader = AssetDatabase.LoadAssetAtPath<Shader>(TextShaderPath);
             assets.fontLicense = AssetDatabase.LoadAssetAtPath<TextAsset>(FontPath + "Galmuri-OFL.txt");
             assets.ufoSprite = FindSprite(UfoSheetPath, "Enemy_0");
+            assets.diamondSprite = LoadSprite(ItemPath + "Diamond.png");
+            assets.shopShipSprite = LoadSprite(ItemPath + "ShopShip.png");
             assets.ufoSprites = new[] { FindSprite(UfoSheetPath, "Enemy_0"), FindSprite(UfoSheetPath, "Enemy_1"), FindSprite(UfoSheetPath, "Enemy_2") };
             assets.earthSprite = FindSprite(EarthSheetPath, "Earth-Star_0");
             assets.loadingBarFrame = FindSprite(UiSheetPath, "UI_3");
@@ -193,17 +197,13 @@ namespace BouncyUFO.EditorTools
             var levels = new GameObject("LevelSystem").AddComponent<LevelSystem>();
             SetField(levels, "ufo", controller);
             SetField(levels, "ufoVisual", squash);
-            var xpBar = new GameObject("XpBar").AddComponent<XpBar>();
-            SetField(xpBar, "levels", levels);
-            var cardUi = new GameObject("CardChoiceUI").AddComponent<CardChoiceUI>();
-            SetField(cardUi, "input", input);
-            SetField(cardUi, "levels", levels);
+            SetField(waves, "ufo", controller);
+            SetField(waves, "levels", levels); // 상점(증강) 연결
 
             // 간단 튜토리얼(처음 한 번), 일시정지
             var tutorial = new GameObject("TutorialDirector").AddComponent<TutorialDirector>();
             SetField(tutorial, "ufo", controller);
             SetField(tutorial, "waves", waves);
-            SetField(tutorial, "levels", levels);
             new GameObject("PauseMenu").AddComponent<PauseMenu>();
         }
 
@@ -282,6 +282,23 @@ namespace BouncyUFO.EditorTools
             return boss;
         }
 
+        /// <summary>다이아 운석(하얀 수정). 지나가도 지구 피해 없음, 부수면 다이아(판 안 상점 재화).</summary>
+        private static MonsterDefinition LoadOrCreateDiamondMeteor()
+        {
+            ReimportFolder(ItemPath);
+            var gem = LoadOrCreateMonster("DiamondMeteor", d =>
+            {
+                d.kind = MonsterDefinition.Kind.Meteor;
+                d.nameKey = "meteor.diamond"; d.sprite = LoadSprite(ItemPath + "DiamondMeteor.png");
+                d.scale = 1f; d.hitRadiusPx = 7f;
+                d.maxHp = 3; d.earthDamage = 0; d.speed = 0.07f;
+                d.spawnWeight = 0f; d.unlockWave = 1;
+                d.exp = 0; d.score = 10; d.gold = 0; d.diamonds = 2;
+            });
+            AssetDatabase.SaveAssets();
+            return gem;
+        }
+
         /// <summary>재화 운석 1종(더미 그림). 지나가도 지구 피해 없음, 부수면 골드.</summary>
         private static MonsterDefinition LoadOrCreateMeteor()
         {
@@ -309,27 +326,27 @@ namespace BouncyUFO.EditorTools
                 LoadOrCreateCard("DashPower", c =>
                 {
                     c.nameKey = "card.dash.name"; c.descKey = "card.dash.desc"; c.icon = LoadSprite(DummyPath + "IconDamage.png");
-                    c.color = new Color(1f, 0.45f, 0.4f); c.effect = CardDefinition.Effect.DashPower; c.value = 1f; c.maxStacks = 5; c.weight = 1f;
+                    c.color = new Color(1f, 0.45f, 0.4f); c.effect = CardDefinition.Effect.DashPower; c.value = 2f; c.maxStacks = 5; c.weight = 1f; c.price = 3;
                 }),
                 LoadOrCreateCard("DashRange", c =>
                 {
                     c.nameKey = "card.range.name"; c.descKey = "card.range.desc"; c.icon = LoadSprite(DummyPath + "IconFireRate.png");
-                    c.color = new Color(1f, 0.85f, 0.3f); c.effect = CardDefinition.Effect.DashRange; c.value = 0.1f; c.maxStacks = 5; c.weight = 1f;
+                    c.color = new Color(1f, 0.85f, 0.3f); c.effect = CardDefinition.Effect.DashRange; c.value = 0.2f; c.price = 2; c.maxStacks = 5; c.weight = 1f;
                 }),
                 LoadOrCreateCard("BodySize", c =>
                 {
                     c.nameKey = "card.body.name"; c.descKey = "card.body.desc"; c.icon = LoadSprite(DummyPath + "IconMultiShot.png");
-                    c.color = new Color(0.4f, 0.9f, 1f); c.effect = CardDefinition.Effect.BodySize; c.value = 0.2f; c.maxStacks = 3; c.weight = 0.8f;
+                    c.color = new Color(0.4f, 0.9f, 1f); c.effect = CardDefinition.Effect.BodySize; c.value = 0.4f; c.maxStacks = 3; c.weight = 0.8f; c.price = 3;
                 }),
                 LoadOrCreateCard("ChainDamage", c =>
                 {
                     c.nameKey = "card.chain.name"; c.descKey = "card.chain.desc"; c.icon = LoadSprite(DummyPath + "IconPierce.png");
-                    c.color = new Color(0.6f, 1f, 0.5f); c.effect = CardDefinition.Effect.ChainDamage; c.value = 1f; c.maxStacks = 3; c.weight = 0.8f;
+                    c.color = new Color(0.6f, 1f, 0.5f); c.effect = CardDefinition.Effect.ChainDamage; c.value = 2f; c.price = 3; c.maxStacks = 3; c.weight = 0.8f;
                 }),
                 LoadOrCreateCard("HealEarth", c =>
                 {
                     c.nameKey = "card.heal.name"; c.descKey = "card.heal.desc"; c.icon = LoadSprite(DummyPath + "IconHeal.png");
-                    c.color = new Color(0.45f, 0.65f, 1f); c.effect = CardDefinition.Effect.HealEarth; c.value = 25f; c.maxStacks = 0; c.weight = 0.7f;
+                    c.color = new Color(0.45f, 0.65f, 1f); c.effect = CardDefinition.Effect.HealEarth; c.value = 50f; c.price = 2; c.maxStacks = 0; c.weight = 0.7f;
                 }),
             };
             AssetDatabase.SaveAssets();

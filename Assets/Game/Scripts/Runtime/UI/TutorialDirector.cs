@@ -8,13 +8,12 @@ namespace BouncyUFO
     /// 따로 만든 튜토리얼(처음 한 번, 또는 설정의 "튜토리얼 다시 보기" 뒤). 게임 씬에서 웨이브 대신 정해진 순서로 진행한다.
     /// 1) 조작법: UFO를 네모로 강조하고 나머지는 어둡게, 글 상자에 한 글자씩 타이핑 → 두 번 날아 보기
     /// 2) 몬스터 3종을 하나씩: 나타나면 멈추고 강조·설명 → 들이받아 처치(놓치면 다시)
-    /// 3) 골드 운석: 골드를 주고 지구엔 피해 없음
-    /// 4) 증강(레벨업 카드): 경험치 막대 강조·설명 → 레벨업 시켜 직접 하나 고르기
+    /// 3) 골드 운석: 골드를 주고 지구엔 피해 없음 / 다이아 운석: 다이아(이 판의 상점 재화)
+    /// 4) 상점 우주선(11/27, 레벨업 대신): 다 내려오면 강조·설명 → 상점이 열려 증강 사기(다이아가 모자라면 선물)
     /// 5) 보스(체력 약하게): 강조·설명 → 처치
-    /// 6) "이제부터 웨이브가 끝없이 이어져요" + 로비 강화 안내 → 로비로
+    /// 6) "이제부터 웨이브가 끝없이 이어져요" + 골드로 UFO 해금 안내 → 로비로
     /// 오른쪽 위(일시정지 아래) "건너뛰기": 누르면 멈추고 예/아니요. 예 = 끝내고 로비, 아니요 = 계속.
-    /// 튜토리얼 중에는 지구 체력이 1 아래로 내려가지 않고, 로비 강화는 모두 최대로 적용된다(Upgrades).
-    /// 처치 경험치는 없고 증강은 4)에서 한 번만 고른다. 얻은 골드는 저장된다.
+    /// 튜토리얼 중에는 지구 체력이 1 아래로 내려가지 않고, 돌진 피해 +3(tutorialDamageBonus)로 잡기 쉽다. 얻은 골드는 저장된다.
     /// </summary>
     public sealed class TutorialDirector : MonoBehaviour
     {
@@ -30,7 +29,6 @@ namespace BouncyUFO
 
         [SerializeField] private UfoController ufo;
         [SerializeField] private WaveDirector waves;
-        [SerializeField] private LevelSystem levels;
 
         private GameConfig Config => PlayArea.Config;
         private float U(float px) => Config.PixelsToUnits(px);
@@ -64,7 +62,6 @@ namespace BouncyUFO
         private Outcome outcome;
         private bool bossDone;
         private bool bossKilled;
-        private bool cardPicked;
         private bool finished;
 
         private void Start()
@@ -79,7 +76,6 @@ namespace BouncyUFO
             Monster.Killed += OnKilled;
             Monster.Escaped += OnEscaped;
             if (waves != null) waves.BossEnded += OnBossEnded;
-            if (levels != null) levels.CardPicked += OnCardPicked;
 
             StartCoroutine(Run());
         }
@@ -91,7 +87,6 @@ namespace BouncyUFO
             Monster.Killed -= OnKilled;
             Monster.Escaped -= OnEscaped;
             if (waves != null) waves.BossEnded -= OnBossEnded;
-            if (levels != null) levels.CardPicked -= OnCardPicked;
         }
 
         // ================= 진행 순서 =================
@@ -119,9 +114,10 @@ namespace BouncyUFO
 
             // 3) 골드 운석(놓쳐도 다음으로)
             yield return Encounter(GameAssets.Instance.meteor, true, "tut.hint.meteor", "tut.meteor1", "tut.meteor2", "tut.meteor3");
+            yield return Encounter(GameAssets.Instance.diamondMeteor, true, "tut.hint.diamond", "tut.diamond1", "tut.diamond2");
 
-            // 4) 증강(레벨업 카드)
-            yield return Augment();
+            // 4) 상점 우주선
+            yield return ShopStep();
 
             // 5) 보스
             bool firstBoss = true;
@@ -198,24 +194,34 @@ namespace BouncyUFO
             yield return Wait(0.8f);
         }
 
-        /// <summary>경험치 막대를 강조해 설명하고, 바로 레벨업시켜 증강 하나를 직접 고르게 한다.</summary>
-        private IEnumerator Augment()
+        /// <summary>
+        /// 상점 우주선: 다이아가 모자라면 선물로 채워 주고, 우주선이 다 내려오면 강조·설명 → 상점이 열린다.
+        /// 상점 안 설명은 열리기 전에 미리 한다(상점 창이 튜토리얼 글 상자보다 위에 뜨므로).
+        /// </summary>
+        private IEnumerator ShopStep()
         {
-            if (levels == null) yield break;
-            var xpBar = FindFirstObjectByType<XpBar>();
-            float halfW = Config.playAreaPixels.x * 0.5f - 4f;
-            if (xpBar != null) yield return Say(xpBar.transform, new Vector2(halfW, 5f), "tut.aug1", "tut.aug2");
-            yield return Say(null, 0f, "tut.aug3");
+            var stats = Session != null ? Session.Stats : null;
+            if (stats != null && stats.Diamonds < Config.tutorialShopDiamonds)
+            {
+                stats.AddDiamonds(Config.tutorialShopDiamonds - stats.Diamonds);
+                yield return Say(null, 0f, "tut.gift");
+            }
 
-            cardPicked = false;
-            levels.AddXp(Mathf.Max(0.01f, levels.XpToNext - levels.Xp)); // 레벨업 → 증강 3개 고르기 창
-            while (!cardPicked) yield return null;
+            bool shopDone = false;
+            waves.StartShop(true, () => shopDone = true);
+            while (ShopShip.Current == null) yield return null;
+            ShopShip.Current.HoldOpen = true; // 설명이 끝날 때까지 상점을 열지 않는다
+            while (ShopShip.Current != null && !ShopShip.Current.IsWaiting) yield return null;
+            if (ShopShip.Current != null)
+            {
+                yield return Say(ShopShip.Current.transform, new Vector2(22f, 14f), "tut.shop1", "tut.shop2", "tut.shop3", "tut.shop4");
+                ShopShip.Current.HoldOpen = false; // 이제 상점이 열린다
+            }
+            while (!shopDone) yield return null;
             yield return Wait(0.4f);
-            yield return Say(null, 0f, "tut.aug4");
+            yield return Say(null, 0f, "tut.shop5");
             yield return Wait(0.6f);
         }
-
-        private void OnCardPicked(CardDefinition card, int stacks) => cardPicked = true;
 
         private void LockControls(bool locked)
         {
