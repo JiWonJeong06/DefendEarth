@@ -22,7 +22,7 @@ namespace BouncyUFO
     [Serializable]
     public sealed class SaveData
     {
-        public const int CurrentVersion = 4;
+        public const int CurrentVersion = 5;
 
         public int version = CurrentVersion;
         public int bestScore;
@@ -47,6 +47,9 @@ namespace BouncyUFO
         // v4 ---------------------------------------------------------
         /// <summary>타격 때 화면 흔들림(설정에서 끄기).</summary>
         public bool screenShake = true;
+        // v5 ---------------------------------------------------------
+        /// <summary>조준 보조(맞을 몬스터에 노란 네모).</summary>
+        public bool aimAssist = true;
         /// <summary>플레이어 계정 경험치(누적). 레벨은 계산해서 구한다.</summary>
         public int accountXp;
         /// <summary>강화 단계. 순서는 GameConfig.upgrades와 같다.</summary>
@@ -129,6 +132,7 @@ namespace BouncyUFO
             }
             if (d.version < 3) d.volume = 1f; // v2 이하 저장엔 없어서 0으로 읽힌다
             if (d.version < 4) d.screenShake = true; // 없으면 false로 읽힌다
+            if (d.version < 5) d.aimAssist = true;
             if (d.upgradeLevels == null) d.upgradeLevels = new List<int>();
             if (d.topScores == null) d.topScores = new List<ScoreEntry>();
             d.version = SaveData.CurrentVersion;
@@ -146,6 +150,25 @@ namespace BouncyUFO
             list.Insert(index, entry);
             if (list.Count > TopScoreCount) list.RemoveRange(TopScoreCount, list.Count - TopScoreCount);
             return index + 1;
+        }
+
+        /// <summary>데이터 초기화(설정의 계정 탭): 저장 파일을 지우고 처음 설치한 상태로(설정 포함).</summary>
+        public static void ResetAll()
+        {
+            try
+            {
+                foreach (var name in new[] { FileName, FileName + ".tmp" })
+                {
+                    string path = PathOf(name);
+                    if (File.Exists(path)) File.Delete(path);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning("[Save] 초기화 중 파일을 지우지 못했습니다: " + e.Message);
+            }
+            data = new SaveData();
+            Save();
         }
 
         public static void Save()

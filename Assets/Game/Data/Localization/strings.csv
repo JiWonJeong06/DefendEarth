@@ -134,6 +134,14 @@ nick.err.long_en,12자까지예요,Up to 12 characters,12文字まで
 ui.ok,확인,OK,OK
 ui.cancel,취소,Cancel,キャンセル
 ui.settings.rename,바꾸기,Change,変更
+ui.settings.tab.game,게임,Game,ゲーム
+ui.settings.tab.sound,소리,Sound,音
+ui.settings.tab.account,계정,User,データ
+ui.settings.tab.info,정보,Info,情報
+ui.settings.aim,조준 보조,Aim assist,エイム補助
+ui.settings.reset,데이터 초기화,Reset data,データ初期化
+ui.settings.reset_confirm1,모든 데이터를 지울까요?,Delete all data?,全データを消す？
+ui.settings.reset_confirm2,정말요? 되돌릴 수 없어요,Really? This can't be undone,本当に？元に戻せないよ
 nick.paste,붙여넣기,Paste,貼り付け
 profile.title,프로필,Profile,プロフィール
 profile.playtime,플레이 시간,Play time,プレイ時間

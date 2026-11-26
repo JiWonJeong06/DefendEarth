@@ -315,6 +315,13 @@ namespace BouncyUFO
         /// </summary>
         private void MarkTargets(Vector2 p, Vector2 v)
         {
+            if (!SaveSystem.Data.aimAssist)
+            {
+                // 설정에서 껐으면 표시 안 함
+                for (int i = 0; i < markers.Count; i++)
+                    foreach (var line in markers[i]) line.gameObject.SetActive(false);
+                return;
+            }
             pathPoints.Clear();
             float g = U(Config.dashGravityPx);
             float half = HalfWidth;
