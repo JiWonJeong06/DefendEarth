@@ -6,13 +6,13 @@ namespace BouncyUFO
 {
     /// <summary>
     /// 판 안 성장. 몬스터를 잡으면 경험치가 쌓이고, 레벨업하면 게임을 멈추고 카드 3장을 보여 준다.
-    /// 고른 카드는 무기·지구에 바로 적용된다. 판이 끝나면 모두 초기화(장면을 다시 불러오므로).
+    /// 고른 카드는 UFO·지구에 바로 적용된다. 판이 끝나면 모두 초기화(장면을 다시 불러오므로).
     /// </summary>
     public sealed class LevelSystem : MonoBehaviour
     {
         public const int ChoiceCount = 3;
 
-        [SerializeField] private Weapon weapon;
+        [SerializeField] private UfoController ufo;
         [SerializeField] private SquashStretch ufoVisual;
 
         public int Level { get; private set; } = 1;
@@ -76,7 +76,7 @@ namespace BouncyUFO
             pendingLevelUps--;
             choosing = true;
             if (ufoVisual != null) ufoVisual.Punch(-Config.squashOnLevelUp); // 레벨업: 크게 통!
-            Effects.Hit(weapon != null ? (Vector2)weapon.transform.position : Vector2.zero, 2.5f, new Color(0.6f, 1f, 0.7f));
+            Effects.Hit(ufo != null ? (Vector2)ufo.transform.position : Vector2.zero, 2.5f, new Color(0.6f, 1f, 0.7f));
             GameSession.Instance?.Pause();
             ChoiceRequested?.Invoke(Level, offer);
         }
@@ -128,17 +128,17 @@ namespace BouncyUFO
         {
             switch (card.effect)
             {
-                case CardDefinition.Effect.Damage:
-                    if (weapon != null) weapon.Damage += Mathf.RoundToInt(card.value);
+                case CardDefinition.Effect.DashPower:
+                    if (ufo != null) ufo.DamageBonus += Mathf.RoundToInt(card.value);
                     break;
-                case CardDefinition.Effect.FireRate:
-                    if (weapon != null) weapon.FireInterval *= Mathf.Clamp01(1f - card.value);
+                case CardDefinition.Effect.ChargeSpeed:
+                    if (ufo != null) ufo.ChargeTimeMultiplier = Mathf.Max(0.25f, ufo.ChargeTimeMultiplier * Mathf.Clamp01(1f - card.value));
                     break;
-                case CardDefinition.Effect.MultiShot:
-                    if (weapon != null) weapon.ShotCount += Mathf.RoundToInt(card.value);
+                case CardDefinition.Effect.BodySize:
+                    if (ufo != null) ufo.BodyScale += card.value;
                     break;
-                case CardDefinition.Effect.Pierce:
-                    if (weapon != null) weapon.Pierce += Mathf.RoundToInt(card.value);
+                case CardDefinition.Effect.ChainDamage:
+                    if (ufo != null) ufo.ChainDamageBonus += Mathf.RoundToInt(card.value);
                     break;
                 case CardDefinition.Effect.HealEarth:
                     GameSession.Instance?.Earth?.Heal(Mathf.RoundToInt(card.value));

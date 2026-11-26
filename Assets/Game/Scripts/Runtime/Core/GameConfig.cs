@@ -21,49 +21,56 @@ namespace BouncyUFO
         [Tooltip("UFO 몸체 반 너비. 화면 밖으로 나가지 않게 막는 데 쓴다")]
         public float ufoHalfWidthPx = 14f;
 
-        [Header("통통 이동: 짧게 누르면 조금, 길게 누를수록 멀리 (최대치 있음)")]
-        [Tooltip("짧게 탭했을 때 튀는 거리(플레이 영역 너비 비율)")]
-        [Range(0.02f, 0.3f)] public float hopMinDistanceFraction = 0.08f;
-        [Tooltip("가장 길게 눌렀을 때 튀는 최대 거리(플레이 영역 너비 비율)")]
-        [Range(0.1f, 1f)] public float hopMaxDistanceFraction = 0.35f;
-        [Tooltip("이 시간(초)보다 짧게 누르면 '짧은 탭'(최소 거리)")]
-        public float hopShortPressTime = 0.1f;
-        [Tooltip("이 시간(초)까지 누르면 최대 거리. 그 이상은 더 늘지 않는다")]
-        public float hopFullChargeTime = 0.45f;
-        [Tooltip("짧은 통/가장 먼 통에 걸리는 시간(초)")]
-        public Vector2 hopDurationMinMax = new Vector2(0.08f, 0.17f);
-        [Tooltip("짧은 통/가장 먼 통의 튀는 높이(기준 픽셀)")]
-        public Vector2 hopHeightMinMaxPx = new Vector2(3f, 9f);
-        [Tooltip("튀는 중에 손을 떼면 이 시간(초) 안에 착지할 때 이어서 튄다")]
-        public float hopBufferTime = 0.15f;
+        [Header("조준·돌진: 꾹 눌러 게이지를 채우고, 손가락 쪽으로 조준, 떼면 돌진")]
+        [Tooltip("이 시간(초)보다 짧게 누르면 게이지 0(가장 약한 돌진)")]
+        public float chargeMinTime = 0.08f;
+        [Tooltip("이 시간(초)까지 누르면 게이지 가득. 그 이상은 늘지 않는다")]
+        public float chargeFullTime = 0.6f;
+        [Tooltip("돌진 출발 속도: 게이지 0 / 가득 (기준 픽셀/초)")]
+        public Vector2 dashSpeedMinMaxPx = new Vector2(340f, 800f);
+        [Tooltip("중력(기준 픽셀/초²). 클수록 빨리 떨어진다")]
+        public float dashGravityPx = 1450f;
+        [Tooltip("조준 각도의 최저치(수평에서 위로, 도). 이보다 아래로는 조준할 수 없다")]
+        [Range(0f, 60f)] public float aimMinElevationDeg = 12f;
+        [Tooltip("공중에서 손을 떼면 이 시간(초) 안에 착지할 때 바로 돌진")]
+        public float dashBufferTime = 0.2f;
+        [Tooltip("벽·천장에 부딪히면 남는 속도 비율")]
+        [Range(0f, 1f)] public float wallBounce = 0.6f;
         [Tooltip("누르고 있는 동안 최대로 움츠리는 정도(모으는 느낌)")]
-        public float squashOnCharge = 0.2f;
+        public float squashOnCharge = 0.25f;
+        [Tooltip("조준 점선 점 개수 / 점 사이 시간(초)")]
+        public int aimDots = 12;
+        public float aimDotStep = 0.04f;
+
+        [Header("몸통 박치기")]
+        [Tooltip("UFO 몸통 판정 반지름(기준 픽셀). 그림보다 살짝 크게")]
+        public float ufoBodyRadiusPx = 11f;
+        [Tooltip("돌진 피해: 게이지 0 / 가득")]
+        public Vector2 dashDamageMinMax = new Vector2(1f, 4f);
+        [Tooltip("튕겨 나가는 몬스터 속도: 게이지 0 / 가득 (기준 픽셀/초)")]
+        public Vector2 knockSpeedMinMaxPx = new Vector2(220f, 520f);
+        [Tooltip("튕겨 나간 몬스터가 느려지는 정도(초당 감속 비율)")]
+        public float knockDrag = 2.2f;
+        [Tooltip("이 속도(기준 픽셀/초) 아래로 느려지면 다시 내려오기 시작")]
+        public float knockStopSpeedPx = 40f;
+        [Tooltip("튕겨 나간 몬스터가 다른 몬스터와 부딪힐 때 주는 기본 피해(연쇄)")]
+        public int chainDamage = 1;
+        [Tooltip("연쇄가 이어지는 최대 단계(1이면 튕긴 몬스터가 한 번만 다른 몬스터를 침)")]
+        public int chainMaxDepth = 2;
+        [Tooltip("연쇄로 맞은 몬스터가 받는 튕김 비율")]
+        [Range(0f, 1f)] public float chainKnockRatio = 0.6f;
 
         [Header("통통 연출 (스쿼시·스트레치)")]
         [Tooltip("스프링 세기. 클수록 빨리 원래 모양으로 돌아온다")]
         public float squashStiffness = 260f;
         [Tooltip("스프링 감쇠. 작을수록 더 출렁인다")]
         public float squashDamping = 12f;
-        [Tooltip("튀어 오를 때 위로 늘어나는 정도")]
-        public float squashOnHopStart = 0.22f;
+        [Tooltip("돌진할 때 늘어나는 정도")]
+        public float squashOnDash = 0.3f;
         [Tooltip("착지할 때 납작하게 눌리는 정도")]
-        public float squashOnHopLand = 0.3f;
-
-        [Tooltip("탄을 쏠 때 살짝 들썩이는 정도")]
-        public float squashOnFire = 0.05f;
-
-        [Header("기본 무기 (기본형 UFO: 직선탄)")]
-        [Tooltip("발사 간격(초)")]
-        public float fireInterval = 0.22f;
-        [Tooltip("탄 속도(플레이 영역 높이/초)")]
-        public float bulletSpeedFraction = 1.0f;
-        public int bulletDamage = 1;
-        [Tooltip("탄 판정 반지름(기준 픽셀). 그림(6×10)보다 살짝 크게")]
-        public float bulletHitRadiusPx = 5f;
-        [Tooltip("UFO 중심에서 탄이 나가는 높이(기준 픽셀)")]
-        public float muzzleOffsetPx = 10f;
-        [Tooltip("탄 갈래가 여러 개일 때 옆 간격(기준 픽셀)")]
-        public float multiShotSpacingPx = 7f;
+        public float squashOnLand = 0.3f;
+        [Tooltip("몬스터를 들이받을 때 출렁이는 정도")]
+        public float squashOnHit = 0.15f;
 
         [Header("지구")]
         public int earthMaxHp = 100;
@@ -138,7 +145,7 @@ namespace BouncyUFO
         public UpgradeDefinition[] upgrades =
         {
             new UpgradeDefinition { nameKey = "upgrade.earth.name", descKey = "upgrade.earth.desc", effect = UpgradeDefinition.Effect.EarthHp, valuePerLevel = 10f, costs = new[] { 40, 80, 150, 250, 400 } },
-            new UpgradeDefinition { nameKey = "upgrade.firerate.name", descKey = "upgrade.firerate.desc", effect = UpgradeDefinition.Effect.FireRate, valuePerLevel = 0.05f, costs = new[] { 60, 120, 220, 350, 500 } },
+            new UpgradeDefinition { nameKey = "upgrade.charge.name", descKey = "upgrade.charge.desc", effect = UpgradeDefinition.Effect.ChargeSpeed, valuePerLevel = 0.05f, costs = new[] { 60, 120, 220, 350, 500 } },
             new UpgradeDefinition { nameKey = "upgrade.meteor.name", descKey = "upgrade.meteor.desc", effect = UpgradeDefinition.Effect.MeteorGold, valuePerLevel = 0.1f, costs = new[] { 50, 100, 180, 300, 450 } },
         };
 
@@ -159,8 +166,8 @@ namespace BouncyUFO
         public float squashOnLevelUp = 0.45f;
 
         [Header("몬스터 간격 (너무 밀집하지 않게)")]
-        [Tooltip("몬스터끼리 가로 간격의 최소치 = UFO 최소 점프 거리 × 이 배율. 1이면 최소 점프만큼")]
-        [Range(0.5f, 3f)] public float monsterGapHopMultiplier = 1f;
+        [Tooltip("몬스터끼리 가로 간격의 최소치(플레이 영역 너비 비율). 옛 '최소 점프 거리'와 같은 8%")]
+        [Range(0.02f, 0.3f)] public float monsterMinGapFraction = 0.08f;
         [Tooltip("두 몬스터 판정이 닿지 않게 더 띄우는 여유(기준 픽셀)")]
         public float monsterExtraGapPx = 2f;
         [Tooltip("이 세로 거리(최소 간격 배율) 안에 있는 몬스터끼리만 가로 간격을 맞춘다")]
@@ -171,13 +178,10 @@ namespace BouncyUFO
         [Range(0f, 1f)] public float spawnCheckBandFraction = 0.3f;
 
         // ---- 계산 값 ----
-        /// <summary>UFO가 가장 짧게 튀는 거리(유닛).</summary>
-        public float MinHopDistance => hopMinDistanceFraction * PlayAreaSize.x;
-
         /// <summary>두 몬스터 사이에 필요한 가로 간격(중심끼리, 유닛).</summary>
         public float MonsterGap(float radiusA, float radiusB)
         {
-            return Mathf.Max(MinHopDistance * monsterGapHopMultiplier, radiusA + radiusB + PixelsToUnits(monsterExtraGapPx));
+            return Mathf.Max(monsterMinGapFraction * PlayAreaSize.x, radiusA + radiusB + PixelsToUnits(monsterExtraGapPx));
         }
 
         public float PixelsToUnits(float px) => px / pixelsPerUnit;

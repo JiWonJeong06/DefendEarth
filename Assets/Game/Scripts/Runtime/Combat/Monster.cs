@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace BouncyUFO
 {
-    /// <summary>지금 화면에 살아 있는 몬스터·운석·보스 목록(탄 판정, 간격 유지용).</summary>
+    /// <summary>지금 화면에 살아 있는 몬스터·운석·보스 목록(박치기·연쇄 판정, 간격 유지용).</summary>
     public static class MonsterRegistry
     {
         public static readonly List<Monster> Active = new List<Monster>(128);
@@ -46,6 +46,18 @@ namespace BouncyUFO
         private int patrolDir = 1;
         private bool patrolling;
         private Vector3 baseScale;
+        private float patrolY;
+
+        // 튕겨 나가는 중 (UFO에 받히거나 연쇄로 맞음)
+        private bool knocked;
+        private Vector2 knockVelocity;
+        private int chainDamage;
+        private int chainDepth;
+        private readonly List<Monster> chainHit = new List<Monster>(4);
+        private static readonly List<Monster> Scratch = new List<Monster>(64);
+
+        /// <summary>튕겨 나가는 중이면 true(그동안은 내려오지 않는다).</summary>
+        public bool IsKnocked => knocked;
 
         public void Setup(SpriteRenderer renderer, Action<Monster> onRelease)
         {
@@ -76,6 +88,8 @@ namespace BouncyUFO
             chargeState = 0;
             chargeTimer = 0f;
             patrolling = false;
+            knocked = false;
+            knockVelocity = Vector2.zero;
             patrolDir = UnityEngine.Random.value < 0.5f ? -1 : 1;
             SetFlash(0f);
             flashTimer = 0f;
@@ -92,7 +106,11 @@ namespace BouncyUFO
             float height = PlayArea.Size.y;
 
             Vector3 p = transform.position;
-            switch (Definition.pattern)
+            if (knocked)
+            {
+                UpdateKnock(ref p, dt);
+            }
+            else switch (Definition.pattern)
             {
                 case MonsterDefinition.MovePattern.Charge:
                     p.y -= ChargeSpeed(height, dt) * speedMul * dt;
@@ -104,11 +122,8 @@ namespace BouncyUFO
                     p.y -= Definition.speed * speedMul * height * dt;
                     break;
             }
-            if (Definition.wobbleAmplitudePx > 0f && chargeState != 2 && !patrolling)
-            {
-                float amp = config.PixelsToUnits(Definition.wobbleAmplitudePx);
-                p.x = baseX + Mathf.Sin(age * Definition.wobbleFrequency * Mathf.PI * 2f + wobblePhase) * amp;
-            }
+            if (!knocked && Definition.wobbleAmplitudePx > 0f && chargeState != 2 && !patrolling)
+                p.x = baseX + WobbleOffset();
             p.x = PlayArea.ClampX(p.x, HitRadius);
             transform.position = p;
 
@@ -120,6 +135,76 @@ namespace BouncyUFO
 
             float earthLine = PlayArea.Bottom + config.PixelsToUnits(config.earthLinePx);
             if (p.y - (IsBoss ? HitRadius * 0.5f : 0f) <= earthLine) ReachEarth(p);
+        }
+
+        private float WobbleOffset()
+        {
+            if (Definition.wobbleAmplitudePx <= 0f) return 0f;
+            float amp = PlayArea.Config.PixelsToUnits(Definition.wobbleAmplitudePx);
+            return Mathf.Sin(age * Definition.wobbleFrequency * Mathf.PI * 2f + wobblePhase) * amp;
+        }
+
+        /// <summary>
+        /// 튕겨 낸다(UFO 몸통에 받히거나 연쇄로 맞았을 때). velocity는 유닛/초, 몬스터의 knockbackScale이 곱해진다.
+        /// 날아가는 동안 다른 몬스터와 부딪히면 damage만큼 피해를 주고 그 몬스터도 튕긴다(depth 단계까지).
+        /// </summary>
+        public void Knock(Vector2 velocity, int damage, int depth)
+        {
+            if (!IsAlive) return;
+            knockVelocity = velocity * Definition.knockbackScale;
+            chainDamage = damage;
+            chainDepth = depth;
+            chainHit.Clear();
+            knocked = knockVelocity.magnitude > PlayArea.Config.PixelsToUnits(PlayArea.Config.knockStopSpeedPx);
+            if (Definition.pattern == MonsterDefinition.MovePattern.Charge && chargeState != 0)
+            {
+                chargeState = 0; // 처음부터 다시 다가와서 멈칫·돌진
+                transform.localScale = baseScale;
+            }
+        }
+
+        private void UpdateKnock(ref Vector3 p, float dt)
+        {
+            var config = PlayArea.Config;
+            p += (Vector3)(knockVelocity * dt);
+            knockVelocity *= Mathf.Exp(-config.knockDrag * dt);
+
+            // 벽·천장에서 튕김
+            if (p.x < PlayArea.Left + HitRadius) { p.x = PlayArea.Left + HitRadius; knockVelocity.x = Mathf.Abs(knockVelocity.x) * 0.6f; }
+            if (p.x > PlayArea.Right - HitRadius) { p.x = PlayArea.Right - HitRadius; knockVelocity.x = -Mathf.Abs(knockVelocity.x) * 0.6f; }
+            if (p.y > PlayArea.Top - HitRadius) { p.y = PlayArea.Top - HitRadius; knockVelocity.y = -Mathf.Abs(knockVelocity.y) * 0.5f; }
+
+            if (chainDepth > 0 && chainDamage > 0) HitOthers(p);
+
+            if (knockVelocity.magnitude <= config.PixelsToUnits(config.knockStopSpeedPx))
+            {
+                knocked = false;
+                baseX = p.x - WobbleOffset(); // 흔들림이 튀지 않게 이어 붙인다
+            }
+        }
+
+        /// <summary>연쇄: 날아가다 다른 몬스터와 부딪히면 피해를 주고 그 몬스터도 튕긴다.</summary>
+        private void HitOthers(Vector3 p)
+        {
+            Scratch.Clear();
+            Scratch.AddRange(MonsterRegistry.Active);
+            for (int i = 0; i < Scratch.Count; i++)
+            {
+                var o = Scratch[i];
+                if (o == this || !o.IsAlive || chainHit.Contains(o)) continue;
+                Vector2 d = o.transform.position - p;
+                float r = HitRadius + o.HitRadius;
+                if (d.sqrMagnitude > r * r) continue;
+
+                chainHit.Add(o);
+                o.chainHit.Add(this); // 되받아치지 않게
+                Vector2 dir = d.sqrMagnitude > 1e-6f ? d.normalized : Vector2.up;
+                if (dir.y < 0.2f) { dir.y = 0.2f; dir.Normalize(); }
+                float speed = knockVelocity.magnitude * PlayArea.Config.chainKnockRatio;
+                o.TakeHit(chainDamage, (Vector2)p + d * 0.5f);
+                if (o.IsAlive) o.Knock(dir * speed, chainDamage, chainDepth - 1);
+                knockVelocity *= 0.7f; // 부딪힌 쪽은 조금 느려진다
+            }
         }
 
         private void ReachEarth(Vector3 p)
@@ -165,10 +250,12 @@ namespace BouncyUFO
             if (!patrolling)
             {
                 p.y -= Definition.speed * speedMul * PlayArea.Size.y * dt;
-                if (p.y <= startY) patrolling = true;
+                if (p.y <= startY) { patrolling = true; patrolY = p.y; }
                 return;
             }
-            p.y -= Definition.patrolDescendSpeed * speedMul * PlayArea.Size.y * dt;
+            // 오가는 높이(patrolY)는 아주 천천히 내려온다. 튕겨 올라갔으면 그 높이까지 다시 내려온다
+            patrolY -= Definition.patrolDescendSpeed * speedMul * PlayArea.Size.y * dt;
+            p.y = p.y > patrolY ? Mathf.MoveTowards(p.y, patrolY, Definition.speed * PlayArea.Size.y * dt) : patrolY;
             p.x += patrolDir * Definition.patrolSpeed * PlayArea.Size.x * dt;
             float limit = PlayArea.Right - HitRadius;
             if (p.x > limit) { p.x = limit; patrolDir = -1; }

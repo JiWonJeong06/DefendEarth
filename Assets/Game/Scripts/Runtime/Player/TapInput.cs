@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 namespace BouncyUFO
 {
     /// <summary>
-    /// 화면을 누른 순간과 뗀 순간을 알린다(터치·마우스). 드래그는 쓰지 않는다.
+    /// 화면을 누른 순간과 뗀 순간을 알린다(터치·마우스). 누르는 동안 손가락 위치(Position)도 따라간다.
     /// 한 번에 손가락 하나만 따라간다. 누르고 있는 동안 다른 손가락은 무시한다.
     /// </summary>
     public sealed class TapInput : MonoBehaviour
@@ -23,6 +23,9 @@ namespace BouncyUFO
 
         private int activeId = NoPress;
         private float pressedAt;
+
+        /// <summary>누르고 있는 손가락의 지금 위치(화면 좌표). 조준에 쓴다.</summary>
+        public Vector2 Position { get; private set; }
 
         public bool IsHolding => activeId != NoPress;
         public float HeldTime => IsHolding ? Time.unscaledTime - pressedAt : 0f;
@@ -43,6 +46,7 @@ namespace BouncyUFO
                 foreach (var touch in touchscreen.touches)
                 {
                     int id = touch.touchId.ReadValue();
+                    if (id == activeId && touch.press.isPressed) Position = touch.position.ReadValue();
                     if (touch.press.wasPressedThisFrame) Begin(id, touch.position.ReadValue());
                     if (touch.press.wasReleasedThisFrame) End(id, touch.position.ReadValue());
                 }
@@ -51,6 +55,7 @@ namespace BouncyUFO
             var mouse = Mouse.current;
             if (mouse != null)
             {
+                if (activeId == MouseId) Position = mouse.position.ReadValue();
                 if (mouse.leftButton.wasPressedThisFrame) Begin(MouseId, mouse.position.ReadValue());
                 if (mouse.leftButton.wasReleasedThisFrame) End(MouseId, mouse.position.ReadValue());
             }
@@ -61,6 +66,7 @@ namespace BouncyUFO
             if (IsHolding) return;
             activeId = id;
             pressedAt = Time.unscaledTime;
+            Position = pos;
             Pressed?.Invoke(pos);
         }
 

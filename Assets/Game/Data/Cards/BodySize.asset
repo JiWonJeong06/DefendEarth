@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 718f516a841a13d49b1edb09838f61fb, type: 3}
-  m_Name: FireRate
+  m_Name: BodySize
   m_EditorClassIdentifier: BouncyUFO::BouncyUFO.CardDefinition
-  nameKey: card.firerate.name
-  descKey: card.firerate.desc
-  icon: {fileID: 21300000, guid: bbe2116366474a9891519773cf62dfbc, type: 3}
-  color: {r: 1, g: 0.85, b: 0.3, a: 1}
-  effect: 1
-  value: 0.15
-  maxStacks: 5
-  weight: 1
+  nameKey: card.body.name
+  descKey: card.body.desc
+  icon: {fileID: 21300000, guid: f6d5f0d8802a4938adb059d028e0969b, type: 3}
+  color: {r: 0.4, g: 0.9, b: 1, a: 1}
+  effect: 2
+  value: 0.2
+  maxStacks: 3
+  weight: 0.8

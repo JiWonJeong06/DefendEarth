@@ -11,14 +11,15 @@ namespace BouncyUFO
     {
         public enum Effect
         {
-            /// <summary>탄 피해 +value</summary>
-            Damage,
-            /// <summary>발사 간격 × (1 - value). 0.15 = 15% 빨라짐</summary>
-            FireRate,
-            /// <summary>탄 갈래 +value</summary>
-            MultiShot,
-            /// <summary>관통 +value</summary>
-            Pierce,
+            // 숫자 순서는 카드 데이터에 저장돼 있으니 바꾸지 않는다
+            /// <summary>돌진 피해 +value</summary>
+            DashPower = 0,
+            /// <summary>게이지 차는 시간 × (1 - value). 0.15 = 15% 빨라짐</summary>
+            ChargeSpeed = 1,
+            /// <summary>몸통 판정 크기 +value (0.2 = 20% 커짐)</summary>
+            BodySize = 2,
+            /// <summary>연쇄 피해(튕겨 나간 몬스터가 다른 몬스터에 주는 피해) +value</summary>
+            ChainDamage = 3,
             /// <summary>지구 체력 +value 회복</summary>
             HealEarth,
         }

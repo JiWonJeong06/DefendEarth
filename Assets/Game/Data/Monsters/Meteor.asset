@@ -17,9 +17,10 @@ MonoBehaviour:
   sprite: {fileID: 21300000, guid: 12c9c7c111f24463a82394ebce3156f1, type: 3}
   scale: 1
   hitRadiusPx: 7
-  maxHp: 4
+  maxHp: 3
   earthDamage: 0
   speed: 0.08
+  knockbackScale: 1
   pattern: 0
   wobbleAmplitudePx: 0
   wobbleFrequency: 1

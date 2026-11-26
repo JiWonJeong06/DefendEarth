@@ -5,8 +5,8 @@ namespace BouncyUFO
 {
     /// <summary>
     /// 간단 튜토리얼(첫 빌드용). 처음 한 번만 나온다(기기에 저장).
-    /// 1) 이동: UFO 왼쪽·오른쪽을 눌러 한 번씩 튀어 보기 — 그동안 몬스터는 나오지 않는다.
-    /// 2) 공격: 자동 발사로 몬스터 몇 마리 잡기.
+    /// 1) 돌진: 꾹 눌러 조준하고 떼서 두 번 돌진해 보기 — 그동안 몬스터는 나오지 않는다.
+    /// 2) 공격: 날아가며 몬스터를 들이받아 몇 마리 잡기.
     /// 3) "이제 지구를 지켜 주세요!" 잠깐 보여 주고 끝.
     /// (1월에 전체 튜토리얼·건너뛰기·다시 보기로 확장)
     /// </summary>
@@ -22,14 +22,14 @@ namespace BouncyUFO
         [SerializeField] private float textHeightPx = 120f;
 
         private Step step = Step.Done;
-        private bool hoppedLeft;
-        private bool hoppedRight;
+        [Tooltip("돌진 단계에서 해 봐야 하는 돌진 횟수")]
+        [SerializeField] private int dashesToPass = 2;
+
+        private int dashes;
         private int kills;
         private float stepStarted;
         private TextMeshPro line1;
         private TextMeshPro line2;
-        private TextMeshPro arrowLeft;
-        private TextMeshPro arrowRight;
 
         private GameConfig Config => PlayArea.Config;
 
@@ -45,12 +45,7 @@ namespace BouncyUFO
             line2.transform.position = new Vector3(0f, y - Config.PixelsToUnits(16f), 0f);
             line2.color = new Color(1f, 0.9f, 0.5f);
 
-            arrowLeft = GameText.Create("ArrowL", transform, GameText.Style.Title, SortOrder.Hud + 10);
-            arrowLeft.text = "<";
-            arrowRight = GameText.Create("ArrowR", transform, GameText.Style.Title, SortOrder.Hud + 10);
-            arrowRight.text = ">";
-
-            if (ufo != null) ufo.Hopped += OnHopped;
+            if (ufo != null) ufo.Dashed += OnDashed;
             Monster.Killed += OnKilled;
             if (waves != null) waves.HoldStart = true;
             Enter(Step.Move);
@@ -58,7 +53,7 @@ namespace BouncyUFO
 
         private void OnDestroy()
         {
-            if (ufo != null) ufo.Hopped -= OnHopped;
+            if (ufo != null) ufo.Dashed -= OnDashed;
             Monster.Killed -= OnKilled;
         }
 
@@ -87,17 +82,12 @@ namespace BouncyUFO
                     gameObject.SetActive(false);
                     break;
             }
-            bool arrows = step == Step.Move;
-            arrowLeft.gameObject.SetActive(arrows);
-            arrowRight.gameObject.SetActive(arrows);
         }
 
-        private void OnHopped(int dir)
+        private void OnDashed(Vector2 aim)
         {
             if (step != Step.Move) return;
-            if (dir < 0) hoppedLeft = true;
-            else hoppedRight = true;
-            if (hoppedLeft && hoppedRight) Enter(Step.Attack);
+            if (++dashes >= dashesToPass) Enter(Step.Attack);
         }
 
         private void OnKilled(Monster m)
@@ -111,17 +101,6 @@ namespace BouncyUFO
             if (step == Step.Done) return;
             float t = Time.time - stepStarted;
             line1.alpha = 0.7f + 0.3f * Mathf.PingPong(Time.unscaledTime * 1.5f, 1f);
-
-            if (step == Step.Move && ufo != null)
-            {
-                // UFO 양옆에 깜빡이는 화살표: 아직 안 해 본 쪽만
-                Vector3 p = ufo.transform.position;
-                float off = Config.PixelsToUnits(22f + 3f * Mathf.PingPong(Time.unscaledTime * 4f, 1f));
-                arrowLeft.transform.position = new Vector3(p.x - off, p.y, 0f);
-                arrowRight.transform.position = new Vector3(p.x + off, p.y, 0f);
-                arrowLeft.alpha = hoppedLeft ? 0.25f : 1f;
-                arrowRight.alpha = hoppedRight ? 0.25f : 1f;
-            }
 
             if (step == Step.Go && t > 2.5f) Enter(Step.Done);
         }

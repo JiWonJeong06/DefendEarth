@@ -44,6 +44,8 @@ namespace BouncyUFO
         public int earthDamage = 3;
         [Tooltip("내려오는 속도(플레이 영역 높이/초)")]
         public float speed = 0.1f;
+        [Tooltip("UFO에 받혔을 때 튕겨 나가는 정도(1 = 보통, 0.25 = 조금만 밀림). 보스·덩치는 작게")]
+        public float knockbackScale = 1f;
 
         [Header("움직임")]
         public MovePattern pattern = MovePattern.Straight;

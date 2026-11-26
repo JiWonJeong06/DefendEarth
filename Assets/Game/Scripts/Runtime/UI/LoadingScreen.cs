@@ -45,7 +45,7 @@ namespace BouncyUFO
             fill.position = back.transform.position;
 
             tip = GameText.Create("Tip", transform, GameText.Style.Body, SortOrder.Hud + 5, TextAlignmentOptions.Center, 160f, true);
-            GameText.SetKey(tip, "tip." + Random.Range(1, 4));
+            GameText.SetKey(tip, "tip." + Random.Range(1, 6));
             tip.color = new Color(0.75f, 0.85f, 1f);
             tip.transform.position = new Vector3(0f, U(-70f), 0f);
 

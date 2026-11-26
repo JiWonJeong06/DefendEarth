@@ -19,6 +19,7 @@ MonoBehaviour:
   maxHp: 4
   earthDamage: 6
   speed: 0.08
+  knockbackScale: 0.9
   pattern: 1
   wobbleAmplitudePx: 0
   wobbleFrequency: 1

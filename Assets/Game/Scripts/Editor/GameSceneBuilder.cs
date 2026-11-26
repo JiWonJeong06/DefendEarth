@@ -70,7 +70,6 @@ namespace BouncyUFO.EditorTools
             var root = rootGo.AddComponent<GameRoot>();
             SetField(root, "config", config);
             var assets = rootGo.AddComponent<GameAssets>();
-            assets.bulletSprite = LoadSprite(ArtPath + "Bullet.png");
             assets.sparkSprite = LoadSprite(ArtPath + "Spark.png");
             assets.pixelSprite = LoadSprite(ArtPath + "Pixel.png");
             assets.spriteMaterial = spriteMat;
@@ -146,16 +145,14 @@ namespace BouncyUFO.EditorTools
             var bar = new GameObject("EarthHealthBar").AddComponent<EarthHealthBar>();
             SetField(bar, "earth", earth);
 
-            // UFO (조작 + 자동 발사 + 통통 연출)
+            // UFO (조준·돌진·몸통 박치기 + 통통 연출)
             var ufo = new GameObject("UFO");
             var controller = ufo.AddComponent<UfoController>();
-            var weapon = ufo.AddComponent<Weapon>();
             var visual = CreateSprite("Visual", FindSprite(UfoSheetPath, "Enemy_0"), spriteMat, SortOrder.Ufo);
             visual.transform.SetParent(ufo.transform, false);
             var squash = visual.AddComponent<SquashStretch>();
             SetField(controller, "input", input);
             SetField(controller, "visual", squash);
-            SetField(weapon, "visual", squash);
             ufo.transform.position = new Vector3(0f, PlayArea.Bottom + config.PixelsToUnits(config.ufoHeightFromBottomPx), 0f);
 
             // 몬스터 등장
@@ -176,7 +173,7 @@ namespace BouncyUFO.EditorTools
 
             // 판 안 성장: 경험치·레벨업 카드
             var levels = new GameObject("LevelSystem").AddComponent<LevelSystem>();
-            SetField(levels, "weapon", weapon);
+            SetField(levels, "ufo", controller);
             SetField(levels, "ufoVisual", squash);
             var xpBar = new GameObject("XpBar").AddComponent<XpBar>();
             SetField(xpBar, "levels", levels);
@@ -219,7 +216,7 @@ namespace BouncyUFO.EditorTools
             {
                 d.nameKey = "monster.swarm"; d.sprite = FindSprite(UfoSheetPath, "Enemy_3");
                 d.scale = 0.8f; d.hitRadiusPx = 7f;
-                d.maxHp = 2; d.earthDamage = 3; d.speed = 0.09f;
+                d.maxHp = 2; d.earthDamage = 3; d.speed = 0.09f; d.knockbackScale = 1f;
                 d.wobbleAmplitudePx = 6f; d.wobbleFrequency = 0.8f;
                 d.groupSize = 5; d.groupSpreadPx = 56f; d.spawnWeight = 4f; d.unlockWave = 1;
                 d.exp = 1; d.score = 10;
@@ -228,7 +225,7 @@ namespace BouncyUFO.EditorTools
             {
                 d.nameKey = "monster.charger"; d.sprite = FindSprite(UfoSheetPath, "Enemy_8");
                 d.scale = 1f; d.hitRadiusPx = 8f;
-                d.maxHp = 4; d.earthDamage = 6; d.speed = 0.08f;
+                d.maxHp = 4; d.earthDamage = 6; d.speed = 0.08f; d.knockbackScale = 0.9f;
                 d.pattern = MonsterDefinition.MovePattern.Charge;
                 d.chargeTriggerFraction = 0.3f; d.chargeWindup = 0.5f; d.chargeSpeed = 0.6f;
                 d.groupSize = 1; d.spawnWeight = 3f; d.unlockWave = 2;
@@ -238,7 +235,7 @@ namespace BouncyUFO.EditorTools
             {
                 d.nameKey = "monster.tank"; d.sprite = FindSprite(UfoSheetPath, "Enemy_11");
                 d.scale = 1.5f; d.hitRadiusPx = 10f;
-                d.maxHp = 22; d.earthDamage = 15; d.speed = 0.04f;
+                d.maxHp = 10; d.earthDamage = 15; d.speed = 0.04f; d.knockbackScale = 0.5f;
                 d.groupSize = 1; d.spawnWeight = 1.5f; d.unlockWave = 3;
                 d.exp = 6; d.score = 80;
             });
@@ -256,7 +253,7 @@ namespace BouncyUFO.EditorTools
                 d.kind = MonsterDefinition.Kind.Boss;
                 d.nameKey = "monster.boss1"; d.sprite = LoadSprite(DummyPath + "Boss.png");
                 d.scale = 1f; d.hitRadiusPx = 16f;
-                d.maxHp = 120; d.earthDamage = 30; d.speed = 0.08f;
+                d.maxHp = 40; d.earthDamage = 30; d.speed = 0.08f; d.knockbackScale = 0.25f;
                 d.pattern = MonsterDefinition.MovePattern.Patrol;
                 d.patrolStartFraction = 0.22f; d.patrolSpeed = 0.18f; d.patrolDescendSpeed = 0.006f;
                 d.spawnWeight = 0f; d.unlockWave = 1;
@@ -274,7 +271,7 @@ namespace BouncyUFO.EditorTools
                 d.kind = MonsterDefinition.Kind.Meteor;
                 d.nameKey = "meteor.gold"; d.sprite = LoadSprite(DummyPath + "Meteor.png");
                 d.scale = 1f; d.hitRadiusPx = 7f;
-                d.maxHp = 4; d.earthDamage = 0; d.speed = 0.08f;
+                d.maxHp = 3; d.earthDamage = 0; d.speed = 0.08f;
                 d.spawnWeight = 0f; d.unlockWave = 1;
                 d.exp = 0; d.score = 5; d.gold = 8;
             });
@@ -290,25 +287,25 @@ namespace BouncyUFO.EditorTools
 
             var list = new[]
             {
-                LoadOrCreateCard("Damage", c =>
+                LoadOrCreateCard("DashPower", c =>
                 {
-                    c.nameKey = "card.damage.name"; c.descKey = "card.damage.desc"; c.icon = LoadSprite(DummyPath + "IconDamage.png");
-                    c.color = new Color(1f, 0.45f, 0.4f); c.effect = CardDefinition.Effect.Damage; c.value = 1f; c.maxStacks = 5; c.weight = 1f;
+                    c.nameKey = "card.dash.name"; c.descKey = "card.dash.desc"; c.icon = LoadSprite(DummyPath + "IconDamage.png");
+                    c.color = new Color(1f, 0.45f, 0.4f); c.effect = CardDefinition.Effect.DashPower; c.value = 1f; c.maxStacks = 5; c.weight = 1f;
                 }),
-                LoadOrCreateCard("FireRate", c =>
+                LoadOrCreateCard("ChargeSpeed", c =>
                 {
-                    c.nameKey = "card.firerate.name"; c.descKey = "card.firerate.desc"; c.icon = LoadSprite(DummyPath + "IconFireRate.png");
-                    c.color = new Color(1f, 0.85f, 0.3f); c.effect = CardDefinition.Effect.FireRate; c.value = 0.15f; c.maxStacks = 5; c.weight = 1f;
+                    c.nameKey = "card.charge.name"; c.descKey = "card.charge.desc"; c.icon = LoadSprite(DummyPath + "IconFireRate.png");
+                    c.color = new Color(1f, 0.85f, 0.3f); c.effect = CardDefinition.Effect.ChargeSpeed; c.value = 0.15f; c.maxStacks = 5; c.weight = 1f;
                 }),
-                LoadOrCreateCard("MultiShot", c =>
+                LoadOrCreateCard("BodySize", c =>
                 {
-                    c.nameKey = "card.multishot.name"; c.descKey = "card.multishot.desc"; c.icon = LoadSprite(DummyPath + "IconMultiShot.png");
-                    c.color = new Color(0.4f, 0.9f, 1f); c.effect = CardDefinition.Effect.MultiShot; c.value = 1f; c.maxStacks = 3; c.weight = 0.8f;
+                    c.nameKey = "card.body.name"; c.descKey = "card.body.desc"; c.icon = LoadSprite(DummyPath + "IconMultiShot.png");
+                    c.color = new Color(0.4f, 0.9f, 1f); c.effect = CardDefinition.Effect.BodySize; c.value = 0.2f; c.maxStacks = 3; c.weight = 0.8f;
                 }),
-                LoadOrCreateCard("Pierce", c =>
+                LoadOrCreateCard("ChainDamage", c =>
                 {
-                    c.nameKey = "card.pierce.name"; c.descKey = "card.pierce.desc"; c.icon = LoadSprite(DummyPath + "IconPierce.png");
-                    c.color = new Color(0.6f, 1f, 0.5f); c.effect = CardDefinition.Effect.Pierce; c.value = 1f; c.maxStacks = 3; c.weight = 0.8f;
+                    c.nameKey = "card.chain.name"; c.descKey = "card.chain.desc"; c.icon = LoadSprite(DummyPath + "IconPierce.png");
+                    c.color = new Color(0.6f, 1f, 0.5f); c.effect = CardDefinition.Effect.ChainDamage; c.value = 1f; c.maxStacks = 3; c.weight = 0.8f;
                 }),
                 LoadOrCreateCard("HealEarth", c =>
                 {

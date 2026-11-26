@@ -11,7 +11,6 @@ namespace BouncyUFO
     {
         public static GameAssets Instance { get; private set; }
 
-        public Sprite bulletSprite;
         public Sprite sparkSprite;
         public Sprite pixelSprite;
         [Tooltip("빛 영향 없는 기본 스프라이트 재질")]
