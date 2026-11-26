@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,14 +15,26 @@ namespace BouncyUFO
 
         private static readonly Dictionary<string, string[]> table = new Dictionary<string, string[]>();
 
-        public static Language Current { get; set; } = FromSystem();
+        public static Language Current { get; private set; } = FromSystem();
+
+        /// <summary>언어가 바뀜. 화면 글자들이 듣고 다시 그린다.</summary>
+        public static event Action Changed;
+
+        /// <summary>언어를 바꾼다. -1(또는 범위 밖)이면 폰 언어를 따른다.</summary>
+        public static void SetLanguage(int index)
+        {
+            var next = index >= 0 && index <= 2 ? (Language)index : FromSystem();
+            if (next == Current) return;
+            Current = next;
+            Changed?.Invoke();
+        }
 
         public static Language FromSystem()
         {
             switch (Application.systemLanguage)
             {
-                case SystemLanguage.Korean: return Language.Korean;
-                case SystemLanguage.Japanese: return Language.Japanese;
+                case UnityEngine.SystemLanguage.Korean: return Language.Korean;
+                case UnityEngine.SystemLanguage.Japanese: return Language.Japanese;
                 default: return Language.English;
             }
         }
@@ -37,9 +50,12 @@ namespace BouncyUFO
                 if (string.IsNullOrWhiteSpace(line)) continue;
                 var cols = line.Split(',');
                 if (cols.Length < 4) continue;
-                table[cols[0].Trim()] = new[] { cols[1], cols[2], cols[3] };
+                // 줄바꿈은 표 안에서 \n 으로 적는다
+                table[cols[0].Trim()] = new[] { Unescape(cols[1]), Unescape(cols[2]), Unescape(cols[3]) };
             }
         }
+
+        private static string Unescape(string s) => s.Replace("\\n", "\n");
 
         /// <summary>키에 맞는 글자. 없으면 키를 그대로 돌려준다(빠진 번역을 찾기 쉽게).</summary>
         public static string Get(string key)

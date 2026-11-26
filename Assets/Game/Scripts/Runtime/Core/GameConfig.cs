@@ -124,6 +124,28 @@ namespace BouncyUFO
         [Tooltip("버틴 시간 1초당 점수 (몬스터 점수는 몬스터 데이터의 score)")]
         public float scorePerSecond = 2f;
 
+        [Header("플레이어 계정 레벨 (플레이 경험치, 데모는 보여주기용)")]
+        public float accountXpPerKill = 1f;
+        public float accountXpPerWave = 5f;
+        [Tooltip("버틴 1분당")]
+        public float accountXpPerMinute = 10f;
+        [Tooltip("레벨 1→2에 필요한 경험치")]
+        public float accountXpBase = 60f;
+        [Tooltip("레벨마다 더 필요한 경험치")]
+        public float accountXpStep = 30f;
+
+        [Header("판 밖 강화 (로비, 골드 사용)")]
+        public UpgradeDefinition[] upgrades =
+        {
+            new UpgradeDefinition { nameKey = "upgrade.earth.name", descKey = "upgrade.earth.desc", effect = UpgradeDefinition.Effect.EarthHp, valuePerLevel = 10f, costs = new[] { 40, 80, 150, 250, 400 } },
+            new UpgradeDefinition { nameKey = "upgrade.firerate.name", descKey = "upgrade.firerate.desc", effect = UpgradeDefinition.Effect.FireRate, valuePerLevel = 0.05f, costs = new[] { 60, 120, 220, 350, 500 } },
+            new UpgradeDefinition { nameKey = "upgrade.meteor.name", descKey = "upgrade.meteor.desc", effect = UpgradeDefinition.Effect.MeteorGold, valuePerLevel = 0.1f, costs = new[] { 50, 100, 180, 300, 450 } },
+        };
+
+        [Header("판 끝")]
+        [Tooltip("지구가 함락된 뒤 결과 씬으로 넘어가기까지(초)")]
+        public float gameOverDelay = 1.6f;
+
         [Header("판 안 성장 (경험치·레벨업)")]
         [Tooltip("레벨 1→2에 필요한 경험치")]
         public float xpBase = 6f;

@@ -22,7 +22,8 @@ namespace BouncyUFO
 
         private void Awake()
         {
-            MaxHp = Mathf.Max(1, PlayArea.Config.earthMaxHp);
+            // 로비 강화(지구 체력)만큼 더한다
+            MaxHp = Mathf.Max(1, PlayArea.Config.earthMaxHp + Mathf.RoundToInt(Upgrades.Total(UpgradeDefinition.Effect.EarthHp)));
             Hp = MaxHp;
         }
 

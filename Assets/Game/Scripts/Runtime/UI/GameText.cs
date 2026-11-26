@@ -71,8 +71,21 @@ namespace BouncyUFO
             return tmp;
         }
 
-        /// <summary>번역 키로 글자를 넣는다.</summary>
-        public static void SetKey(TextMeshPro text, string key) => text.text = Localization.Get(key);
+        /// <summary>번역 키로 글자를 넣는다. 설정에서 언어를 바꾸면 자동으로 다시 바뀐다.</summary>
+        public static void SetKey(TextMeshPro text, string key)
+        {
+            var loc = text.GetComponent<LocalizedText>();
+            if (loc == null) loc = text.gameObject.AddComponent<LocalizedText>();
+            loc.SetKey(key);
+        }
+
+        /// <summary>번역 키 없이 글자를 직접 넣는다(숫자 등). 이전에 붙은 번역 키는 뗀다.</summary>
+        public static void SetPlain(TextMeshPro text, string value)
+        {
+            var loc = text.GetComponent<LocalizedText>();
+            if (loc != null) loc.SetKey(null);
+            text.text = value;
+        }
 
         /// <summary>새 글자가 아틀라스에 추가되면 흐려지지 않게 다시 도트 필터를 건다.</summary>
         public static void KeepCrisp()

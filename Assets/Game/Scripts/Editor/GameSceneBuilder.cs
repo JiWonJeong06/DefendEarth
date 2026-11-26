@@ -8,12 +8,12 @@ using UnityEngine.SceneManagement;
 namespace BouncyUFO.EditorTools
 {
     /// <summary>
-    /// 메뉴 [Bouncy UFO > Build Game Scene] 한 번으로 게임 장면을 새로 만든다.
-    /// 장면 파일을 손으로 고치지 않고 코드로 다시 만들 수 있게 해 두었다.
+    /// 메뉴 [Bouncy UFO > Build All Scenes] 한 번으로 5개 씬(타이틀·로비·로딩·게임·결과)을 새로 만들고
+    /// 빌드 목록에 순서대로 넣는다. 씬 파일을 손으로 고치지 않고 코드로 다시 만들 수 있게 해 두었다.
     /// </summary>
     public static class GameSceneBuilder
     {
-        private const string ScenePath = "Assets/Game/Scenes/Game.unity";
+        private const string SceneFolder = "Assets/Game/Scenes/";
         private const string ConfigPath = "Assets/Game/Data/GameConfig.asset";
         private const string UfoSheetPath = "Assets/Art/Temp/Enemy.png";
         private const string EarthSheetPath = "Assets/Art/Temp/Earth-Star.png";
@@ -28,34 +28,53 @@ namespace BouncyUFO.EditorTools
         private const string FlashMaterialPath = "Assets/Game/Data/SpriteFlash.mat";
         private const string SpriteMaterialPath = "Packages/com.unity.render-pipelines.universal/Runtime/Materials/Sprite-Unlit-Default.mat";
 
-        [MenuItem("Bouncy UFO/Build Game Scene")]
-        public static void Build()
+        /// <summary>빌드 순서. 0번(타이틀)이 앱을 켜면 처음 나오는 씬.</summary>
+        private static readonly string[] SceneOrder = { SceneFlow.Title, SceneFlow.Lobby, SceneFlow.Loading, SceneFlow.Game, SceneFlow.Result };
+
+        private static Material spriteMat;
+
+        [MenuItem("Bouncy UFO/Build All Scenes")]
+        public static void BuildAll()
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
-
-            if (System.IO.File.Exists(ScenePath) &&
-                !EditorUtility.DisplayDialog("Bouncy UFO", "Game 장면을 새로 만들까요?\n기존 Game.unity는 덮어씁니다.", "새로 만들기", "취소"))
+            if (!EditorUtility.DisplayDialog("Bouncy UFO",
+                    "5개 씬(Title, Lobby, Loading, Game, Result)을 새로 만들까요?\n있던 씬 파일은 덮어씁니다.", "새로 만들기", "취소"))
                 return;
 
+            BuildScene(SceneFlow.Title, BuildTitle);
+            BuildScene(SceneFlow.Lobby, BuildLobby);
+            BuildScene(SceneFlow.Loading, BuildLoading);
+            BuildScene(SceneFlow.Game, BuildGame);
+            BuildScene(SceneFlow.Result, BuildResult);
+
+            EditorBuildSettings.scenes = SceneOrder.Select(n => new EditorBuildSettingsScene(SceneFolder + n + ".unity", true)).ToArray();
+            EditorSceneManager.OpenScene(SceneFolder + SceneFlow.Title + ".unity");
+            Debug.Log("[Bouncy UFO] 5개 씬을 만들고 빌드 목록에 넣었습니다. Title 씬에서 Play 하세요.");
+        }
+
+        private static void BuildScene(string name, System.Action<GameConfig, TapInput> content)
+        {
             GameConfig config = LoadOrCreateConfig();
             PlayArea.Init(config);
-            Material spriteMat = AssetDatabase.LoadAssetAtPath<Material>(SpriteMaterialPath);
-
+            spriteMat = AssetDatabase.LoadAssetAtPath<Material>(SpriteMaterialPath);
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            var input = CreateCommon(config);
+            content(config, input);
+            EditorSceneManager.SaveScene(scene, SceneFolder + name + ".unity");
+        }
 
-            Material flashMat = LoadOrCreateFlashMaterial();
-            Sprite pixel = LoadSprite(ArtPath + "Pixel.png");
-
-            // 1) 설정 루트 + 공용 그림·재질 + 판 상태
+        /// <summary>모든 씬 공통: 설정·그림 모음, 카메라, 배경, 입력.</summary>
+        private static TapInput CreateCommon(GameConfig config)
+        {
             var rootGo = new GameObject("GameRoot");
             var root = rootGo.AddComponent<GameRoot>();
             SetField(root, "config", config);
             var assets = rootGo.AddComponent<GameAssets>();
             assets.bulletSprite = LoadSprite(ArtPath + "Bullet.png");
             assets.sparkSprite = LoadSprite(ArtPath + "Spark.png");
-            assets.pixelSprite = pixel;
+            assets.pixelSprite = LoadSprite(ArtPath + "Pixel.png");
             assets.spriteMaterial = spriteMat;
-            assets.flashMaterial = flashMat;
+            assets.flashMaterial = LoadOrCreateFlashMaterial();
             assets.monsters = LoadOrCreateMonsters();
             assets.boss = LoadOrCreateBoss();
             assets.meteor = LoadOrCreateMeteor();
@@ -67,13 +86,19 @@ namespace BouncyUFO.EditorTools
             assets.titleFont = AssetDatabase.LoadAssetAtPath<Font>(FontPath + "Galmuri11.ttf");
             assets.bodyFont = AssetDatabase.LoadAssetAtPath<Font>(FontPath + "Galmuri9.ttf");
             assets.textShader = AssetDatabase.LoadAssetAtPath<Shader>(TextShaderPath);
+            assets.fontLicense = AssetDatabase.LoadAssetAtPath<TextAsset>(FontPath + "Galmuri-OFL.txt");
+            assets.ufoSprite = FindSprite(UfoSheetPath, "Enemy_0");
+            assets.earthSprite = FindSprite(EarthSheetPath, "Earth-Star_0");
+            assets.starSprite = FindSprite(EarthSheetPath, "Earth-Star_2");
+            assets.pilotSuit = LoadSprite(DummyPath + "PilotSuit.png");
+            assets.pilotFace = LoadSprite(DummyPath + "PilotFace.png");
+            assets.pilotEyes = LoadSprite(DummyPath + "PilotEyes.png");
+            assets.pilotHair = new[] { LoadSprite(DummyPath + "PilotHair0.png"), LoadSprite(DummyPath + "PilotHair1.png"), LoadSprite(DummyPath + "PilotHair2.png") };
             if (assets.titleFont == null || assets.bodyFont == null || assets.textShader == null)
                 Debug.LogWarning("[Bouncy UFO] 폰트나 글자 셰이더를 찾지 못했습니다. Assets/Art/Fonts/Galmuri, " + TextShaderPath + " 확인");
             if (assets.strings == null) Debug.LogWarning("[Bouncy UFO] 번역표가 없습니다: " + StringsPath);
-            var session = rootGo.AddComponent<GameSession>();
-            new GameObject("Effects").AddComponent<Effects>();
 
-            // 2) 카메라: 플레이 영역 전체가 보이게(정수 배율 도트)
+            // 카메라: 플레이 영역 전체가 보이게(정수 배율 도트)
             var camGo = new GameObject("Main Camera") { tag = "MainCamera" };
             camGo.transform.position = new Vector3(0f, 0f, -10f);
             var cam = camGo.AddComponent<Camera>();
@@ -88,7 +113,7 @@ namespace BouncyUFO.EditorTools
             ppc.gridSnapping = PixelPerfectCamera.GridSnapping.None;
             camGo.AddComponent<PlayAreaCamera>();
 
-            // 3) 플레이 영역 배경 (여백과 구분되는 남색)
+            // 플레이 영역 배경 (여백과 구분되는 남색)
             Sprite bgSprite = FindSprite(EarthSheetPath, "Earth-Star_9");
             var bg = CreateSprite("PlayAreaBackground", bgSprite, spriteMat, SortOrder.Background);
             if (bgSprite != null)
@@ -97,7 +122,21 @@ namespace BouncyUFO.EditorTools
                 bg.transform.localScale = new Vector3(PlayArea.Size.x / s.x, PlayArea.Size.y / s.y, 1f);
             }
 
-            // 4) 지구 (임시 그림, 아래쪽 가운데) + 체력 바
+            // 입력(터치·마우스). 버튼과 UFO가 함께 듣는다
+            return new GameObject("Input").AddComponent<TapInput>();
+        }
+
+        private static void BuildTitle(GameConfig config, TapInput input) => new GameObject("TitleScreen").AddComponent<TitleScreen>();
+        private static void BuildLobby(GameConfig config, TapInput input) => new GameObject("LobbyScreen").AddComponent<LobbyScreen>();
+        private static void BuildLoading(GameConfig config, TapInput input) => new GameObject("LoadingScreen").AddComponent<LoadingScreen>();
+        private static void BuildResult(GameConfig config, TapInput input) => new GameObject("ResultScene").AddComponent<ResultScene>();
+
+        private static void BuildGame(GameConfig config, TapInput input)
+        {
+            var session = GameObject.Find("GameRoot").AddComponent<GameSession>();
+            new GameObject("Effects").AddComponent<Effects>();
+
+            // 지구 (임시 그림, 아래쪽 가운데) + 체력 바
             var earthGo = CreateSprite("Earth", FindSprite(EarthSheetPath, "Earth-Star_0"), spriteMat, SortOrder.Earth);
             earthGo.transform.position = new Vector3(0f, PlayArea.Bottom, 0f);
             var earth = earthGo.AddComponent<Earth>();
@@ -107,9 +146,8 @@ namespace BouncyUFO.EditorTools
             var bar = new GameObject("EarthHealthBar").AddComponent<EarthHealthBar>();
             SetField(bar, "earth", earth);
 
-            // 5) UFO (입력 + 조작 + 자동 발사 + 통통 연출)
+            // UFO (조작 + 자동 발사 + 통통 연출)
             var ufo = new GameObject("UFO");
-            var input = ufo.AddComponent<TapInput>();
             var controller = ufo.AddComponent<UfoController>();
             var weapon = ufo.AddComponent<Weapon>();
             var visual = CreateSprite("Visual", FindSprite(UfoSheetPath, "Enemy_0"), spriteMat, SortOrder.Ufo);
@@ -120,7 +158,7 @@ namespace BouncyUFO.EditorTools
             SetField(weapon, "visual", squash);
             ufo.transform.position = new Vector3(0f, PlayArea.Bottom + config.PixelsToUnits(config.ufoHeightFromBottomPx), 0f);
 
-            // 6) 몬스터 등장 + 판 끝 화면
+            // 몬스터 등장
             var spawner = new GameObject("MonsterSpawner").AddComponent<MonsterSpawner>();
             var warning = new GameObject("WarningFlash").AddComponent<WarningFlash>();
             var gold = new GameObject("GoldDrops").AddComponent<GoldDrops>();
@@ -130,13 +168,13 @@ namespace BouncyUFO.EditorTools
             SetField(waves, "warning", warning);
             SetField(waves, "gold", gold);
 
-            // 7) 위쪽 표시: 골드·웨이브 번호, 보스 체력 바
+            // 위쪽 표시: 골드·점수·웨이브, 보스 체력 바
             var hud = new GameObject("TopHud").AddComponent<TopHud>();
             SetField(hud, "waves", waves);
             var bossBar = new GameObject("BossHealthBar").AddComponent<BossHealthBar>();
             SetField(bossBar, "waves", waves);
 
-            // 8) 판 안 성장: 경험치·레벨업 카드
+            // 판 안 성장: 경험치·레벨업 카드
             var levels = new GameObject("LevelSystem").AddComponent<LevelSystem>();
             SetField(levels, "weapon", weapon);
             SetField(levels, "ufoVisual", squash);
@@ -146,17 +184,11 @@ namespace BouncyUFO.EditorTools
             SetField(cardUi, "input", input);
             SetField(cardUi, "levels", levels);
 
-            // 9) 간단 튜토리얼 (처음 한 번)
+            // 간단 튜토리얼(처음 한 번), 일시정지
             var tutorial = new GameObject("TutorialHints").AddComponent<TutorialHints>();
             SetField(tutorial, "ufo", controller);
             SetField(tutorial, "waves", waves);
-            var result = new GameObject("ResultScreen").AddComponent<ResultScreen>();
-            SetField(result, "input", input);
-
-            EditorSceneManager.SaveScene(scene, ScenePath);
-            AddSceneToBuild(ScenePath);
-            Selection.activeObject = AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath);
-            Debug.Log("[Bouncy UFO] Game 장면을 만들었습니다: " + ScenePath);
+            new GameObject("PauseMenu").AddComponent<PauseMenu>();
         }
 
         private static Sprite LoadSprite(string path)
@@ -353,13 +385,6 @@ namespace BouncyUFO.EditorTools
             var so = new SerializedObject(target);
             so.FindProperty(field).objectReferenceValue = value;
             so.ApplyModifiedPropertiesWithoutUndo();
-        }
-
-        private static void AddSceneToBuild(string path)
-        {
-            var scenes = EditorBuildSettings.scenes.Where(s => s.path != path).ToList();
-            scenes.Insert(0, new EditorBuildSettingsScene(path, true));
-            EditorBuildSettings.scenes = scenes.ToArray();
         }
     }
 }

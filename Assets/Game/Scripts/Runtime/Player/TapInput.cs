@@ -18,13 +18,22 @@ namespace BouncyUFO
         /// <summary>뗀 위치(화면 좌표), 누르고 있던 시간(초, 실제 시간).</summary>
         public event Action<Vector2, float> Released;
 
+        /// <summary>지금 장면의 입력(버튼들이 듣는다).</summary>
+        public static TapInput Main { get; private set; }
+
         private int activeId = NoPress;
         private float pressedAt;
 
         public bool IsHolding => activeId != NoPress;
         public float HeldTime => IsHolding ? Time.unscaledTime - pressedAt : 0f;
 
-        private void OnDisable() => activeId = NoPress;
+        private void OnEnable() => Main = this;
+
+        private void OnDisable()
+        {
+            activeId = NoPress;
+            if (Main == this) Main = null;
+        }
 
         private void Update()
         {

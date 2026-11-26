@@ -40,7 +40,11 @@ namespace BouncyUFO
         private void OnKilled(Monster m)
         {
             if (m.Kind == MonsterDefinition.Kind.Meteor && m.Definition.gold > 0)
-                Burst(m.transform.position, m.Definition.gold, Source.Meteor);
+            {
+                // 로비 강화(운석 골드)만큼 늘어난다
+                int amount = Mathf.RoundToInt(m.Definition.gold * (1f + Upgrades.Total(UpgradeDefinition.Effect.MeteorGold)));
+                Burst(m.transform.position, amount, Source.Meteor);
+            }
         }
 
         /// <summary>amount 골드를 동전 여러 개로 나눠 튀긴다.</summary>

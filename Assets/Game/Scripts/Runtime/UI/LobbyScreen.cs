@@ -1,0 +1,147 @@
+using TMPro;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+namespace BouncyUFO
+{
+    /// <summary>
+    /// 로비: 프로필(캐릭터·계정 레벨), 골드, 최고 기록, 게임 시작, 강화·꾸미기·순위표·설정.
+    /// 뒤로 가기(안드로이드 뒤로 버튼)는 열린 창을 닫는다.
+    /// </summary>
+    public sealed class LobbyScreen : MonoBehaviour
+    {
+        private const int PanelOrder = SortOrder.Overlay;
+
+        private PilotView pilot;
+        private TextMeshPro level;
+        private TextMeshPro gold;
+        private TextMeshPro best;
+        private Transform xpFill;
+        private float xpWidth;
+        private Transform ufo;
+        private SquashStretch ufoSquash;
+        private int lastBounce;
+
+        private UpgradePanel upgrade;
+        private CustomizePanel customize;
+        private LeaderboardPanel ranking;
+        private SettingsPanel settings;
+        private ConfirmPanel quitConfirm;
+
+        private GameConfig Config => PlayArea.Config;
+        private float U(float px) => Config.PixelsToUnits(px);
+
+        private void Start()
+        {
+            var a = GameAssets.Instance;
+            float px = a.pixelSprite.bounds.size.x;
+            StarField.Create(transform, 30);
+
+            // 위: 프로필(캐릭터 + 계정 레벨 + 경험치 바)
+            pilot = PilotView.Create(transform, new Vector3(PlayArea.Left + U(16f), PlayArea.Top - U(18f), 0f), 1, SortOrder.Hud);
+            level = GameText.Create("Level", transform, GameText.Style.Title, SortOrder.Hud + 2, TextAlignmentOptions.MidlineLeft, 80f);
+            level.transform.position = new Vector3(PlayArea.Left + U(30f + 40f), PlayArea.Top - U(13f), 0f);
+            xpWidth = U(56f);
+            var xpBack = a.CreateSprite("XpBack", a.pixelSprite, SortOrder.Hud, transform);
+            xpBack.color = new Color(0.1f, 0.12f, 0.25f);
+            xpBack.transform.localScale = new Vector3(xpWidth / px, U(3f) / px, 1f);
+            xpBack.transform.position = new Vector3(PlayArea.Left + U(30f) + xpWidth * 0.5f, PlayArea.Top - U(25f), 0f);
+            var xf = a.CreateSprite("XpFill", a.pixelSprite, SortOrder.Hud + 1, xpBack.transform.parent);
+            xf.color = new Color(0.6f, 1f, 0.7f);
+            xpFill = xf.transform;
+            xpFill.position = xpBack.transform.position;
+
+            // 위 오른쪽: 골드
+            var coin = a.CreateSprite("Coin", a.coinSprite, SortOrder.Hud, transform);
+            coin.transform.position = new Vector3(PlayArea.Right - U(66f), PlayArea.Top - U(14f), 0f);
+            gold = GameText.Create("Gold", transform, GameText.Style.Title, SortOrder.Hud + 2, TextAlignmentOptions.MidlineRight, 80f);
+            gold.color = new Color(1f, 0.86f, 0.4f);
+            gold.transform.position = new Vector3(PlayArea.Right - U(6f + 40f), PlayArea.Top - U(14f), 0f);
+
+            // 제목 + 최고 기록
+            var title = GameText.Create("Title", transform, GameText.Style.Title, SortOrder.Hud + 2);
+            GameText.SetKey(title, "game.title");
+            title.color = new Color(0.65f, 0.95f, 1f);
+            title.transform.position = new Vector3(0f, U(104f), 0f);
+            best = GameText.Create("Best", transform, GameText.Style.Body, SortOrder.Hud + 2, TextAlignmentOptions.Center, 170f);
+            best.transform.position = new Vector3(0f, U(88f), 0f);
+            best.color = new Color(0.8f, 0.85f, 1f);
+
+            // 가운데: 지구 위에서 통통 튀는 UFO
+            var earth = a.CreateSprite("Earth", a.earthSprite, SortOrder.Earth, transform);
+            earth.transform.localScale = Vector3.one * 1.5f;
+            earth.transform.position = new Vector3(0f, U(-4f), 0f);
+            var root = new GameObject("UFO").transform;
+            root.SetParent(transform, false);
+            var sr = a.CreateSprite("Visual", a.ufoSprite, SortOrder.Ufo, root);
+            sr.transform.localScale = Vector3.one * 2f;
+            ufoSquash = sr.gameObject.AddComponent<SquashStretch>();
+            ufo = root;
+
+            // 버튼
+            var start = PixelButton.Create("Start", transform, new Vector2(0f, -66f), new Vector2(124f, 28f), "ui.start", new Color(0.3f, 0.75f, 0.45f), SortOrder.Hud, 0);
+            start.Clicked += SceneFlow.StartGame;
+
+            int panelBase = PanelOrder;
+            upgrade = UpgradePanel.Create(transform, panelBase);
+            customize = CustomizePanel.Create(transform, panelBase);
+            ranking = LeaderboardPanel.Create(transform, panelBase);
+            settings = SettingsPanel.Create(transform, panelBase, true);
+            quitConfirm = ConfirmPanel.Create(transform, panelBase + 60);
+            upgrade.GoldSpent += Refresh;
+            customize.Closed += () => pilot.Refresh();
+
+            Menu("Upgrade", "ui.upgrade", new Vector2(-40f, -100f), new Color(0.85f, 0.55f, 0.3f), upgrade.Open);
+            Menu("Custom", "ui.custom", new Vector2(40f, -100f), new Color(0.75f, 0.45f, 0.8f), customize.Open);
+            Menu("Ranking", "ui.ranking", new Vector2(-40f, -124f), new Color(0.35f, 0.55f, 0.9f), ranking.Open);
+            Menu("Settings", "ui.settings", new Vector2(40f, -124f), new Color(0.45f, 0.5f, 0.6f), settings.Open);
+
+            Refresh();
+        }
+
+        private void Menu(string name, string key, Vector2 posPx, Color color, System.Action onClick)
+        {
+            var b = PixelButton.Create(name, transform, posPx, new Vector2(76f, 20f), key, color, SortOrder.Hud, 0, GameText.Style.Body);
+            b.Clicked += onClick;
+        }
+
+        private void Refresh()
+        {
+            var d = SaveSystem.Data;
+            var acc = Account.FromTotal(d.accountXp);
+            GameText.SetPlain(level, "Lv " + acc.level);
+            float k = acc.need > 0 ? Mathf.Clamp01((float)acc.xp / acc.need) : 0f;
+            float px = GameAssets.Instance.pixelSprite.bounds.size.x;
+            xpFill.localScale = new Vector3(xpWidth * k / px, U(3f) / px, 1f);
+            xpFill.position = new Vector3(PlayArea.Left + U(30f) + xpWidth * k * 0.5f, PlayArea.Top - U(25f), 0f);
+            GameText.SetPlain(gold, d.gold.ToString());
+            GameText.SetPlain(best, Localization.Get("ui.best") + "  " + d.bestScore);
+        }
+
+        private void OnEnable() => Localization.Changed += OnLanguageChanged;
+        private void OnDisable() => Localization.Changed -= OnLanguageChanged;
+        private void OnLanguageChanged() { if (best != null) Refresh(); }
+
+        private void Update()
+        {
+            // UFO 통통
+            float period = 0.7f;
+            float t = Time.time;
+            int bounce = Mathf.FloorToInt(t / period);
+            float local = t / period - bounce;
+            ufo.position = new Vector3(0f, U(34f) + Mathf.Sin(local * Mathf.PI) * U(8f), 0f);
+            if (bounce != lastBounce) { lastBounce = bounce; ufoSquash.Punch(0.25f); }
+
+            // 안드로이드 뒤로 버튼(= Esc): 맨 위 창부터 닫고, 열린 창이 없으면 "게임을 종료할까요?"
+            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                if (quitConfirm.IsOpen) quitConfirm.Close();
+                else if (settings.Back()) { }
+                else if (upgrade.IsOpen) upgrade.Close();
+                else if (customize.IsOpen) customize.Close();
+                else if (ranking.IsOpen) ranking.Close();
+                else quitConfirm.Ask("ui.quit_confirm", AppQuit.Now);
+            }
+        }
+    }
+}

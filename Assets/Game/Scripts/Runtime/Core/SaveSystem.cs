@@ -1,25 +1,61 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
 namespace BouncyUFO
 {
+    /// <summary>이 기기 순위표 한 줄(점수·웨이브·날짜만, 개인정보 없음).</summary>
+    [Serializable]
+    public sealed class ScoreEntry
+    {
+        public int score;
+        public int wave;
+        public string date;
+    }
+
     /// <summary>
-    /// 기기 안 저장 데이터. 개인정보는 넣지 않는다(점수·골드·튜토리얼 여부만).
+    /// 기기 안 저장 데이터. 개인정보는 넣지 않는다.
     /// version 번호로 저장 형식을 구분해서, 나중에 항목이 늘어도 옛 저장을 그대로 읽는다.
+    /// (v1: 기록·골드·튜토리얼 → v2: 설정, 계정 경험치, 강화, 꾸미기, 이 기기 순위표 추가)
     /// </summary>
     [Serializable]
     public sealed class SaveData
     {
-        public const int CurrentVersion = 1;
+        public const int CurrentVersion = 2;
 
         public int version = CurrentVersion;
         public int bestScore;
         public int bestWave;
-        /// <summary>모아 둔 골드(판에서 져도 유지). 1월에 UFO 해금·강화에 쓴다.</summary>
+        /// <summary>모아 둔 골드(판에서 져도 유지).</summary>
         public int gold;
         public int totalRuns;
         public bool tutorialDone;
+
+        // v2 ---------------------------------------------------------
+        /// <summary>-1 = 폰 언어, 0 한국어, 1 영어, 2 일본어</summary>
+        public int language = -1;
+        public bool sound = true;
+        public bool vibration = true;
+        /// <summary>플레이어 계정 경험치(누적). 레벨은 계산해서 구한다.</summary>
+        public int accountXp;
+        /// <summary>강화 단계. 순서는 GameConfig.upgrades와 같다.</summary>
+        public List<int> upgradeLevels = new List<int>();
+        /// <summary>캐릭터 꾸미기: 머리 모양, 머리색, 피부색, 옷색</summary>
+        public int hairStyle;
+        public int hairColor;
+        public int skinColor;
+        public int suitColor;
+        /// <summary>이 기기 최고 기록 TOP 10</summary>
+        public List<ScoreEntry> topScores = new List<ScoreEntry>();
+
+        public int UpgradeLevel(int index) => index >= 0 && index < upgradeLevels.Count ? upgradeLevels[index] : 0;
+
+        public void SetUpgradeLevel(int index, int level)
+        {
+            while (upgradeLevels.Count <= index) upgradeLevels.Add(0);
+            upgradeLevels[index] = level;
+        }
     }
 
     /// <summary>
@@ -29,6 +65,7 @@ namespace BouncyUFO
     public static class SaveSystem
     {
         private const string FileName = "save.json";
+        private const int TopScoreCount = 10;
         private static SaveData data;
 
         /// <summary>에디터에서 Play를 다시 누를 때 예전 값이 남지 않게(도메인 다시 불러오기를 끈 경우 대비).</summary>
@@ -67,9 +104,32 @@ namespace BouncyUFO
         /// <summary>옛 형식 저장을 지금 형식으로 맞춘다(항목이 늘 때 여기에 추가).</summary>
         private static SaveData Upgrade(SaveData d)
         {
-            if (d.version < 1) d.version = 1;
+            if (d.version < 2)
+            {
+                // v1에는 설정이 없었다: 기본값으로 시작. JsonUtility가 없는 bool을 false로 읽으므로 켜 준다.
+                d.language = -1;
+                d.sound = true;
+                d.vibration = true;
+                if (d.bestScore > 0 && d.topScores.Count == 0)
+                    d.topScores.Add(new ScoreEntry { score = d.bestScore, wave = d.bestWave, date = "-" });
+            }
+            if (d.upgradeLevels == null) d.upgradeLevels = new List<int>();
+            if (d.topScores == null) d.topScores = new List<ScoreEntry>();
             d.version = SaveData.CurrentVersion;
             return d;
+        }
+
+        /// <summary>이 기기 순위표에 넣는다. 몇 등인지 돌려준다(1부터, 못 들면 0).</summary>
+        public static int AddTopScore(int score, int wave)
+        {
+            var list = Data.topScores;
+            var entry = new ScoreEntry { score = score, wave = wave, date = DateTime.Now.ToString("yyyy-MM-dd") };
+            int index = list.FindIndex(e => score > e.score);
+            if (index < 0) index = list.Count;
+            if (index >= TopScoreCount) return 0;
+            list.Insert(index, entry);
+            if (list.Count > TopScoreCount) list.RemoveRange(TopScoreCount, list.Count - TopScoreCount);
+            return index + 1;
         }
 
         public static void Save()

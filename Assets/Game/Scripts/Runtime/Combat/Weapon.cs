@@ -23,7 +23,8 @@ namespace BouncyUFO
         private void Start()
         {
             Damage = Config.bulletDamage;
-            FireInterval = Config.fireInterval;
+            // 로비 강화(연사)만큼 빨라진다
+            FireInterval = Config.fireInterval * Mathf.Clamp(1f - Upgrades.Total(UpgradeDefinition.Effect.FireRate), 0.3f, 1f);
             ShotCount = 1;
             Pierce = 0;
 

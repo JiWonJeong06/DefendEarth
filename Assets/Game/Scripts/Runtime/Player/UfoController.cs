@@ -65,6 +65,7 @@ namespace BouncyUFO
         private void OnPressed(Vector2 screenPos)
         {
             if (Time.timeScale == 0f) return;
+            if (PixelButton.AnyAt(screenPos)) return; // 일시정지 버튼 등을 누른 것은 이동이 아님
             var cam = PlayAreaCamera.Main != null ? PlayAreaCamera.Main.Camera : null;
             if (cam == null) return;
 

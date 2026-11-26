@@ -39,10 +39,26 @@ namespace BouncyUFO
         [Tooltip("TextMeshPro/Mobile/Bitmap 셰이더 (빌드에 꼭 들어가게 여기서 참조)")]
         public Shader textShader;
 
+        [Header("타이틀·로비용 (임시 그림)")]
+        public Sprite ufoSprite;
+        public Sprite earthSprite;
+        public Sprite starSprite;
+
+        [Header("캐릭터 꾸미기 (더미 그림, 흰색 그림에 색을 입힌다)")]
+        public Sprite pilotSuit;
+        public Sprite pilotFace;
+        public Sprite pilotEyes;
+        public Sprite[] pilotHair = new Sprite[0];
+
+        [Header("크레딧")]
+        [Tooltip("갈무리 폰트 라이선스 원문 (OFL은 폰트와 함께 라이선스를 배포해야 한다)")]
+        public TextAsset fontLicense;
+
         private void Awake()
         {
             Instance = this;
             Localization.Load(strings);
+            Localization.SetLanguage(SaveSystem.Data.language);
         }
 
         private void LateUpdate() => GameText.KeepCrisp();
